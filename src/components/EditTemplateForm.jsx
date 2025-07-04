@@ -17,7 +17,7 @@ import Link from "@mui/icons-material/Link";
 import Phone from "@mui/icons-material/Phone";
 
 
-import FileUploadComponent from './FileUploadComponent';
+import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
 
 
@@ -901,10 +901,10 @@ const sendRequest = async () => {
 
           <FormControl fullWidth>
             <Select labelId="template-type-label" id="template-type" value={templateType} onChange={handleTemplateTypeChange} label="Select" ref={templateTypeRef}>
-              <MenuItem value="TEXT">TEXT</MenuItem>
-              <MenuItem value="IMAGE">IMAGE</MenuItem>
+              <MenuItem value="TEXT">TEXTO</MenuItem>
+              <MenuItem value="IMAGE">IMAGEN</MenuItem>
               <MenuItem value="VIDEO">VIDEO</MenuItem>
-              <MenuItem value="DOCUMENT">DOCUMENT</MenuItem>
+              <MenuItem value="DOCUMENT">DOCUMENTO</MenuItem>
             </Select>
             <FormHelperText>
               Escoge el tipo de plantilla que se va a crear
@@ -938,6 +938,60 @@ const sendRequest = async () => {
             </Select>
           </FormControl>
         </Box>
+
+        {/* Header*/} {templateType === 'TEXT' ? (
+          <Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
+            <FormControl fullWidth>
+              <FormLabel>
+                Encabezado
+              </FormLabel>
+            </FormControl>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Agregue un encabezado de página de 60 caracteres a su mensaje. Las variables no se admiten en el pie de página.
+            </Typography>
+            <TextField
+              fullWidth
+              label="Header text"
+              value={header}
+              onChange={handleHeaderChange}
+              helperText={`${header.length} / ${charLimit} caracteres`}
+              sx={{ mb: 3 }}
+              error={header.length === charLimit}
+            />
+          </Box>
+        ) : (
+          <Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
+            <FormControl fullWidth>
+              <FormLabel>
+                Encabezado
+              </FormLabel>
+            </FormControl>
+
+              {/* Componente para subir archivos versión vieja
+            /*<FileUploadComponent
+              templateType={templateType}
+              onUploadSuccess={(mediaId, uploadedUrl) => {
+                setMediaId(mediaId); // Guarda el mediaId
+                setUploadedUrl(uploadedUrl); // Guarda la URL
+                //setUploadStatus("¡Archivo subido exitosamente!");
+              }}
+              onImagePreview={(preview) => setImagePreview(preview)} // Recibe la vista previa
+              onHeaderChange={(newHeader) => setHeader(newHeader)} // Nueva prop
+            />*/}
+              <FileUploadComponent
+                templateType={templateType}
+                onUploadSuccess={(uploadData) => {
+                  setMediaId(uploadData.mediaId);
+                  setUploadedUrl(uploadData.url);
+                  console.log("UploadData: ", uploadData)
+                  console.log('Datos recibidos del componente hijo mediaId: ', uploadData.mediaId);
+                  console.log('Datos recibidos del componente hijo uploadedUrl: ', uploadData.url);
+                }}
+                onImagePreview={(preview) => setImagePreview(preview)}
+                onHeaderChange={(newHeader) => setHeader(newHeader)}
+              />
+            </Box>
+        )}
 
         {/*Idioma --data-urlencodeo languageCode */}<Box sx={{ width: "100%", marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
           <FormControl fullWidth>
@@ -1046,48 +1100,6 @@ const sendRequest = async () => {
 
 
         </Box>
-
-        {/* Header*/} {templateType === 'TEXT' ? (
-          <Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel>
-                Encabezado
-              </FormLabel>
-            </FormControl>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Agregue un encabezado de página de 60 caracteres a su mensaje. Las variables no se admiten en el pie de página.
-            </Typography>
-            <TextField
-              fullWidth
-              label="Header text"
-              value={header}
-              onChange={handleHeaderChange}
-              helperText={`${header.length} / ${charLimit} caracteres`}
-              sx={{ mb: 3 }}
-              error={header.length === charLimit}
-            />
-          </Box>
-        ) : (
-          <Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel>
-                Encabezado
-              </FormLabel>
-            </FormControl>
-
-            {/* Componente para subir archivos */}
-            <FileUploadComponent
-              templateType={templateType}
-              onUploadSuccess={(mediaId, uploadedUrl) => {
-                setMediaId(mediaId); // Guarda el mediaId
-                setUploadedUrl(uploadedUrl); // Guarda la URL
-                //setUploadStatus("¡Archivo subido exitosamente!");
-              }}
-              onImagePreview={(preview) => setImagePreview(preview)} // Recibe la vista previa
-              onHeaderChange={(newHeader) => setHeader(newHeader)} // Nueva prop
-            />
-          </Box>
-        )}
 
         {/* Footer */}<Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2}}>
           <FormControl fullWidth>

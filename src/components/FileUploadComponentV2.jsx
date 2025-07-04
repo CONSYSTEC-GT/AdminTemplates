@@ -65,21 +65,32 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
   // Configuración según el tipo
   const getFileConfig = () => {
-    if (templateType === 'image') {
+    // Normalizar el tipo a minúsculas para comparación
+    const normalizedType = templateType.toLowerCase();
+
+    // Definir arrays de tipos válidos en inglés y español
+    const imageTypes = ['image', 'imagen'];
+    const videoTypes = ['video', 'video']; // video es igual en ambos idiomas
+    const documentTypes = ['document', 'documento'];
+
+    // Función helper para verificar si el tipo está en algún array
+    const isType = (typeArray) => typeArray.includes(normalizedType);
+
+    if (isType(imageTypes)) {
       return {
         accept: '.jpg, .jpeg, .png',
         maxSize: 5 * 1024 * 1024, // 5MB para imágenes
         allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
         typeLabel: 'imagen'
       };
-    } else if (templateType === 'video') {
+    } else if (isType(videoTypes)) {
       return {
         accept: '.mp4',
         maxSize: 16 * 1024 * 1024, // 16MB para videos
         allowedTypes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm'],
         typeLabel: 'video'
       };
-    } else if (templateType === 'document') {
+    } else if (isType(documentTypes)) {
       return {
         accept: '.pdf , .doc, .docx, .xls, .xlsx, .csv, .pptx',
         maxSize: 20 * 1024 * 1024,
@@ -96,7 +107,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         typeLabel: 'documento'
       };
     }
-
 
     return {
       accept: '',
