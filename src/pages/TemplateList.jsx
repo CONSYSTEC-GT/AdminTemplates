@@ -91,7 +91,7 @@ export default function BasicCard() {
   // Recupera el token del localStorage
   const token = localStorage.getItem('authToken');
 
-   // Decodifica el token para obtener appId y authCode
+  // Decodifica el token para obtener appId y authCode
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {

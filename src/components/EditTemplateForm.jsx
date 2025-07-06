@@ -113,7 +113,7 @@ const EditTemplateForm = () => {
   const [variables, setVariables] = useState([]);
 
   // Estado para almacenar ejemplos de variables
-    const [variableExamples, setVariableExamples] = useState({});
+  const [variableExamples, setVariableExamples] = useState({});
 
   //ESTE ES PARA EL EXAMPLE MEDIA
   const [mediaId, setMediaId] = useState('');
@@ -152,22 +152,22 @@ const EditTemplateForm = () => {
       console.log('urlWsFTP', urlWsFTP);
     }
   }
-    /*
+  /*
 
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  idBotRedes = 721;
-  idBot = 257;
-  urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-  */
+appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+empresaTalkMe = 2;
+idBotRedes = 721;
+idBot = 257;
+urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
+apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+*/
 
 
 
@@ -269,68 +269,147 @@ const EditTemplateForm = () => {
 
 
 
-const sendRequest = async () => {
-  // Validar campos antes de enviar la solicitud
-  if (!validateFields()) {
-    return { status: "error", message: "Validación fallida" };
-  }
-
-  const templateId = idTemplate;
-  const url = `https://partner.gupshup.io/partner/app/${appId}/templates/${templateId}`;
-  const headers = {
-    Authorization: authCode,
-    "Content-Type": "application/x-www-form-urlencoded",
-  };
-
-  const data = new URLSearchParams();
-  data.append("elementName", templateName);
-  data.append("category", selectedCategory.toUpperCase());
-  data.append("languageCode", languageCode);
-  data.append("templateType", templateType.toUpperCase());
-  data.append("vertical", vertical);
-  data.append("content", message);
-
-  if (header) data.append("header", header);
-  if (footer) data.append("footer", footer);
-  if (mediaId) data.append("mediaId", mediaId);
-
-  // Construir el objeto buttons
-  const formattedButtons = buttons.map((button) => {
-    const buttonData = {
-      type: button.type,
-      text: button.title,
-    };
-
-    if (button.type === "URL") {
-      buttonData.url = button.url;
-    } else if (button.type === "PHONE_NUMBER") {
-      buttonData.phone_number = button.phoneNumber;
+  const sendRequest = async () => {
+    // Validar campos antes de enviar la solicitud
+    if (!validateFields()) {
+      return { status: "error", message: "Validación fallida" };
     }
 
-    return buttonData;
-  });
+    const templateId = idTemplate;
+    const url = `https://partner.gupshup.io/partner/app/${appId}/templates/${templateId}`;
+    const headers = {
+      Authorization: authCode,
+      "Content-Type": "application/x-www-form-urlencoded",
+    };
 
-  data.append("buttons", JSON.stringify(formattedButtons));
-  data.append("example", example);
-  data.append("exampleHeader", exampleHeader);
-  data.append("enableSample", true);
-  data.append("allowTemplateCategoryChange", false);
+    const data = new URLSearchParams();
+    data.append("elementName", templateName);
+    data.append("category", selectedCategory.toUpperCase());
+    data.append("languageCode", languageCode);
+    data.append("templateType", templateType.toUpperCase());
+    data.append("vertical", vertical);
+    data.append("content", message);
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+    if (header) data.append("header", header);
+    if (footer) data.append("footer", footer);
+    if (mediaId) data.append("mediaId", mediaId);
 
-  try {
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: headers,
-      body: data,
+    // Construir el objeto buttons
+    const formattedButtons = buttons.map((button) => {
+      const buttonData = {
+        type: button.type,
+        text: button.title,
+      };
+
+      if (button.type === "URL") {
+        buttonData.url = button.url;
+      } else if (button.type === "PHONE_NUMBER") {
+        buttonData.phone_number = button.phoneNumber;
+      }
+
+      return buttonData;
     });
 
-    const responseData = await response.json(); // Mover esta línea aquí para usarla en ambos casos
+    data.append("buttons", JSON.stringify(formattedButtons));
+    data.append("example", example);
+    data.append("exampleHeader", exampleHeader);
+    data.append("enableSample", true);
+    data.append("allowTemplateCategoryChange", false);
 
-    if (!response.ok) {
-      console.error("Error response:", responseData);
-      
-      // Guardar log de error
+    console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: headers,
+        body: data,
+      });
+
+      const responseData = await response.json(); // Mover esta línea aquí para usarla en ambos casos
+
+      if (!response.ok) {
+        console.error("Error response:", responseData);
+
+        // Guardar log de error
+        await saveTemplateLog({
+          TEMPLATE_NAME: templateName,
+          APP_ID: appId,
+          CATEGORY: selectedCategory,
+          LANGUAGE_CODE: languageCode,
+          TEMPLATE_TYPE: templateType,
+          VERTICAL: vertical,
+          CONTENT: message,
+          HEADER: header || null,
+          FOOTER: footer || null,
+          MEDIA_ID: mediaId || null,
+          BUTTONS: JSON.stringify(buttons),
+          EXAMPLE: example,
+          EXAMPLE_HEADER: exampleHeader,
+          ENABLE_SAMPLE: true,
+          ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
+          urlTemplatesGS,
+          CREADO_POR: idNombreUsuarioTalkMe,
+          STATUS: "ERROR",
+          REJECTION_REASON: responseData.message || "Solicitud inválida"
+        });
+
+        Swal.fire({
+          title: 'Error',
+          text: `❌ Error al actualizar la plantilla: ${responseData.message || "Solicitud inválida"}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#00c3ff'
+        });
+        return { status: "error", message: responseData.message || "Solicitud inválida" };
+      }
+
+      // Guardar log de éxito
+      await saveTemplateLog({
+        TEMPLATE_NAME: templateName,
+        APP_ID: appId,
+        CATEGORY: selectedCategory,
+        LANGUAGE_CODE: languageCode,
+        TEMPLATE_TYPE: templateType,
+        VERTICAL: vertical,
+        CONTENT: message,
+        HEADER: header || null,
+        FOOTER: footer || null,
+        MEDIA_ID: mediaId || null,
+        BUTTONS: JSON.stringify(buttons),
+        EXAMPLE: example,
+        EXAMPLE_HEADER: exampleHeader,
+        ENABLE_SAMPLE: true,
+        ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
+        urlTemplatesGS,
+        CREADO_POR: idNombreUsuarioTalkMe,
+        STATUS: "SUCCESS",
+        REJECTION_REASON: null
+      });
+
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'La plantilla fue editada correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#00c3ff'
+      });
+
+      console.log("Response: ", responseData);
+      console.log("Plantilla:", templateId);
+      console.log("URL:", url);
+
+      return {
+        status: "success",
+        template: {
+          id: templateId
+        },
+        ...responseData
+      };
+
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+
+      // Guardar log de error de excepción
       await saveTemplateLog({
         TEMPLATE_NAME: templateName,
         APP_ID: appId,
@@ -350,98 +429,19 @@ const sendRequest = async () => {
         urlTemplatesGS,
         CREADO_POR: idNombreUsuarioTalkMe,
         STATUS: "ERROR",
-        REJECTION_REASON: responseData.message || "Solicitud inválida"
+        REJECTION_REASON: error.message || "Error en la solicitud"
       });
 
       Swal.fire({
         title: 'Error',
-        text: `❌ Error al actualizar la plantilla: ${responseData.message || "Solicitud inválida"}`,
+        text: `❌ Error al actualizar la plantilla: ${error.message || "Error en la solicitud"}`,
         icon: 'error',
         confirmButtonText: 'Aceptar',
         confirmButtonColor: '#00c3ff'
       });
-      return { status: "error", message: responseData.message || "Solicitud inválida" };
+      return { status: "error", message: "Error en la solicitud" };
     }
-
-    // Guardar log de éxito
-    await saveTemplateLog({
-      TEMPLATE_NAME: templateName,
-      APP_ID: appId,
-      CATEGORY: selectedCategory,
-      LANGUAGE_CODE: languageCode,
-      TEMPLATE_TYPE: templateType,
-      VERTICAL: vertical,
-      CONTENT: message,
-      HEADER: header || null,
-      FOOTER: footer || null,
-      MEDIA_ID: mediaId || null,
-      BUTTONS: JSON.stringify(buttons),
-      EXAMPLE: example,
-      EXAMPLE_HEADER: exampleHeader,
-      ENABLE_SAMPLE: true,
-      ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-      urlTemplatesGS,
-      CREADO_POR: idNombreUsuarioTalkMe,
-      STATUS: "SUCCESS",
-      REJECTION_REASON: null
-    });
-
-    Swal.fire({
-      title: '¡Éxito!',
-      text: 'La plantilla fue editada correctamente.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
-
-    console.log("Response: ", responseData);
-    console.log("Plantilla:", templateId);
-    console.log("URL:", url);
-
-    return { 
-      status: "success", 
-      template: { 
-        id: templateId
-      },
-      ...responseData
-    };
-
-  } catch (error) {
-    console.error("Error en la solicitud:", error);
-    
-    // Guardar log de error de excepción
-    await saveTemplateLog({
-      TEMPLATE_NAME: templateName,
-      APP_ID: appId,
-      CATEGORY: selectedCategory,
-      LANGUAGE_CODE: languageCode,
-      TEMPLATE_TYPE: templateType,
-      VERTICAL: vertical,
-      CONTENT: message,
-      HEADER: header || null,
-      FOOTER: footer || null,
-      MEDIA_ID: mediaId || null,
-      BUTTONS: JSON.stringify(buttons),
-      EXAMPLE: example,
-      EXAMPLE_HEADER: exampleHeader,
-      ENABLE_SAMPLE: true,
-      ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-      urlTemplatesGS,
-      CREADO_POR: idNombreUsuarioTalkMe,
-      STATUS: "ERROR",
-      REJECTION_REASON: error.message || "Error en la solicitud"
-    });
-
-    Swal.fire({
-      title: 'Error',
-      text: `❌ Error al actualizar la plantilla: ${error.message || "Error en la solicitud"}`,
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
-    return { status: "error", message: "Error en la solicitud" };
-  }
-};
+  };
 
 
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
@@ -763,7 +763,7 @@ const sendRequest = async () => {
   // Función para reemplazar las variables en el mensaje con sus ejemplos
   const replaceVariables = (text, variables) => {
     let result = text;
-    
+
 
     Object.keys(variables).forEach(variable => {
       const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
@@ -771,7 +771,7 @@ const sendRequest = async () => {
       result = result.replace(regex, variables[variable]);
     });
 
-    
+
     return result;
   };
 
@@ -793,11 +793,11 @@ const sendRequest = async () => {
     setDisplayPantallas(selectedOptions);
   };
 
-    // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
-    useEffect(() => {
-      const newExample = replaceVariables(message, variableExamples);
-      setExample(newExample);
-    }, [message, variableExamples]);
+  // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
+  useEffect(() => {
+    const newExample = replaceVariables(message, variableExamples);
+    setExample(newExample);
+  }, [message, variableExamples]);
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
@@ -967,7 +967,7 @@ const sendRequest = async () => {
               </FormLabel>
             </FormControl>
 
-              {/* Componente para subir archivos versión vieja
+            {/* Componente para subir archivos versión vieja
             /*<FileUploadComponent
               templateType={templateType}
               onUploadSuccess={(mediaId, uploadedUrl) => {
@@ -978,19 +978,19 @@ const sendRequest = async () => {
               onImagePreview={(preview) => setImagePreview(preview)} // Recibe la vista previa
               onHeaderChange={(newHeader) => setHeader(newHeader)} // Nueva prop
             />*/}
-              <FileUploadComponent
-                templateType={templateType}
-                onUploadSuccess={(uploadData) => {
-                  setMediaId(uploadData.mediaId);
-                  setUploadedUrl(uploadData.url);
-                  console.log("UploadData: ", uploadData)
-                  console.log('Datos recibidos del componente hijo mediaId: ', uploadData.mediaId);
-                  console.log('Datos recibidos del componente hijo uploadedUrl: ', uploadData.url);
-                }}
-                onImagePreview={(preview) => setImagePreview(preview)}
-                onHeaderChange={(newHeader) => setHeader(newHeader)}
-              />
-            </Box>
+            <FileUploadComponent
+              templateType={templateType}
+              onUploadSuccess={(uploadData) => {
+                setMediaId(uploadData.mediaId);
+                setUploadedUrl(uploadData.url);
+                console.log("UploadData: ", uploadData)
+                console.log('Datos recibidos del componente hijo mediaId: ', uploadData.mediaId);
+                console.log('Datos recibidos del componente hijo uploadedUrl: ', uploadData.url);
+              }}
+              onImagePreview={(preview) => setImagePreview(preview)}
+              onHeaderChange={(newHeader) => setHeader(newHeader)}
+            />
+          </Box>
         )}
 
         {/*Idioma --data-urlencodeo languageCode */}<Box sx={{ width: "100%", marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
@@ -1050,7 +1050,7 @@ const sendRequest = async () => {
               multiline
               aria-required="true"
               error={contenidoPlantillaTypeError}
-              rows={4}
+              rows={7}
               label="Escribe"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -1101,7 +1101,7 @@ const sendRequest = async () => {
 
         </Box>
 
-        {/* Footer */}<Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2}}>
+        {/* Footer */}<Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
           <FormControl fullWidth>
             <FormLabel>
               Pie de página
@@ -1261,20 +1261,30 @@ const sendRequest = async () => {
             {/* Vista previa de la imagen */}
             {imagePreview && (
               <Box sx={{ bgcolor: "#ffffff", p: 1, borderRadius: 2, boxShadow: 1, maxWidth: "100%" }}>
-                {imagePreview.includes("image") && (
-                  <img src={imagePreview} alt="Vista previa" style={{ width: "100%", borderRadius: 2 }} />
-                )}
-
-                {imagePreview.includes("video") && (
+                {typeof imagePreview === "string" && imagePreview.startsWith("data:image") ? (
+                  <img
+                    src={imagePreview}
+                    alt="Vista previa"
+                    style={{ width: "100%", maxHeight: "300px", borderRadius: 2, display: "block" }}
+                  />
+                ) : imagePreview.includes("video") ? (
                   <video controls width="100%">
                     <source src={imagePreview} />
                     Tu navegador no soporta este formato de video.
                   </video>
-                )}
-
-                {imagePreview.includes("pdf") && (
+                ) : imagePreview.includes("pdf") ? (
                   <iframe src={imagePreview} width="100%" height="500px"></iframe>
-                )}
+                ) : (imagePreview.includes(".doc") || imagePreview.includes(".docx") ||
+                  imagePreview.includes(".xls") || imagePreview.includes(".xlsx") ||
+                  imagePreview.includes(".ppt") || imagePreview.includes(".pptx")) ? (
+                  <iframe
+                    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(imagePreview)}`}
+                    width="100%"
+                    height="500px"
+                    frameBorder="0"
+                    title="Vista previa de Office"
+                  ></iframe>
+                ) : nullnull}
               </Box>
             )}
             {/* Muestra el estado de la subida */}
