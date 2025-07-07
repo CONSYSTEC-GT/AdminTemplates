@@ -158,8 +158,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     return errors;
   };
 
-
-
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -384,6 +382,15 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     setUploadState('idle');
     setUploadProgress(0);
     setErrorMessage('');
+
+    // LIMPIAR LA VISTA PREVIA DE LA IMAGEN
+    setImagePreview(null);
+
+    // Notificar al componente padre que se quitó la imagen
+    if (onImagePreview) {
+      onImagePreview(null);
+    }
+    
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';

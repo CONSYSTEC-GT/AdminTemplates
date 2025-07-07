@@ -223,6 +223,7 @@ export default function BasicCard() {
         case 'DOCUMENT':
         case 'VIDEO':
           navigate('/modify-template', { state: { template } });
+          console.log("TEMPLATE ID ES : ", template.id);
           break;
         default:
           // Ruta por defecto si no coincide con ningún tipo conocido

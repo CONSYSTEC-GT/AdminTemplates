@@ -1268,23 +1268,23 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                     style={{ width: "100%", maxHeight: "300px", borderRadius: 2, display: "block" }}
                   />
                 ) : imagePreview.includes("video") ? (
-                  <video controls width="100%">
+                  <video controls width="100%" style={{ maxHeight: "300px", objectFit: "contain" }}>
                     <source src={imagePreview} />
                     Tu navegador no soporta este formato de video.
                   </video>
                 ) : imagePreview.includes("pdf") ? (
-                  <iframe src={imagePreview} width="100%" height="500px"></iframe>
+                  <iframe src={imagePreview} width="100%" height="300px"></iframe>
                 ) : (imagePreview.includes(".doc") || imagePreview.includes(".docx") ||
                   imagePreview.includes(".xls") || imagePreview.includes(".xlsx") ||
                   imagePreview.includes(".ppt") || imagePreview.includes(".pptx")) ? (
                   <iframe
                     src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(imagePreview)}`}
                     width="100%"
-                    height="500px"
+                    height="300px"
                     frameBorder="0"
                     title="Vista previa de Office"
                   ></iframe>
-                ) : nullnull}
+                ) : null}
               </Box>
             )}
             {/* Muestra el estado de la subida */}

@@ -229,6 +229,15 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
     setUploadState('idle');
     setUploadProgress(0);
     setErrorMessage('');
+
+    // LIMPIAR LA VISTA PREVIA DE LA IMAGEN
+    setImagePreview(null);
+
+    // Notificar al componente padre que se quitó la imagen
+    if (onImagePreview) {
+      onImagePreview(null);
+    }
+    
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
