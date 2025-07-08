@@ -315,7 +315,7 @@ useEffect(() => {
 
     if (header) data.append("header", header);
     if (footer) data.append("footer", footer);
-    if (mediaId) data.append("mediaId", mediaId);
+    if (mediaId) data.append("exampleMedia", mediaId);
 
     // Construir el objeto buttons
     const formattedButtons = buttons.map((button) => {
@@ -468,7 +468,7 @@ useEffect(() => {
 
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
   const sendRequest2 = async (templateId) => {
-    const url = `${urlWsFTP}${templateId}`;
+    const url = `${urlTemplatesGS}${templateId}`;
     const headers = {
       "Content-Type": "application/json",
       // Agrega aquí cualquier header de autenticación si es necesario
