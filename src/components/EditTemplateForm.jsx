@@ -19,6 +19,7 @@ import Phone from "@mui/icons-material/Phone";
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
+import { obtenerPantallasMedia } from '../api/templatesGSApi';
 
 
 const EditTemplateForm = () => {
@@ -27,8 +28,49 @@ const EditTemplateForm = () => {
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
 
+    // Recupera el token del localStorage
+  const token = localStorage.getItem('authToken');
+
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      appId = decoded.app_id; // Extrae appId del token
+      authCode = decoded.auth_code; // Extrae authCode del token
+      appName = decoded.app_name; // Extrae el nombre de la aplicación
+      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+      empresaTalkMe = decoded.empresa;
+      idBotRedes = decoded.id_bot_redes;
+      idBot = decoded.id_bot;
+      urlTemplatesGS = decoded.urlTemplatesGS;
+      urlWsFTP = decoded.urlWsFTP;
+    } catch (error) {
+      console.error('Error decodificando el token:', error);
+      console.log('urlWsFTP', urlWsFTP);
+    }
+  }
+  /*
+
+let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+
+appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+empresaTalkMe = 2;
+idBotRedes = 721;
+idBot = 257;
+urlTemplatesGS = 'http://localhost:3004/api/';
+apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+*/
+  
   // Cargar los datos en el formulario al montar el componente
-  useEffect(() => {
+useEffect(() => {
+  // Función asíncrona interna
+  const loadData = async () => {
     if (templateData) {
       setTemplateName(templateData.elementName || "");
       setSelectedCategory(templateData.category || "");
@@ -36,7 +78,6 @@ const EditTemplateForm = () => {
       setLanguageCode(templateData.languageCode || "");
       setVertical(templateData.vertical || "");
       setIdTemplate(templateData.id);
-
 
       // Parsear containerMeta si existe
       if (templateData.containerMeta) {
@@ -46,16 +87,18 @@ const EditTemplateForm = () => {
           setHeader(meta.header || "");
           setFooter(meta.footer || "");
           setExample(meta.sampleText || "");
+          setMediaId(meta.sampleMedia || "");
+          console.log("media Id en loadData: ", mediaId);
 
           // Cargar botones si existen en containerMeta
           if (meta.buttons && Array.isArray(meta.buttons)) {
             setButtons(
               meta.buttons.map((button, index) => ({
-                id: index, // Genera un ID único para la key
-                title: button.text || "", // Título del botón
-                type: button.type || "QUICK_REPLY", // Tipo de botón
-                url: button.url || "", // URL si aplica
-                phoneNumber: button.phone_number || "", // Número de teléfono si aplica
+                id: index,
+                title: button.text || "",
+                type: button.type || "QUICK_REPLY",
+                url: button.url || "",
+                phoneNumber: button.phone_number || "",
               }))
             );
           }
@@ -64,7 +107,33 @@ const EditTemplateForm = () => {
         }
       }
     }
-  }, [templateData]);
+
+    try {
+      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+      if (info === null) {
+        console.log("info es null", info);
+      } else {
+        const pantallasFromAPI = info.pantallas || "";
+        setPantallas(pantallasFromAPI);
+
+        // Procesar para el display
+        const displayValues = procesarPantallasAPI(pantallasFromAPI);
+        setDisplayPantallas(displayValues);
+        console.log("pantallas: ", displayPantallas);
+
+        setMediaURL(info.url || "");
+        setImagePreview(info.url || "");
+
+        console.log("media url: ", mediaURL);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  // Llamar a la función asíncrona
+  loadData();
+}, [templateData, urlTemplatesGS, templateData.id]);
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
   const [templateName, setTemplateName] = useState("");
@@ -128,48 +197,6 @@ const EditTemplateForm = () => {
   const messageRef = useRef(null);
   const exampleRef = useRef(null);
   const selectedCategoryRef = useRef(null);
-
-
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
-
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
-      appName = decoded.app_name; // Extrae el nombre de la aplicación
-      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
-      empresaTalkMe = decoded.empresa;
-      idBotRedes = decoded.id_bot_redes;
-      idBot = decoded.id_bot;
-      urlTemplatesGS = decoded.urlTemplatesGS;
-      urlWsFTP = decoded.urlWsFTP;
-    } catch (error) {
-      console.error('Error decodificando el token:', error);
-      console.log('urlWsFTP', urlWsFTP);
-    }
-  }
-  /*
-
-let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-empresaTalkMe = 2;
-idBotRedes = 721;
-idBot = 257;
-urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
-apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
-
-
 
   // Función para mostrar Snackbar
   const showSnackbar = (message, severity) => {
@@ -245,8 +272,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     return isValid;
   };
 
-
-
   const iniciarRequest = async () => {
     try {
       // Hacer el primer request
@@ -266,8 +291,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       console.error("Ocurrió un error:", error);
     }
   };
-
-
 
   const sendRequest = async () => {
     // Validar campos antes de enviar la solicitud
@@ -443,7 +466,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
   const sendRequest2 = async (templateId) => {
     const url = `${urlWsFTP}${templateId}`;
@@ -466,7 +488,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     // Crear un objeto con los datos 149 EN CERTI 721 EN DEV
     const data = {
       ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
-      ID_BOT_REDES: 149,
+      ID_BOT_REDES: idBotRedes,
       ID_INTERNO: templateId,
       NOMBRE: templateName,
       MENSAJE: message,
@@ -518,6 +540,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   // PANTALLAS
   const pantallasTalkMe = [
+    '0 - Notificaciones',
     '1 - Contactos',
     '2 - Recontacto',
     '3 - Historial',
@@ -618,7 +641,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-
   const handleHeaderTemplateTypeChange = (event) => {
     setTemplateType(event.target.value);
     setHeader(''); // Resetear el header al cambiar el tipo
@@ -637,8 +659,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [selectedFile, setSelectedFile] = useState(null);
   const MAX_IMG_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
   const [error, setError] = useState(''); // Estado para manejar errores
-
-
 
   const handleMediaTypeChange = (event) => {
     setMediaType(event.target.value);
@@ -792,6 +812,20 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     // Guardar el texto completo para mostrar (displayPantallas)
     setDisplayPantallas(selectedOptions);
   };
+
+  const procesarPantallasAPI = (pantallasString) => {
+  if (!pantallasString) return [];
+  
+  const pantallasArray = pantallasString.split(',');
+  const displayValues = pantallasArray.map(pantallaNum => {
+    const pantallaOption = pantallasTalkMe.find(option => 
+      option.startsWith(pantallaNum.trim() + ' -')
+    );
+    return pantallaOption || pantallaNum;
+  });
+  
+  return displayValues;
+};
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
@@ -1261,7 +1295,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             {/* Vista previa de la imagen */}
             {imagePreview && (
               <Box sx={{ bgcolor: "#ffffff", p: 1, borderRadius: 2, boxShadow: 1, maxWidth: "100%" }}>
-                {typeof imagePreview === "string" && imagePreview.startsWith("data:image") ? (
+                {typeof imagePreview === "string" && (imagePreview.startsWith("data:image") || imagePreview.startsWith("http")) ? (
                   <img
                     src={imagePreview}
                     alt="Vista previa"

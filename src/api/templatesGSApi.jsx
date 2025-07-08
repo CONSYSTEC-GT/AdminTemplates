@@ -444,6 +444,32 @@ export const obtenerApiToken = async (urlTemplatesGS, idEmpresa) => {
   }
 };
 
+export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
+  const url = `${urlTemplatesGS}plantillas/${id_interno}/pantallas-media`;
+  console.log("url del endpoint obtenerPantallasMedia: ", url);
+
+  try{
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok){
+      throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data
+  } catch (error){
+    console.error("Error obteniendo el API Token:", error);
+    return null;
+  }
+
+}
+
 //utils
 
 function reordenarVariables(message) {
