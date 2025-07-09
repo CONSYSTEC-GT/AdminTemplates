@@ -225,9 +225,12 @@ const TemplateAproved = () => {
       // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
       setSelectedTemplate(null);
+      setLoading(true);
 
-      // Opcional: Recargar la lista de plantillas
-      await fetchTemplates();
+      // Recargar y actualizar el estado de plantillas
+      const newTemplates = await fetchTemplates(appId, authCode);
+      setTemplates(newTemplates);
+      setLoading(false);
     } catch (error) {
       console.error('Error al eliminar la plantilla:', error);
     }
