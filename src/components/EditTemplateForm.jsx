@@ -74,7 +74,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       if (templateData) {
         setTemplateName(templateData.elementName || "");
         setSelectedCategory(templateData.category || "");
-        setTemplateType(templateData.templateType || "");
+        setTemplateType((templateData.templateType || "").toLowerCase());
         setLanguageCode(templateData.languageCode || "");
         setVertical(templateData.vertical || "");
         setIdTemplate(templateData.id);
@@ -138,7 +138,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [templateType, setTemplateType] = useState("TEXT");
+  const [templateType, setTemplateType] = useState("text");
   const [pantallas, setPantallas] = useState([]);
   const [displayPantallas, setDisplayPantallas] = useState([]);
   const [templateNameHelperText, setTemplateNameHelperText] = useState("El nombre debe hacer referencia al texto de su plantilla.");
@@ -468,66 +468,108 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
   const sendRequest2 = async (templateId) => {
-    const url = `${urlTemplatesGS}${templateId}`;
-    const headers = {
-      "Content-Type": "application/json",
-      // Agrega aquí cualquier header de autenticación si es necesario
-    };
-
-    // Convertir selectedCategory a ID_PLANTILLA_CATEGORIA 13 Y 14 EN CERTI 17 Y 18 EN DEV
-    let ID_PLANTILLA_CATEGORIA;
-    if (selectedCategory === "MARKETING") {
-      ID_PLANTILLA_CATEGORIA = 10;
-    } else if (selectedCategory === "UTILITY") {
-      ID_PLANTILLA_CATEGORIA = 13;
-    } else {
-      console.error("Categoría no válida:", selectedCategory);
-      return null; // Retornar null si la categoría no es válida
-    }
-
-    // Crear un objeto con los datos 149 EN CERTI 721 EN DEV
-    const data = {
-      ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
-      ID_BOT_REDES: idBotRedes,
-      ID_INTERNO: templateId,
-      NOMBRE: templateName,
-      MENSAJE: message,
-      TIPO_PLANTILLA: templateType,
-      MODIFICADO_POR: idNombreUsuarioTalkMe,
-    };
-
-    // Imprimir el segundo request
-    console.log("Segundo request enviado:", {
-      url: url,
-      headers: headers,
-      body: data,
-    });
-
-    try {
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: headers,
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        console.error("Error response:", errorResponse);
-        //showSnackbar(`❌ Error en el segundo request: ${errorResponse.message || "Solicitud inválida"}`, "error");
-        return null; // Retornar null en caso de error
-      }
-
-      const result = await response.json();
-      //showSnackbar("✅ Segundo request completado exitosamente", "success");
-      console.log("Response del segundo request: ", result);
-      return result; // Retornar el resultado en caso de éxito
-    } catch (error) {
-      console.error("Error en el segundo request:", error);
-      showSnackbar("❌ Error en el segundo request", "error");
-      return null; // Retornar null en caso de error
-    }
+  const url = `${urlTemplatesGS}plantillas/${templateId}`;
+  const headers = {
+    "Content-Type": "application/json",
   };
 
+  // Convertir selectedCategory a ID_PLANTILLA_CATEGORIA
+  let ID_PLANTILLA_CATEGORIA;
+  if (selectedCategory === "MARKETING") {
+    ID_PLANTILLA_CATEGORIA = 10;
+  } else if (selectedCategory === "UTILITY") {
+    ID_PLANTILLA_CATEGORIA = 13;
+  } else {
+    console.error("Categoría no válida:", selectedCategory);
+    return null;
+  }
+
+  let TIPO_PLANTILLA;
+  if (templateType === "CAROUSEL") {
+    TIPO_PLANTILLA = 1;
+  } else {
+    TIPO_PLANTILLA = 0;
+  }
+
+  const mediaMap = {
+    image: "image",
+    video: "video",
+    document: "document",
+    carousel: "image"
+  };
+
+  console.log("templateType: ", templateType);
+  const MEDIA = mediaMap[templateType] || null
+  console.log("MEDIA: ",MEDIA);
+
+  const mensajeProcesado = reordenarVariables(message);
+
+  const nombreProcesado = templateName.replace(/_/g, " ");
+
+  // Crear un objeto con los datos completos
+  const data = {
+    ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
+    ID_BOT_REDES: idBotRedes,
+    NOMBRE: nombreProcesado,
+    NOMBRE_PLANTILLA: templateName,
+    MENSAJE: mensajeProcesado,
+    TIPO_PLANTILLA: TIPO_PLANTILLA,
+    MEDIA: MEDIA,
+    URL: uploadedUrl,
+    PANTALLAS: pantallas,
+    MODIFICADO_EL: new Date(),
+    MODIFICADO_POR: idNombreUsuarioTalkMe,
+  };
+
+  console.log("Segundo request enviado:", {
+    url: url,
+    headers: headers,
+    body: data,
+  });
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorResponse = await response.json();
+      console.error("Error response:", errorResponse);
+      return null;
+    }
+
+    const result = await response.json();
+    console.log("Response del segundo request: ", result);
+    return result;
+  } catch (error) {
+    console.error("Error en el segundo request:", error);
+    showSnackbar("❌ Error en el segundo request", "error");
+    return null;
+  }
+};
+
+
+function reordenarVariables(message) {
+  // Encontrar todas las variables en el mensaje
+  const variables = message.match(/\{\{\d+\}\}/g) || [];
+  
+  // Crear un mapa para el reordenamiento: {{1}} -> {{0}}, {{2}} -> {{1}}, etc.
+  const reordenamiento = {};
+  variables.forEach((variable, index) => {
+    const numeroOriginal = variable.match(/\d+/)[0];
+    reordenamiento[variable] = `{{${index}}}`;
+  });
+  
+  // Reemplazar cada variable con su nuevo número
+  let nuevoMensaje = message;
+  for (const [vieja, nueva] of Object.entries(reordenamiento)) {
+    nuevoMensaje = nuevoMensaje.replace(new RegExp(escapeRegExp(vieja), 'g'), nueva);
+  }
+  
+  return nuevoMensaje;
+}
   //const [variables, setVariables] = useState([{ key: '{{1}}', value: '' }, { key: '{{2}}', value: '' }]);
 
   //MEDIA
@@ -935,10 +977,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
           <FormControl fullWidth>
             <Select labelId="template-type-label" id="template-type" value={templateType} onChange={handleTemplateTypeChange} label="Select" ref={templateTypeRef}>
-              <MenuItem value="TEXT">TEXTO</MenuItem>
-              <MenuItem value="IMAGE">IMAGEN</MenuItem>
-              <MenuItem value="VIDEO">VIDEO</MenuItem>
-              <MenuItem value="DOCUMENT">DOCUMENTO</MenuItem>
+              <MenuItem value="text">TEXTO</MenuItem>
+              <MenuItem value="image">IMAGEN</MenuItem>
+              <MenuItem value="video">VIDEO</MenuItem>
+              <MenuItem value="document">DOCUMENTO</MenuItem>
             </Select>
             <FormHelperText>
               Escoge el tipo de plantilla que se va a crear
