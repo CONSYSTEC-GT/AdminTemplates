@@ -273,24 +273,32 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
   const iniciarRequest = async () => {
-    try {
-      // Hacer el primer request
-      const result = await sendRequest();
+  try {
+    // Hacer el primer request
+    const result = await sendRequest();
 
-      // Verificar si el primer request fue exitoso
-      if (result && result.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
-        const templateId = result.template.id;
+    // Verificar si el primer request fue exitoso
+    if (result && result.status === "success") {
+      // Extraer el valor de `id` del objeto `template`
+      const templateId = result.template.id;
 
-        // Hacer el segundo request, pasando el `id` como parámetro
-        await sendRequest2(templateId);
+      // Hacer el segundo request, pasando el `id` como parámetro
+      const result2 = await sendRequest2(templateId);
+
+      // Si el segundo request también fue exitoso
+      if (result2 && result2.status === "success") {
+        navigate('/Dashboard');
       } else {
-        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
+        console.error("El segundo request no fue exitoso.");
       }
-    } catch (error) {
-      console.error("Ocurrió un error:", error);
+    } else {
+      console.error("El primer request no fue exitoso o no tiene el formato esperado.");
     }
-  };
+  } catch (error) {
+    console.error("Ocurrió un error:", error);
+  }
+};
+
 
   const sendRequest = async () => {
     // Validar campos antes de enviar la solicitud

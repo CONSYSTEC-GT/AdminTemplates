@@ -49,14 +49,27 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
     try {
       // Hacer el primer request
       const result = await handleDelete();
-  
+
       // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
         // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
-  
+
         // Hacer el segundo request, pasando el `id` como parámetro
         await handleDelete2(templateId);
+
+        // Cierra el modal y notifica al padre
+        onClose(); // Cierra el modal de confirmación
+        onConfirm(template); // Esto llama a handleDeleteConfirm en el padre
+
+        // Mostrar confirmación de éxito
+        Swal.fire({
+          title: 'Eliminado',
+          text: 'La plantilla fue eliminada correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#00c3ff'
+        });
       } else {
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         Swal.fire({
@@ -70,18 +83,19 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
     } catch (error) {
       console.error("Ocurrió un error:", error);
       Swal.fire({
-          title: 'Error',
-          text: 'La plantilla no pudo ser eliminada correctamente.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
+        title: 'Error',
+        text: 'La plantilla no pudo ser eliminada correctamente.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#00c3ff'
+      });
     }
   };
 
+
   const handleDelete = async () => {
     if (!template) return;
-  
+
     try {
       const response = await fetch(
         `https://partner.gupshup.io/partner/app/${appId}/template/${template.elementName}`,
@@ -92,95 +106,51 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
           },
         }
       );
-  
+
       if (response.ok) {
-        //showSnackbar('✅ Plantilla eliminada exitosamente', 'success');
-        Swal.fire({
-                  title: '¡Éxito!',
-                  text: 'La plantilla fue eliminada correctamente.',
-                  icon: 'success',
-                  confirmButtonText: 'Aceptar',
-                  confirmButtonColor: '#00c3ff'
-                });
-        //setShowConfirmationModal(true); // Activamos el modal de confirmación
         return { status: "success", template: { id: template.id } }; // Devuelve el estado y el ID de la plantilla
       } else {
-        //showSnackbar('❌ Error al eliminar la plantilla', 'error');
-        Swal.fire({
-          title: 'Error',
-          text: 'La plantilla no pudo ser eliminada correctamente.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
         return { status: "error" }; // Devuelve un estado de error
       }
     } catch (error) {
       console.log('Error en la solicitud:', error);
-      //showSnackbar('❌ Error al eliminar la plantilla', 'error');
       return { status: "error" }; // Devuelve un estado de error
     }
   };
 
   const handleDelete2 = async (templateId) => {
-    //const url = `https://certificacion.talkme.pro/templatesGS/api/plantillas/${templateId}`; 
     const url = `${urlTemplatesGS}plantillas/${templateId}`;
     const headers = {
       "Content-Type": "application/json",
-      // Agrega aquí cualquier header de autenticación si es necesario
     };
-  
+
     try {
       const response = await fetch(url, {
         method: "DELETE",
         headers: headers // Asegúrate de incluir los headers en la solicitud
       });
-  
+
       if (!response.ok) {
         const errorResponse = await response.json();
         console.error("Error response:", errorResponse);
-        //showSnackbar(`❌ Error en el segundo request: ${errorResponse.message || "Solicitud inválida"}`, "error");
-        Swal.fire({
-          title: 'Error',
-          text: 'La plantilla no pudo ser eliminada correctamente.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
         return null; // Retornar null en caso de error
       }
-  
+
       const result = await response.json();
-      //showSnackbar("✅ Segundo request completado exitosamente", "success");
-      Swal.fire({
-                  title: '¡Éxito!',
-                  text: 'La plantilla fue eliminada correctamente.',
-                  icon: 'success',
-                  confirmButtonText: 'Aceptar',
-                  confirmButtonColor: '#00c3ff'
-                });
       console.log("Response del segundo request: ", result);
-      return result; // Retornar el resultado en caso de éxito
+      return result;
     } catch (error) {
       console.error("Error en el segundo request:", error);
-      //showSnackbar("❌ Error en el segundo request", "error");
-      Swal.fire({
-          title: 'Error',
-          text: 'La plantilla no pudo ser eliminada correctamente.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
       return null; // Retornar null en caso de error
     }
   };
-  
 
-// Modificamos también esta función para manejar apropiadamente el cierre
-const handleCloseConfirmationModal = () => {
-  setShowConfirmationModal(false);
-  onConfirm(template); // Ahora llamamos a onConfirm al cerrar el modal de confirmación
-};
+
+  // Modificamos también esta función para manejar apropiadamente el cierre
+  const handleCloseConfirmationModal = () => {
+    setShowConfirmationModal(false);
+    onConfirm(template); // Ahora llamamos a onConfirm al cerrar el modal de confirmación
+  };
 
   if (!template) return null;
 
@@ -193,7 +163,6 @@ const handleCloseConfirmationModal = () => {
         aria-describedby="delete-modal-description"
       >
         <Box sx={modalStyle}>
-          {!showConfirmationModal ? (
             <>
               <Typography id="delete-modal-title" variant="h6" gutterBottom>
                 ¿Estás seguro de eliminar esta plantilla?
@@ -233,30 +202,7 @@ const handleCloseConfirmationModal = () => {
                 </Button>
               </Box>
             </>
-          ) : (
-            <Box sx={{ textAlign: 'center' }}>
-              <CheckIcon
-                sx={{
-                  fontSize: 60,
-                  color: 'success.main',
-                  mb: 2,
-                }}
-              />
-              <Typography variant="h6" gutterBottom>
-                Plantilla eliminada
-              </Typography>
-              <Typography sx={{ mb: 3 }}>
-                La plantilla se ha eliminado exitosamente.
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCloseConfirmationModal}
-              >
-                Listo
-              </Button>
-            </Box>
-          )}
+          
         </Box>
       </Modal>
     </>

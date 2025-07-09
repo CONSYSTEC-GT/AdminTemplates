@@ -91,7 +91,7 @@ export default function BasicCard() {
   // Recupera el token del localStorage
   const token = localStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
+  /* Decodifica el token para obtener appId y authCode
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
@@ -112,7 +112,7 @@ export default function BasicCard() {
     }
   }
   
- /*
+ */
 
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
 
@@ -122,7 +122,7 @@ export default function BasicCard() {
   idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
   idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
   empresaTalkMe = 2;
-*/
+//
 
 
   // Función para obtener las plantillas
