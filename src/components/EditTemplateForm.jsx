@@ -28,7 +28,7 @@ const EditTemplateForm = () => {
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
 
-    // Recupera el token del localStorage
+  // Recupera el token del localStorage
   const token = localStorage.getItem('authToken');
 
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
@@ -66,74 +66,74 @@ urlTemplatesGS = 'http://localhost:3004/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 */
-  
+
   // Cargar los datos en el formulario al montar el componente
-useEffect(() => {
-  // Función asíncrona interna
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+  useEffect(() => {
+    // Función asíncrona interna
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType(templateData.templateType || "");
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-      // Parsear containerMeta si existe
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          setMessage(meta.data || "");
-          setHeader(meta.header || "");
-          setFooter(meta.footer || "");
-          setExample(meta.sampleText || "");
-          setMediaId(meta.sampleMedia || "");
-          console.log("media Id en loadData: ", mediaId);
+        // Parsear containerMeta si existe
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
+            setMessage(meta.data || "");
+            setHeader(meta.header || "");
+            setFooter(meta.footer || "");
+            setExample(meta.sampleText || "");
+            setMediaId(meta.sampleMedia || "");
+            console.log("media Id en loadData: ", mediaId);
 
-          // Cargar botones si existen en containerMeta
-          if (meta.buttons && Array.isArray(meta.buttons)) {
-            setButtons(
-              meta.buttons.map((button, index) => ({
-                id: index,
-                title: button.text || "",
-                type: button.type || "QUICK_REPLY",
-                url: button.url || "",
-                phoneNumber: button.phone_number || "",
-              }))
-            );
+            // Cargar botones si existen en containerMeta
+            if (meta.buttons && Array.isArray(meta.buttons)) {
+              setButtons(
+                meta.buttons.map((button, index) => ({
+                  id: index,
+                  title: button.text || "",
+                  type: button.type || "QUICK_REPLY",
+                  url: button.url || "",
+                  phoneNumber: button.phone_number || "",
+                }))
+              );
+            }
+          } catch (error) {
+            console.error("Error al parsear containerMeta:", error);
           }
-        } catch (error) {
-          console.error("Error al parsear containerMeta:", error);
         }
       }
-    }
 
-    try {
-      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-      if (info === null) {
-        console.log("info es null", info);
-      } else {
-        const pantallasFromAPI = info.pantallas || "";
-        setPantallas(pantallasFromAPI);
+      try {
+        const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+        if (info === null) {
+          console.log("info es null", info);
+        } else {
+          const pantallasFromAPI = info.pantallas || "";
+          setPantallas(pantallasFromAPI);
 
-        // Procesar para el display
-        const displayValues = procesarPantallasAPI(pantallasFromAPI);
-        setDisplayPantallas(displayValues);
-        console.log("pantallas: ", displayPantallas);
+          // Procesar para el display
+          const displayValues = procesarPantallasAPI(pantallasFromAPI);
+          setDisplayPantallas(displayValues);
+          console.log("pantallas: ", displayPantallas);
 
-        setMediaURL(info.url || "");
-        setImagePreview(info.url || "");
+          setMediaURL(info.url || "");
+          setImagePreview(info.url || "");
 
-        console.log("media url: ", mediaURL);
+          console.log("media url: ", mediaURL);
+        }
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
+    };
 
-  // Llamar a la función asíncrona
-  loadData();
-}, [templateData, urlTemplatesGS, templateData.id]);
+    // Llamar a la función asíncrona
+    loadData();
+  }, [templateData, urlTemplatesGS, templateData.id]);
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
   const [templateName, setTemplateName] = useState("");
@@ -814,18 +814,18 @@ useEffect(() => {
   };
 
   const procesarPantallasAPI = (pantallasString) => {
-  if (!pantallasString) return [];
-  
-  const pantallasArray = pantallasString.split(',');
-  const displayValues = pantallasArray.map(pantallaNum => {
-    const pantallaOption = pantallasTalkMe.find(option => 
-      option.startsWith(pantallaNum.trim() + ' -')
-    );
-    return pantallaOption || pantallaNum;
-  });
-  
-  return displayValues;
-};
+    if (!pantallasString) return [];
+
+    const pantallasArray = pantallasString.split(',');
+    const displayValues = pantallasArray.map(pantallaNum => {
+      const pantallaOption = pantallasTalkMe.find(option =>
+        option.startsWith(pantallaNum.trim() + ' -')
+      );
+      return pantallaOption || pantallaNum;
+    });
+
+    return displayValues;
+  };
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
@@ -1288,36 +1288,56 @@ useEffect(() => {
               gap: 2,
             }}
           >
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="caption" gutterBottom>
               Vista previa
             </Typography>
 
             {/* Vista previa de la imagen */}
             {imagePreview && (
               <Box sx={{ bgcolor: "#ffffff", p: 1, borderRadius: 2, boxShadow: 1, maxWidth: "100%" }}>
-                {typeof imagePreview === "string" && (imagePreview.startsWith("data:image") || imagePreview.startsWith("http")) ? (
-                  <img
-                    src={imagePreview}
-                    alt="Vista previa"
-                    style={{ width: "100%", maxHeight: "300px", borderRadius: 2, display: "block" }}
-                  />
-                ) : imagePreview.includes("video") ? (
-                  <video controls width="100%" style={{ maxHeight: "300px", objectFit: "contain" }}>
-                    <source src={imagePreview} />
-                    Tu navegador no soporta este formato de video.
-                  </video>
-                ) : imagePreview.includes("pdf") ? (
-                  <iframe src={imagePreview} width="100%" height="300px"></iframe>
-                ) : (imagePreview.includes(".doc") || imagePreview.includes(".docx") ||
-                  imagePreview.includes(".xls") || imagePreview.includes(".xlsx") ||
-                  imagePreview.includes(".ppt") || imagePreview.includes(".pptx")) ? (
-                  <iframe
-                    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(imagePreview)}`}
-                    width="100%"
-                    height="300px"
-                    frameBorder="0"
-                    title="Vista previa de Office"
-                  ></iframe>
+                {typeof imagePreview === "string" &&
+                  (imagePreview.startsWith("data:image") ||
+                    imagePreview.startsWith("http") ||
+                    imagePreview.startsWith("https")) ? (
+
+                  // Imágenes (jpg, png, gif, etc.)
+                  imagePreview.match(/\.(jpeg|jpg|gif|png|webp)$/) ||
+                    imagePreview.startsWith("data:image") ? (
+                    <img
+                      src={imagePreview}
+                      alt="Vista previa"
+                      style={{ width: "100%", maxHeight: "300px", borderRadius: 2, display: "block" }}
+                    />
+                  ) :
+
+                    // Videos (mp4, webm, etc.)
+                    imagePreview.match(/\.(mp4|webm|ogg|mov)$/) ||
+                      imagePreview.includes("video") ? (
+                      <video controls width="100%" style={{ maxHeight: "300px", objectFit: "contain" }}>
+                        <source src={imagePreview} />
+                        Tu navegador no soporta este formato de video.
+                      </video>
+                    ) :
+
+                      // PDFs
+                      imagePreview.match(/\.(pdf)$/) ||
+                        imagePreview.includes("pdf") ? (
+                        <iframe src={imagePreview} width="100%" height="300px"></iframe>
+                      ) :
+
+                        // Documentos de Office
+                        imagePreview.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/) ? (
+                          <iframe
+                            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(imagePreview)}`}
+                            width="100%"
+                            height="300px"
+                            frameBorder="0"
+                            title="Vista previa de Office"
+                          />
+                        ) :
+
+                          // Si no coincide con ningún formato conocido
+                          null
                 ) : null}
               </Box>
             )}
@@ -1333,10 +1353,13 @@ useEffect(() => {
                 alignSelf: "flex",
                 maxWidth: "100%",
                 minHeight: "40px",
+                maxHeight: "200px",
                 display: "flex",
                 flexDirection: "column",
                 gap: 0.5,
                 boxShadow: 1,
+                overflowY: "auto", // Scroll vertical cuando el contenido excede la altura
+                overflowX: "hidden", // Previene scroll horizontal no deseado
               }}
             >
 
