@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
-import { Alert, Box, Button, Checkbox, Container, FormControl, FormControlLabel, FormLabel, FormHelperText, Grid, Grid2, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Radio, RadioGroup, Select, Snackbar, Stack, TextField, Tooltip, Typography, alpha } from '@mui/material';
+import { Alert, Box, Button, Checkbox, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, FormHelperText, Grid, Grid2, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Radio, RadioGroup, Select, Snackbar, Stack, TextField, Tooltip, Typography, alpha } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2'
 
@@ -15,11 +15,14 @@ import Delete from '@mui/icons-material/Delete';
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import Link from "@mui/icons-material/Link";
 import Phone from "@mui/icons-material/Phone";
+import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
-import { obtenerPantallasMedia } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 
 
 const EditTemplateForm = () => {
@@ -67,75 +70,10 @@ apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 */
 
-  // Cargar los datos en el formulario al montar el componente
-  useEffect(() => {
-    // Función asíncrona interna
-    const loadData = async () => {
-      if (templateData) {
-        setTemplateName(templateData.elementName || "");
-        setSelectedCategory(templateData.category || "");
-        setTemplateType((templateData.templateType || "").toLowerCase());
-        setLanguageCode(templateData.languageCode || "");
-        setVertical(templateData.vertical || "");
-        setIdTemplate(templateData.id);
 
-        // Parsear containerMeta si existe
-        if (templateData.containerMeta) {
-          try {
-            const meta = JSON.parse(templateData.containerMeta);
-            setMessage(meta.data || "");
-            setHeader(meta.header || "");
-            setFooter(meta.footer || "");
-            setExample(meta.sampleText || "");
-            setMediaId(meta.sampleMedia || "");
-            console.log("media Id en loadData: ", mediaId);
-
-            // Cargar botones si existen en containerMeta
-            if (meta.buttons && Array.isArray(meta.buttons)) {
-              setButtons(
-                meta.buttons.map((button, index) => ({
-                  id: index,
-                  title: button.text || "",
-                  type: button.type || "QUICK_REPLY",
-                  url: button.url || "",
-                  phoneNumber: button.phone_number || "",
-                }))
-              );
-            }
-          } catch (error) {
-            console.error("Error al parsear containerMeta:", error);
-          }
-        }
-      }
-
-      try {
-        const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-        if (info === null) {
-          console.log("info es null", info);
-        } else {
-          const pantallasFromAPI = info.pantallas || "";
-          setPantallas(pantallasFromAPI);
-
-          // Procesar para el display
-          const displayValues = procesarPantallasAPI(pantallasFromAPI);
-          setDisplayPantallas(displayValues);
-          console.log("pantallas: ", displayPantallas);
-
-          setMediaURL(info.url || "");
-          setImagePreview(info.url || "");
-
-          console.log("media url: ", mediaURL);
-        }
-      } catch (error) {
-        console.log("Error: ", error);
-      }
-    };
-
-    // Llamar a la función asíncrona
-    loadData();
-  }, [templateData, urlTemplatesGS, templateData.id]);
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("text");
@@ -183,6 +121,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   // Estado para almacenar ejemplos de variables
   const [variableExamples, setVariableExamples] = useState({});
+  const [variableExamplesError, setvariableExamplesError] = useState(false);
+  const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
+  const [variableErrors, setVariableErrors] = useState({});
 
   //ESTE ES PARA EL EXAMPLE MEDIA
   const [mediaId, setMediaId] = useState('');
@@ -196,7 +137,117 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const verticalRef = useRef(null);
   const messageRef = useRef(null);
   const exampleRef = useRef(null);
+  const exampleRefs = useRef({});
   const selectedCategoryRef = useRef(null);
+
+  const [emojiCount, setEmojiCount] = useState(0);
+
+  // Estado para almacenar descripciones de variables
+  const [variableDescriptions, setVariableDescriptions] = useState({});
+  const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
+  const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
+
+
+  // Primer useEffect para cargar datos iniciales y pantallas
+useEffect(() => {
+  const loadData = async () => {
+    if (templateData) {
+      setTemplateName(templateData.elementName || "");
+      setSelectedCategory(templateData.category || "");
+      setTemplateType((templateData.templateType || "").toLowerCase());
+      setLanguageCode(templateData.languageCode || "");
+      setVertical(templateData.vertical || "");
+      setIdTemplate(templateData.id);
+
+      // Parsear containerMeta si existe
+      if (templateData.containerMeta) {
+        try {
+          const meta = JSON.parse(templateData.containerMeta);
+          setMessage(meta.data || "");
+          setHeader(meta.header || "");
+          setFooter(meta.footer || "");
+          setExample(meta.sampleText || "");
+          setMediaId(meta.sampleMedia || "");
+
+          if (meta.buttons && Array.isArray(meta.buttons)) {
+            setButtons(
+              meta.buttons.map((button, index) => ({
+                id: index,
+                title: button.text || "",
+                type: button.type || "QUICK_REPLY",
+                url: button.url || "",
+                phoneNumber: button.phone_number || "",
+              }))
+            );
+          }
+        } catch (error) {
+          console.error("Error al parsear containerMeta:", error);
+        }
+      }
+    }
+
+    try {
+      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+      if (info === null) {
+        console.log("info es null", info);
+      } else {
+        const pantallasFromAPI = info.pantallas || "";
+        setPantallas(pantallasFromAPI);
+
+        const displayValues = procesarPantallasAPI(pantallasFromAPI);
+        setDisplayPantallas(displayValues);
+
+        setMediaURL(info.url || "");
+        setImagePreview(info.url || "");
+        setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  loadData();
+}, [templateData, urlTemplatesGS, templateData.id]);
+
+// Segundo useEffect que se ejecuta cuando idPlantilla cambia
+useEffect(() => {
+  const loadParametros = async () => {
+    if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
+    
+    try {
+      const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
+      if (infoParametros === null || infoParametros.length === 0) {
+        console.log("infoParametros es null o vacío", infoParametros);
+      } else {
+        const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
+        const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
+
+        setVariables(variablesFormateadas);
+
+        const descripcionesIniciales = {};
+        const ejemplosIniciales = {};
+
+        parametrosOrdenados.forEach((param, index) => {
+          const variableKey = `{{${index + 1}}}`;
+          descripcionesIniciales[variableKey] = param.NOMBRE;
+          ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+        });
+
+        setVariableDescriptions(descripcionesIniciales);
+        setVariableExamples(ejemplosIniciales);
+
+        console.log("VARIABLES FORMATEADAS", variablesFormateadas);
+        console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
+        console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  loadParametros();
+}, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
+
 
   // Función para mostrar Snackbar
   const showSnackbar = (message, severity) => {
@@ -273,31 +324,67 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
   const iniciarRequest = async () => {
-  try {
-    // Hacer el primer request
-    const result = await sendRequest();
+    try {
+      // Hacer el primer request
+      const result = await sendRequest();
 
-    // Verificar si el primer request fue exitoso
-    if (result && result.status === "success") {
-      // Extraer el valor de `id` del objeto `template`
-      const templateId = result.template.id;
+      /*const result = {
+        status: "success",
+        template: {
+          id: "9014865b-201a-48bc-8352-3a5aea09ce06" // Puedes poner cualquier ID de prueba aquí
+        }
+      };*/
 
-      // Hacer el segundo request, pasando el `id` como parámetro
-      const result2 = await sendRequest2(templateId);
+      // Verificar si el primer request fue exitoso
+      if (result && result.status === "success") {
+        // Extraer el valor de `id` del objeto `template`
+        const templateId = result.template.id;
 
-      // Si el segundo request también fue exitoso
-      if (result2 && result2.status === "success") {
-        navigate('/Dashboard');
+        // Hacer el segundo request, pasando el `id` como parámetro
+        const result2 = await sendRequest2(templateId);
+
+        // Si el segundo request también fue exitoso
+        if (result2 && result2.status === "success") {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La plantilla se actualizó correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+
+          navigate('/Dashboard');
+        } else {
+          console.error("El segundo request no fue exitoso.");
+          Swal.fire({
+            title: 'Error al actualizar',
+            text: 'Ocurrió un problema al actualizar la plantilla. Intenta de nuevo.',
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+        }
       } else {
-        console.error("El segundo request no fue exitoso.");
+        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
+        Swal.fire({
+          title: 'Campos incompletos',
+          text: 'Por favor, completa todos los campos antes de continuar o intenta nuevamente.',
+          icon: 'warning',
+          confirmButtonText: 'Cerrar',
+          confirmButtonColor: '#00c3ff'
+        });
       }
-    } else {
-      console.error("El primer request no fue exitoso o no tiene el formato esperado.");
+    } catch (error) {
+      console.error("Ocurrió un error:", error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Campo incompletos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
     }
-  } catch (error) {
-    console.error("Ocurrió un error:", error);
-  }
-};
+  };
 
 
   const sendRequest = async () => {
@@ -384,13 +471,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           REJECTION_REASON: responseData.message || "Solicitud inválida"
         });
 
-        Swal.fire({
-          title: 'Error',
-          text: `❌ Error al actualizar la plantilla: ${responseData.message || "Solicitud inválida"}`,
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
         return { status: "error", message: responseData.message || "Solicitud inválida" };
       }
 
@@ -415,14 +495,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         CREADO_POR: idNombreUsuarioTalkMe,
         STATUS: "SUCCESS",
         REJECTION_REASON: null
-      });
-
-      Swal.fire({
-        title: '¡Éxito!',
-        text: 'La plantilla fue editada correctamente.',
-        icon: 'success',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#00c3ff'
       });
 
       console.log("Response: ", responseData);
@@ -463,13 +535,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         REJECTION_REASON: error.message || "Error en la solicitud"
       });
 
-      Swal.fire({
-        title: 'Error',
-        text: `❌ Error al actualizar la plantilla: ${error.message || "Error en la solicitud"}`,
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#00c3ff'
-      });
       return { status: "error", message: "Error en la solicitud" };
     }
   };
@@ -507,14 +572,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
   console.log("templateType: ", templateType);
-  const MEDIA = mediaMap[templateType] || null
-  console.log("MEDIA: ",MEDIA);
+  const MEDIA = mediaMap[templateType] || null;
+  console.log("MEDIA: ", MEDIA);
 
   const mensajeProcesado = reordenarVariables(message);
-
   const nombreProcesado = templateName.replace(/_/g, " ");
 
-  // Crear un objeto con los datos completos
   const data = {
     ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
     ID_BOT_REDES: idBotRedes,
@@ -545,12 +608,24 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     if (!response.ok) {
       const errorResponse = await response.json();
       console.error("Error response:", errorResponse);
-      return null;
+      return { status: "error", message: errorResponse };
     }
 
     const result = await response.json();
     console.log("Response del segundo request: ", result);
-    return result;
+
+    // Moví esta condición después de obtener el resultado y antes del return
+    if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
+      // Primero eliminamos los parámetros existentes
+      //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
+      await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
+      await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
+      // Aquí deberías agregar la lógica para insertar los nuevos parámetros
+      // await insertarNuevosParametros(...);
+    }
+
+    return { status: "success", data: result };
+
   } catch (error) {
     console.error("Error en el segundo request:", error);
     showSnackbar("❌ Error en el segundo request", "error");
@@ -577,6 +652,11 @@ function reordenarVariables(message) {
   }
   
   return nuevoMensaje;
+}
+
+// Función auxiliar para escapar caracteres especiales en regex
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
   //const [variables, setVariables] = useState([{ key: '{{1}}', value: '' }, { key: '{{2}}', value: '' }]);
 
@@ -820,29 +900,296 @@ function reordenarVariables(message) {
   };
 
   const handleAddVariable = () => {
-    const newVariable = `{{${variables.length + 1}}}`;
-    setMessage((prev) => `${prev} ${newVariable}`);
-    setVariables([...variables, newVariable]);
-  };
+      const newVariable = `{{${variables.length + 1}}}`;
+  
+      // Verificar si al añadir la variable se superaría el límite de caracteres
+    if (message.length + newVariable.length > 550) {
+      // Puedes mostrar un mensaje de error o simplemente no hacer nada
+      Swal.fire({
+          title: 'Limite de caracteres',
+          text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      return;
+    }
+  
+      // Obtener la posición actual del cursor
+      const cursorPosition = messageRef.current.selectionStart;
+  
+      // Dividir el texto en dos partes: antes y después del cursor
+      const textBeforeCursor = message.substring(0, cursorPosition);
+      const textAfterCursor = message.substring(cursorPosition);
+  
+      // Insertar la variable en la posición del cursor
+      const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
+      setMessage(newMessage);
+  
+      // Actualizar el array de variables
+      setVariables([...variables, newVariable]);
+  
+      // OPCIONAL: Colocar el cursor después de la variable insertada
+      setTimeout(() => {
+        const newPosition = cursorPosition + newVariable.length;
+        messageRef.current.focus();
+        messageRef.current.setSelectionRange(newPosition, newPosition);
+      }, 0);
+    };
 
   const handleEmojiClick = (emojiObject) => {
     setMessage((prev) => `${prev} ${emojiObject.emoji}`);
     setShowEmojiPicker(false);
   };
 
-  // Función para reemplazar las variables en el mensaje con sus ejemplos
-  const replaceVariables = (text, variables) => {
-    let result = text;
+  // FUNCIONES DEL BODY
 
+  // Función actualizada con límite de emojis
+  const handleBodyMessageChange = (e) => {
+    let newText = e.target.value; // ✅ Cambiar const por let
+    const maxLength = 550;
+    const emojiCount = countEmojis(newText);
+    const maxEmojis = 10;
+  
+    // Renumerar variables solo si se detectan (ej: al pegar)
+    if (newText.includes("{{")) {
+      newText = renumberVariables(newText); // ✅ Ahora funciona correctamente
+    }
+  
+    // Verificar si se excede el límite de emojis
+    if (emojiCount > maxEmojis) {
+      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+      if (countEmojis(message) <= maxEmojis) {
+        Swal.fire({
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+      return; // No actualizar el texto si excede el límite de emojis
+    }
+  
+    if (newText.length > maxLength) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+  
+    // Continuar con tu lógica existente si está dentro del límite de caracteres
+    if (newText.length <= maxLength) {
+      // Guardar el nuevo texto
+      setMessage(newText);
+  
+      // Actualizar el contador de emojis (necesitas agregar este estado)
+      setEmojiCount(emojiCount);
+  
+      // Extraer y actualizar variables automáticamente
+      const detectedVariables = extractVariables(newText);
+      if (
+        detectedVariables.length !== variables.length ||
+        !detectedVariables.every(v => variables.includes(v))
+      ) {
+        setVariables(detectedVariables);
+      }
+  
+      // Verificar qué variables se han eliminado del texto
+      const deletedVariables = [];
+      variables.forEach(variable => {
+        if (!newText.includes(variable)) {
+          deletedVariables.push(variable);
+        }
+      });
+  
+      // Si se eliminaron variables, actualiza el estado
+      if (deletedVariables.length > 0) {
+        // Filtrar las variables eliminadas
+        const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
+  
+        // Actualizar el estado de las variables
+        setVariables(remainingVariables);
+  
+        // Actualizar las descripciones y ejemplos
+        const newDescriptions = { ...variableDescriptions };
+        const newExamples = { ...variableExamples };
+        const newErrors = { ...variableErrors };
+  
+        deletedVariables.forEach(v => {
+          delete newDescriptions[v];
+          delete newExamples[v];
+          delete newErrors[v];
+        });
+  
+        setVariableDescriptions(newDescriptions);
+        setVariableExamples(newExamples);
+        setVariableErrors(newErrors);
+      }
+    }
+  };
+ 
+  const extractVariables = (text) => {
+    const regex = /\{\{\d+\}\}/g;
+    return [...new Set(text.match(regex) || [])];
+  };
 
-    Object.keys(variables).forEach(variable => {
-      const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
-      console.log(`Reemplazando: {{${variable}}} por ${variables[variable]}`);
-      result = result.replace(regex, variables[variable]);
+  const renumberVariables = (text) => {
+    const variableMap = new Map();
+    let counter = 1;
+    
+    return text.replace(/\{\{\d+\}\}/g, (match) => {
+        if (!variableMap.has(match)) {
+            variableMap.set(match, `{{${counter}}}`);
+            counter++;
+        }
+        return variableMap.get(match);
+    });
+};
+
+  // Nueva función para borrar una variable específica
+  const deleteVariable = (variableToDelete) => {
+    // Eliminar la variable del texto
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+    // Eliminar la variable de la lista de variables
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+    // Renumerar las variables restantes para mantener el orden secuencial
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
     });
 
+    // Actualizar el texto con las variables renumeradas
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
 
-    return result;
+    // Crear nuevos objetos para descripciones y ejemplos de variables
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+    // Eliminar la variable eliminada de los errores
+    delete newVariableErrors[variableToDelete];
+
+    // Copiar las descripciones y ejemplos con las nuevas claves
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+    // Actualizar todos los estados
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+    // Actualizar las referencias
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+  // Nueva función para borrar todas las variables
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+
+    // Limpiar todos los estados relacionados con variables
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
+
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+      console.log("Ejemplo actualizado:", updatedExamples);
+      return updatedExamples;
+    });
+  };
+
+  const handleUpdateDescriptions = (variable, event) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+  };
+
+const replaceVariables = (text, variables) => {
+  let result = text;
+  
+  Object.keys(variables).forEach(variable => {
+    // Remover las llaves de la clave para crear el regex correcto
+    const cleanVariable = variable.replace(/[{}]/g, '');
+    const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
+    console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
+    result = result.replace(regex, variables[variable]);
+  });
+  
+  return result;
+};
+
+// Función para previsualizar el mensaje con ejemplos aplicados
+  const previewMessage = () => {
+    let previewHeader = header;
+    let previewFooter = footer;
+    let previewText = message;
+    Object.entries(variableExamples).forEach(([variable, example]) => {
+      previewHeader = previewHeader.replaceAll(variable, example);
+      previewFooter = previewFooter.replaceAll(variable, example);
+      previewText = previewText.replaceAll(variable, example);
+    });
+  }
+
+  // Función para generar el ejemplo combinando el mensaje y los valores de las variables
+  const generateExample = () => {
+    let generatedExample = message;
+    Object.keys(variableExamples).forEach(variable => {
+      generatedExample = generatedExample.replace(new RegExp(variable, 'g'), variableExamples[variable]);
+    });
+    return generatedExample;
+  };
+
+  // Función para contar emojis en un texto
+  const countEmojis = (text) => {
+    // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
+    const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
+    const matches = text.match(emojiRegex);
+    return matches ? matches.length : 0;
   };
 
   const handlePantallas = (event) => {
@@ -1122,9 +1469,21 @@ function reordenarVariables(message) {
           />
         </Box>
 
-        {/* BodyMessage --data-urlencode content */}<Box sx={{ width: "100%", marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
+        {/* BodyMessage --data-urlencode content */}<Box
+          sx={{
+            width: "100%",
+            marginTop: 2,
+            p: 4,
+            border: "1px solid #ddd",
+            borderRadius: 2,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+
+          }}
+        >
           <FormControl fullWidth>
-            <FormLabel>*Contenido</FormLabel>
+            <FormLabel sx={{ fontSize: "1.1rem", fontWeight: "500", color: "#333" }}>
+              *Contenido
+            </FormLabel>
           </FormControl>
 
           {/* Campo de texto con soporte para emojis y variables */}
@@ -1136,53 +1495,159 @@ function reordenarVariables(message) {
               error={contenidoPlantillaTypeError}
               rows={7}
               label="Escribe"
+              placeholder="Ingresa el contenido de tu mensaje aquí..."
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              sx={{ mb: 3, mt: 4 }}
+              onChange={handleBodyMessageChange}
+              //onChange={(e) => setMessage(e.target.value)}
+              sx={{
+                mb: 3,
+                mt: 4,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 1.5,
+                  "&:hover fieldset": {
+                    borderColor: "primary.main",
+                  }
+                }
+              }}
               inputRef={messageRef}
+              helperText={`${message.length}/550 caracteres | ${emojiCount}/10 emojis`}
+              FormHelperTextProps={{
+                sx: {
+                  textAlign: 'right',
+                  color: message.length === 550 || emojiCount >= 10 ? 'error.main' : 'text.secondary'
+                }
+              }}
             />
 
-            {/* Botón para agregar emojis */}
-            <Button
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-
+            {/* Botones de emojis y acciones en una barra de herramientas mejor diseñada */}
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                mb: 2,
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: "rgba(0,0,0,0.02)"
+              }}
             >
-              <Smile size={20} />
-            </Button>
+              <Tooltip title="Agregar emojis">
+                <IconButton
+                  color="primary"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  sx={{ borderRadius: 1 }}
+                >
+                  <Smile size={20} />
+                </IconButton>
+              </Tooltip>
+
+              <Divider orientation="vertical" flexItem />
+
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={handleAddVariable}
+                sx={{ borderRadius: 1 }}
+              >
+                Agregar Variable
+              </Button>
+
+              {variables.length > 0 && (
+                <Button
+                  color="error"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ClearIcon />}
+                  onClick={deleteAllVariables}
+                  sx={{ ml: "auto", borderRadius: 1 }}
+                >
+                  Borrar todas
+                </Button>
+              )}
+            </Stack>
 
             {/* Selector de emojis */}
             {showEmojiPicker && (
-              <Box>
+              <Paper
+                elevation={3}
+                sx={{
+                  position: "absolute",
+                  zIndex: 1000,
+                  mt: 1
+                }}
+              >
                 <EmojiPicker onEmojiClick={handleEmojiClick} />
-              </Box>
+              </Paper>
             )}
 
-            {/* Botón para agregar variables */}
-            <Button
-              variant="contained"
-              onClick={handleAddVariable}
+            {/* Variables disponibles como chips con campos de texto para ejemplos y descripción */}
+            {variables.length > 0 && (
+              <Paper
+                sx={{
+                  my: 2,
+                  p: 2,
+                  borderRadius: 2,
+                  border: "1px solid #ddd",
+                }}
+              >
+                <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
+                  Agrega una descripción y un ejemplo a tu variable:
+                </Typography>
 
-            >
-              + Agregar variable
-            </Button>
+                {variables.map((variable, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 2,
+                      mb: 2,
+                      p: 1.5,
+                      backgroundColor: "#fff",
+                      borderRadius: 1,
+                      border: "1px solid #e0e0e0"
+                    }}
+                  >
+                    <Chip
+                      label={variable}
+                      color="primary"
+                      sx={{ fontWeight: "500" }}
+                      deleteIcon={
+                        <Tooltip title="Borrar variable">
+                          <DeleteIcon />
+                        </Tooltip>
+                      }
+                      onDelete={() => deleteVariable(variable)}
+                    />
+
+                    <Stack sx={{ flexGrow: 1, gap: 1 }}>
+                      <TextField
+                        size="small"
+                        label="Descripción"
+                        placeholder="¿Para qué sirve esta variable?"
+                        value={variableDescriptions[variable] || ''}
+                        onChange={(e) => handleUpdateDescriptions(variable, e)}
+                        sx={{ flexGrow: 1 }}
+                      />
+
+                      <TextField
+                        size="small"
+                        label="Texto de ejemplo"
+                        value={variableExamples[variable] || ''}
+                        onChange={(e) => handleUpdateExample(variable, e.target.value)}
+                        sx={{ flexGrow: 1 }}
+                        inputRef={(el) => (exampleRefs.current[variable] = el)}
+                        error={!!variableErrors[variable]}
+                        helperText={variableErrors[variable]}
+                      />
+
+                    </Stack>
+                  </Box>
+                ))}
+              </Paper>
+            )}
           </Box>
-
-          {/* Lista de variables y valores de muestra */}
-          <Stack spacing={2} sx={{ mt: 2 }}>
-            {variables.map((variable, index) => (
-              <Box key={index} sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                <Typography variant="body1">{variable}</Typography>
-                <TextField
-                  label="Sample Value"
-                  size="small"
-                  sx={{ width: "150px" }}
-                />
-              </Box>
-            ))}
-          </Stack>
-
-
-
         </Box>
 
         {/* Footer */}<Box sx={{ width: '100%', marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>

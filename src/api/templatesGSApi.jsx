@@ -464,11 +464,63 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
 
     return data
   } catch (error){
-    console.error("Error obteniendo el API Token:", error);
+    console.error("Error obteniendo info de la plantilla:", error);
     return null;
   }
 
 }
+
+export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
+  const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
+  console.log("url del endpoint obtenerParametros: ", url);
+
+  try{
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok){
+      throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data
+  } catch (error){
+    console.error("Error obteniendo parametros de la plantilla", error);
+    return null;
+  }
+}
+
+export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) => {
+  const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
+  console.log("url del endpoint eliminarParametrosPlantilla: ", url);
+
+  try {
+    const response = await fetch(url, {
+      method: 'DELETE', // Cambiado a DELETE ya que es un endpoint DELETE
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al eliminar los parámetros de la plantilla: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error eliminando parámetros de la plantilla", error);
+    return null;
+  }
+}
+
+
 
 //utils
 
