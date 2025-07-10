@@ -358,7 +358,7 @@ useEffect(() => {
           console.error("El segundo request no fue exitoso.");
           Swal.fire({
             title: 'Error al actualizar',
-            text: 'Ocurrió un problema al actualizar la plantilla. Intenta de nuevo.',
+            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
             icon: 'error',
             confirmButtonText: 'Cerrar',
             confirmButtonColor: '#00c3ff'
@@ -368,7 +368,7 @@ useEffect(() => {
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         Swal.fire({
           title: 'Campos incompletos',
-          text: 'Por favor, completa todos los campos antes de continuar o intenta nuevamente.',
+          text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
           icon: 'warning',
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
@@ -378,7 +378,7 @@ useEffect(() => {
       console.error("Ocurrió un error:", error);
       Swal.fire({
         title: 'Error',
-        text: 'Campo incompletos.',
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
         icon: 'error',
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
@@ -1260,6 +1260,7 @@ const replaceVariables = (text, variables) => {
               onChange={handleTemplateNameChange}
               fullWidth
               inputRef={templateNameRef}
+              disabled
             />
           </FormControl>
         </Box>
@@ -1439,6 +1440,7 @@ const replaceVariables = (text, variables) => {
               value={languageCode} // Usamos directamente el código de idioma
               onChange={handleLanguageCodeChange}
               ref={languageCodeRef}
+              disabled
             >
               {Object.entries(languageMap).map(([code, name]) => (
                 <MenuItem key={code} value={code}>
@@ -1466,6 +1468,7 @@ const replaceVariables = (text, variables) => {
             helperText="Defina para qué caso de uso, por ejemplo, actualización de cuenta, OTP, etc, en 2 o 3 palabras"
             onChange={handleVerticalChange}
             inputRef={verticalRef}
+            disabled
           />
         </Box>
 
