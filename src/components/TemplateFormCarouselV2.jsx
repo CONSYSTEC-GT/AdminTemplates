@@ -112,6 +112,8 @@ const TemplateFormCarousel = () => {
   const [variableExamplesError, setvariableExamplesError] = useState(false);
   const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
   const [variableErrors, setVariableErrors] = useState({});
+  const [descriptionErrors, setDescriptionErrors] = useState({});
+  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
 
   const [cardErrors, setCardErrors] = useState({});
 
@@ -149,6 +151,7 @@ const TemplateFormCarousel = () => {
   const exampleRefs = useRef({});
   const exampleCardRefs = useRef({});
   const cantidadBotonesRefs = useRef({});
+  const descriptionRefs = useRef({});
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
@@ -290,19 +293,64 @@ const TemplateFormCarousel = () => {
     if (variables.length > 0) {
       console.log("Validando variables...");
       const newErrors = {};
-  
+      const newDescriptionErrors = {};
+
       for (const variable of variables) {
-        if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
+        // Validar ejemplo
+        if (!variableExamples[variable]?.trim()) {
           console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
           isValid = false;
-          newErrors[variable] = "Este campo es requerido";
-  
-          // Solo establece el primer error de variable si no hay otro error antes
-          if (exampleRefs.current[variable] && !firstErrorFieldRef) {
-            firstErrorFieldRef = { current: exampleRefs.current[variable] };
-          }
+          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
+        }
+
+        // Validar descripción
+        if (!variableDescriptions[variable]?.trim()) {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+        } else {
+          newDescriptionErrors[variable] = "";
+        }
+      }
+
+      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+      if (duplicateVariables.size > 0) {
+        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        isValid = false;
+
+        // Marcar todas las variables con descripciones duplicadas
+        duplicateVariables.forEach(variable => {
+          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+        });
+
+        // Enfocar la primera variable con descripción duplicada
+        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+          descriptionRefs.current[firstDuplicateVariable].focus();
+        }
+      } else {
+        console.log("No se encontraron descripciones duplicadas.");
+        // Limpiar errores de descripción
+        variables.forEach(variable => {
+          newDescriptionErrors[variable] = "";
+        });
+      }
+
+      // 3. Validar que todas las variables tengan descripción (opcional)
+      for (const variable of variables) {
+        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "La descripción es requerida";
+
+          // Enfocar el campo de descripción vacío
+          if (descriptionRefs.current && descriptionRefs.current[variable]) {
+            descriptionRefs.current[variable].focus();
+          }
         }
       }
   
@@ -1747,6 +1795,77 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
     return matches ? matches.length : 0;
   };
 
+  // 1. Función para detectar duplicados
+  const getDuplicateDescriptions = (descriptions) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
+
+    // Contar ocurrencias de cada descripción (ignorando vacías)
+    Object.entries(descriptions).forEach(([variable, description]) => {
+      if (description && description.trim()) {
+        const cleanDesc = description.trim().toLowerCase();
+        if (descriptionCounts[cleanDesc]) {
+          descriptionCounts[cleanDesc].push(variable);
+          duplicates.add(cleanDesc);
+        } else {
+          descriptionCounts[cleanDesc] = [variable];
+        }
+      }
+    });
+
+    // Retornar variables que tienen descripciones duplicadas
+    const duplicateVariables = new Set();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(variable => {
+        duplicateVariables.add(variable);
+      });
+    });
+
+    return duplicateVariables;
+  };
+
+  // 3. En tu componente, calcular duplicados
+  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+  // Función para detectar descripciones duplicadas entre tarjetas
+const getDuplicateDescriptionsInCards = (cards) => {
+  const descriptionCounts = {};
+  const duplicates = new Set();
+
+  // Recorrer todas las tarjetas y sus descripciones
+  cards.forEach(card => {
+    if (card.variableDescriptions) {
+      Object.entries(card.variableDescriptions).forEach(([variable, description]) => {
+        if (description && description.trim()) {
+          const cleanDesc = description.trim().toLowerCase();
+          if (descriptionCounts[cleanDesc]) {
+            descriptionCounts[cleanDesc].push({ cardId: card.id, variable });
+            duplicates.add(cleanDesc);
+          } else {
+            descriptionCounts[cleanDesc] = [{ cardId: card.id, variable }];
+          }
+        }
+      });
+    }
+  });
+
+  // Crear un mapa de tarjetas y variables con descripciones duplicadas
+  const duplicateEntries = new Map();
+  duplicates.forEach(desc => {
+    descriptionCounts[desc].forEach(entry => {
+      if (!duplicateEntries.has(entry.cardId)) {
+        duplicateEntries.set(entry.cardId, new Set());
+      }
+      duplicateEntries.get(entry.cardId).add(entry.variable);
+    });
+  });
+
+  return duplicateEntries;
+};
+
+// Uso en tu componente:
+const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
+
   return (
     <Grid container sx={{ height: 'calc(100vh - 16px)' }}>
 
@@ -2097,6 +2216,12 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
                           placeholder="¿Para qué sirve esta variable?"
                           value={variableDescriptions[variable] || ''}
                           onChange={(e) => handleUpdateDescriptions(variable, e)}
+                          error={duplicateVariables.has(variable)}
+                          helperText={
+                          duplicateVariables.has(variable)
+                            ? "Esta descripción ya existe en otra variable"
+                            : ""
+                        }
                           sx={{ flexGrow: 1 }}
                         />
 
@@ -2414,6 +2539,12 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
                                                 placeholder="¿Para qué sirve esta variable?"
                                                 value={card.variableDescriptions?.[variableCard] || ''}
                                                 onChange={(e) => handleUpdateDescriptionsCard(card.id, variableCard, e.target.value)}
+                                                error={duplicateDescriptionsInCards.get(card.id)?.has(variableCard) || false}
+                                                helperText={
+                                                  duplicateDescriptionsInCards.get(card.id)?.has(variableCard)
+                                                    ? "Esta descripción ya existe en otra tarjeta"
+                                                    : ""
+                                                }
                                                 sx={{ flexGrow: 1 }}
                                               />
 
