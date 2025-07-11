@@ -95,7 +95,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="/modify-template-catalog"
+            path="/modify-template-catalogo"
             element={
               <ProtectedRoute>
                 <ModifyTemplateCatalogPage />

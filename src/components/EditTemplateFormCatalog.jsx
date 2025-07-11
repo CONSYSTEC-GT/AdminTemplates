@@ -700,9 +700,10 @@ const TemplateForm = () => {
   };
 
   const handleUpdateDescriptions = (variable, value) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
     setVariableDescriptions(prevDescriptions => ({
       ...prevDescriptions,
-      [variable]: value
+      [variable]: newValue
     }));
   };
 
