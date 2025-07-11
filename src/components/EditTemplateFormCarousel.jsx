@@ -35,7 +35,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import WhatsAppCarouselPreview from './WhatsappCarouselPreview';
-import FileUploadCarousel from './FileUploadCarousel';
+import FileUploadCarousel from './FileUploadCarouselV2';
 import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
 import { editTemplateCarouselGupshup } from '../api/gupshupApi';
 import { saveTemplateToTalkMe } from '../api/templatesGSApi';
