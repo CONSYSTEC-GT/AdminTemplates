@@ -40,95 +40,47 @@ import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
 import { editTemplateCarouselGupshup } from '../api/gupshupApi';
 import { saveTemplateToTalkMe } from '../api/templatesGSApi';
 import { editTemplateToTalkMe } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
+
 
 import { CustomDialog } from '../utils/CustomDialog';
 
 const EditTemplateFormCarousel = () => {
 
+  // Recupera el token del localStorage
+  const token = localStorage.getItem('authToken');
+
+  // Decodifica el token para obtener appId y authCode
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        appId = decoded.app_id; // Extrae appId del token
+        authCode = decoded.auth_code; // Extrae authCode del token
+        appName = decoded.app_name; // Extrae el nombre de la aplicación
+        idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
+        idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+        empresaTalkMe = decoded.empresa;
+        idBotRedes = decoded.id_bot_redes;
+        idBot = decoded.id_bot;
+        urlTemplatesGS = decoded.urlTemplatesGS;
+        urlWsFTP = decoded.urlWsFTP;
+      } catch (error) {
+        console.error('Error decodificando el token:', error);
+        console.log('urlWsFTP', urlWsFTP);
+      }
+    }
+
   const location = useLocation();
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
-
-  // Cargar los datos en el formulario al montar el componente
-  useEffect(() => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
-
-      // Parsear containerMeta si existe
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          console.log("Meta parsed:", meta);
-          setMessage(meta.data || "");
-          setExample(meta.sampleText || "");
-
-          // Detectar el tipo de carrusel basado en la primera tarjeta
-          if (meta.cards && meta.cards.length > 0) {
-            console.log("Cards:", meta.cards);
-            setCarouselType(meta.cards[0].headerType);
-            
-            // Detectar cantidad de botones y su tipo basado en la primera tarjeta
-            if (meta.cards[0].buttons && meta.cards[0].buttons.length > 0) {
-              setCantidadBotones(String(meta.cards[0].buttons.length));
-              console.log("Cantidad de botones:", meta.cards[0].buttons.length);
-              console.log("Tipo de dato:", typeof Number(meta.cards[0].buttons.length));
-
-
-              setTipoBoton(meta.cards[0].buttons[0].type || "QUICK_REPLY");
-            }
-
-            // Configurar las tarjetas con sus datos
-            const destructuredCards = meta.cards.map((card, index) => {
-              return {
-                id: `card-${index}`, // Genera un ID único para cada tarjeta
-                messageCard: card.body || "",
-                variablesCard: [], // Si tienes variables en el body, deberías extraerlas aquí
-                variableDescriptions: {}, // Mapeo para descripciones de variables
-                variableExamples: {}, // Mapeo para ejemplos de variables
-                fileData: card.mediaUrl ? {
-                  url: card.mediaUrl,
-                  id: card.mediaId || `media-${Date.now()}-${index}`,
-                  type: card.headerType === "IMAGE" ? "image" : "video",
-                } : null,
-                buttons: card.buttons ? card.buttons.map((button, buttonIndex) => ({
-                  id: `button-${index}-${buttonIndex}`,
-                  title: button.text || "",
-                  type: button.type || "QUICK_REPLY",
-                  url: button.url || "",
-                  phoneNumber: button.phone_number || ""
-                })) : []
-              };
-            });
-
-            setCards(destructuredCards);
-          }
-        } catch (error) {
-          console.error("Error al parsear containerMeta:", error);
-        }
-      }
-    }
-  }, [templateData]);
-  
-
-
-
-
-
-
-
-
-
 
   //MODO DE EDICION || ESTO ES UN FLAG 
   const [modoEdicionActiva, setModoEdicionActiva] = useState(false);
 
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("CAROUSEL");
@@ -230,6 +182,133 @@ const EditTemplateFormCarousel = () => {
   const emojiPickerCardRef = useRef(null);
   const emojiPickerButtonRef = useRef(null); // Para el botón
   const emojiPickerComponentRef = useRef(null); // Para el componente del picker
+
+   // Cargar los datos en el formulario al montar el componente
+useEffect(() => {
+  const loadData = async () => {
+    if (templateData) {
+      setTemplateName(templateData.elementName || "");
+      setSelectedCategory(templateData.category || "");
+      setTemplateType(templateData.templateType || "");
+      setLanguageCode(templateData.languageCode || "");
+      setVertical(templateData.vertical || "");
+      setIdTemplate(templateData.id);
+
+      // Parsear containerMeta si existe
+      if (templateData.containerMeta) {
+        try {
+          const meta = JSON.parse(templateData.containerMeta);
+          console.log("Meta parsed:", meta);
+          setMessage(meta.data || "");
+          setExample(meta.sampleText || "");
+
+          // Detectar el tipo de carrusel basado en la primera tarjeta
+          if (meta.cards && meta.cards.length > 0) {
+            console.log("Cards:", meta.cards);
+            setCarouselType(meta.cards[0].headerType);
+            
+            // Detectar cantidad de botones y su tipo basado en la primera tarjeta
+            if (meta.cards[0].buttons && meta.cards[0].buttons.length > 0) {
+              setCantidadBotones(String(meta.cards[0].buttons.length));
+              console.log("Cantidad de botones:", meta.cards[0].buttons.length);
+              console.log("Tipo de dato:", typeof Number(meta.cards[0].buttons.length));
+
+              setTipoBoton(meta.cards[0].buttons[0].type || "QUICK_REPLY");
+            }
+
+            // Configurar las tarjetas con sus datos
+            const destructuredCards = meta.cards.map((card, index) => {
+              return {
+                id: `card-${index}`, // Genera un ID único para cada tarjeta
+                messageCard: card.body || "",
+                variablesCard: [], // Si tienes variables en el body, deberías extraerlas aquí
+                variableDescriptions: {}, // Mapeo para descripciones de variables
+                variableExamples: {}, // Mapeo para ejemplos de variables
+                fileData: card.mediaUrl ? {
+                  url: card.mediaUrl,
+                  id: card.mediaId || `media-${Date.now()}-${index}`,
+                  type: card.headerType === "IMAGE" ? "image" : "video",
+                } : null,
+                buttons: card.buttons ? card.buttons.map((button, buttonIndex) => ({
+                  id: `button-${index}-${buttonIndex}`,
+                  title: button.text || "",
+                  type: button.type || "QUICK_REPLY",
+                  url: button.url || "",
+                  phoneNumber: button.phone_number || ""
+                })) : []
+              };
+            });
+
+            setCards(destructuredCards);
+          }
+        } catch (error) {
+          console.error("Error al parsear containerMeta:", error);
+        }
+      }
+    }
+
+    // Segundo bloque try-catch movido dentro de loadData
+    try {
+      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+      if (info === null) {
+        console.log("info es null", info);
+      } else {
+        const pantallasFromAPI = info.pantallas || "";
+        setPantallas(pantallasFromAPI);
+
+        const displayValues = procesarPantallasAPI(pantallasFromAPI);
+        setDisplayPantallas(displayValues);
+
+        setMediaURL(info.url || "");
+        setImagePreview(info.url || "");
+        setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  loadData(); // Llamada a la función dentro del useEffect
+}, [templateData, urlTemplatesGS]);
+
+// Segundo useEffect que se ejecuta cuando idPlantilla cambia
+  useEffect(() => {
+    const loadParametros = async () => {
+      if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
+
+      try {
+        const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
+        if (infoParametros === null || infoParametros.length === 0) {
+          console.log("infoParametros es null o vacío", infoParametros);
+        } else {
+          const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
+          const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
+
+          setVariables(variablesFormateadas);
+
+          const descripcionesIniciales = {};
+          const ejemplosIniciales = {};
+
+          parametrosOrdenados.forEach((param, index) => {
+            const variableKey = `{{${index + 1}}}`;
+            descripcionesIniciales[variableKey] = param.NOMBRE;
+            ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+          });
+
+          setVariableDescriptions(descripcionesIniciales);
+          setVariableExamples(ejemplosIniciales);
+
+          console.log("VARIABLES FORMATEADAS", variablesFormateadas);
+          console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
+          console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+        }
+      } catch (error) {
+        console.log("Error: ", error);
+      }
+    };
+
+    loadParametros();
+  }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
 
   const resetForm = () => {
     setTemplateName("");
@@ -406,30 +485,6 @@ const EditTemplateFormCarousel = () => {
       return 'null'; // En caso de que la extensión no sea reconocida
     }
   };
-
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
-
-  // Decodifica el token para obtener appId y authCode
-  let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
-      idUsuarioTalkMe = decoded.id_usuario;
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;
-      empresaTalkMe = decoded.empresa;
-      //console.log('appId:', appId);
-      //console.log('authCode:', authCode);
-      //console.log('idUsuarioTalkMe:', idUsuarioTalkMe);
-      //console.log('idNombreUsuarioTalkMe:', idNombreUsuarioTalkMe);
-      //console.log('empresaTalkMe:', empresaTalkMe);
-
-    } catch (error) {
-      console.error('Error decodificando el token:', error);
-    }
-  }
 
   const iniciarRequest = async () => {
     try {
@@ -2080,7 +2135,7 @@ const handlePantallas = (event) => {
 
                                       <Divider orientation="vertical" flexItem />
 
-                                      <Button
+                                      {/*<Button
                                         variant="contained"
                                         size="small"
                                         startIcon={<AddIcon />}
@@ -2088,7 +2143,7 @@ const handlePantallas = (event) => {
                                         sx={{ borderRadius: 1 }}
                                       >
                                         Agregar Variable
-                                      </Button>
+                                      </Button> */}
 
                                       {card.variablesCard.length > 0 && (
                                         <Button
