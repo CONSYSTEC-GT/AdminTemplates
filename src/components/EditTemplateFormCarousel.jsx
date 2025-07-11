@@ -40,7 +40,7 @@ import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
 import { editTemplateCarouselGupshup } from '../api/gupshupApi';
 import { saveTemplateToTalkMe } from '../api/templatesGSApi';
 import { editTemplateToTalkMe } from '../api/templatesGSApi';
-import { eliminarParametrosPlantilla, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 
 
 import { CustomDialog } from '../utils/CustomDialog';
