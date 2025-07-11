@@ -1578,6 +1578,20 @@ const handlePantallas = (event) => {
   setDisplayPantallas(selectedOptions);
 };
 
+  const procesarPantallasAPI = (pantallasString) => {
+    if (!pantallasString) return [];
+
+    const pantallasArray = pantallasString.split(',');
+    const displayValues = pantallasArray.map(pantallaNum => {
+      const pantallaOption = pantallasTalkMe.find(option =>
+        option.startsWith(pantallaNum.trim() + ' -')
+      );
+      return pantallaOption || pantallaNum;
+    });
+
+    return displayValues;
+  };
+
 
   return (
     <Grid container sx={{ height: 'calc(100vh - 16px)' }}>
