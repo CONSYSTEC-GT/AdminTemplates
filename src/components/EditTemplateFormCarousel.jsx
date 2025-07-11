@@ -132,7 +132,7 @@ const EditTemplateFormCarousel = () => {
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("CAROUSEL");
-  const [pantallas, setPantallas] = useState([]);
+  const [pantallas, setPantallas] = useState(["4 - Broadcast"]);
   const [displayPantallas, setDisplayPantallas] = useState([]);
   const [carouselType, setCarouselType] = useState("");
   const [templateNameHelperText, setTemplateNameHelperText] = useState("El nombre debe hacer referencia al texto de su plantilla.");
@@ -545,11 +545,7 @@ const EditTemplateFormCarousel = () => {
 
     // PANTALLAS
     const pantallasTalkMe = [
-      '1 - Contactos',
-      '2 - Recontacto',
-      '3 - Historial',
-      '4 - Broadcast',
-      '5 - Operador/Supervisor'
+      '4 - Broadcast'
     ];
 
   // CATEGORIAS
