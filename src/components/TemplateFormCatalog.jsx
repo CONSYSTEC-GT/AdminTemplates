@@ -86,6 +86,8 @@ const TemplateForm = () => {
   const [variableDescriptions, setVariableDescriptions] = useState({});
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
+  const [descriptionErrors, setDescriptionErrors] = useState({});
+  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
 
   //ESTE ES PARA EL EXAMPLE MEDIA
   const [mediaId, setMediaId] = useState('');
@@ -101,6 +103,7 @@ const TemplateForm = () => {
   const exampleRef = useRef(null);
   const selectedCategoryRef = useRef(null);
   const exampleRefs = useRef({});
+  const descriptionRefs = useRef({});
 
   const resetForm = () => {
     setTemplateName("");
@@ -230,22 +233,68 @@ const TemplateForm = () => {
     }
 
     // Validación de variables
+    // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
       console.log("Validando variables...");
       const newErrors = {};
+      const newDescriptionErrors = {};
 
       for (const variable of variables) {
-        if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
+        // Validar ejemplo
+        if (!variableExamples[variable]?.trim()) {
           console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
           isValid = false;
-          newErrors[variable] = "Este campo es requerido";
-
-          // Solo establece el primer error de variable si no hay otro error antes
-          if (exampleRefs.current[variable] && !firstErrorFieldRef) {
-            firstErrorFieldRef = { current: exampleRefs.current[variable] };
-          }
+          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
+        }
+
+        // Validar descripción
+        if (!variableDescriptions[variable]?.trim()) {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+        } else {
+          newDescriptionErrors[variable] = "";
+        }
+      }
+
+      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+      if (duplicateVariables.size > 0) {
+        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        isValid = false;
+
+        // Marcar todas las variables con descripciones duplicadas
+        duplicateVariables.forEach(variable => {
+          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+        });
+
+        // Enfocar la primera variable con descripción duplicada
+        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+          descriptionRefs.current[firstDuplicateVariable].focus();
+        }
+      } else {
+        console.log("No se encontraron descripciones duplicadas.");
+        // Limpiar errores de descripción
+        variables.forEach(variable => {
+          newDescriptionErrors[variable] = "";
+        });
+      }
+
+      // 3. Validar que todas las variables tengan descripción (opcional)
+      for (const variable of variables) {
+        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "La descripción es requerida";
+
+          // Enfocar el campo de descripción vacío
+          if (descriptionRefs.current && descriptionRefs.current[variable]) {
+            descriptionRefs.current[variable].focus();
+          }
         }
       }
 
@@ -940,6 +989,38 @@ const handleEmojiClick = (emojiObject) => {
     return matches ? matches.length : 0;
   };
 
+    // 1. Función para detectar duplicados
+  const getDuplicateDescriptions = (descriptions) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
+
+    // Contar ocurrencias de cada descripción (ignorando vacías)
+    Object.entries(descriptions).forEach(([variable, description]) => {
+      if (description && description.trim()) {
+        const cleanDesc = description.trim().toLowerCase();
+        if (descriptionCounts[cleanDesc]) {
+          descriptionCounts[cleanDesc].push(variable);
+          duplicates.add(cleanDesc);
+        } else {
+          descriptionCounts[cleanDesc] = [variable];
+        }
+      }
+    });
+
+    // Retornar variables que tienen descripciones duplicadas
+    const duplicateVariables = new Set();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(variable => {
+        duplicateVariables.add(variable);
+      });
+    });
+
+    return duplicateVariables;
+  };
+
+  // 3. En tu componente, calcular duplicados
+  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
 
 
 
@@ -1301,6 +1382,12 @@ const handleEmojiClick = (emojiObject) => {
                         placeholder="¿Para qué sirve esta variable?"
                         value={variableDescriptions[variable] || ''}
                         onChange={(e) => handleUpdateDescriptions(variable, e)}
+                        error={duplicateVariables.has(variable)}
+                        helperText={
+                          duplicateVariables.has(variable)
+                            ? "Esta descripción ya existe en otra variable"
+                            : ""
+                        }
                         sx={{ flexGrow: 1 }}
                       />
 

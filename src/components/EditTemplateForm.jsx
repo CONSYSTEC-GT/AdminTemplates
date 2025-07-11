@@ -124,6 +124,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [variableExamplesError, setvariableExamplesError] = useState(false);
   const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
   const [variableErrors, setVariableErrors] = useState({});
+  const [descriptionErrors, setDescriptionErrors] = useState({});
+  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
 
   //ESTE ES PARA EL EXAMPLE MEDIA
   const [mediaId, setMediaId] = useState('');
@@ -139,6 +141,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const exampleRef = useRef(null);
   const exampleRefs = useRef({});
   const selectedCategoryRef = useRef(null);
+  const descriptionRefs = useRef({});
 
   const [emojiCount, setEmojiCount] = useState(0);
 
@@ -149,104 +152,104 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
   // Primer useEffect para cargar datos iniciales y pantallas
-useEffect(() => {
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType((templateData.templateType || "").toLowerCase());
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+  useEffect(() => {
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType((templateData.templateType || "").toLowerCase());
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-      // Parsear containerMeta si existe
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          setMessage(meta.data || "");
-          setHeader(meta.header || "");
-          setFooter(meta.footer || "");
-          setExample(meta.sampleText || "");
-          setMediaId(meta.sampleMedia || "");
+        // Parsear containerMeta si existe
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
+            setMessage(meta.data || "");
+            setHeader(meta.header || "");
+            setFooter(meta.footer || "");
+            setExample(meta.sampleText || "");
+            setMediaId(meta.sampleMedia || "");
 
-          if (meta.buttons && Array.isArray(meta.buttons)) {
-            setButtons(
-              meta.buttons.map((button, index) => ({
-                id: index,
-                title: button.text || "",
-                type: button.type || "QUICK_REPLY",
-                url: button.url || "",
-                phoneNumber: button.phone_number || "",
-              }))
-            );
+            if (meta.buttons && Array.isArray(meta.buttons)) {
+              setButtons(
+                meta.buttons.map((button, index) => ({
+                  id: index,
+                  title: button.text || "",
+                  type: button.type || "QUICK_REPLY",
+                  url: button.url || "",
+                  phoneNumber: button.phone_number || "",
+                }))
+              );
+            }
+          } catch (error) {
+            console.error("Error al parsear containerMeta:", error);
           }
-        } catch (error) {
-          console.error("Error al parsear containerMeta:", error);
         }
       }
-    }
 
-    try {
-      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-      if (info === null) {
-        console.log("info es null", info);
-      } else {
-        const pantallasFromAPI = info.pantallas || "";
-        setPantallas(pantallasFromAPI);
+      try {
+        const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+        if (info === null) {
+          console.log("info es null", info);
+        } else {
+          const pantallasFromAPI = info.pantallas || "";
+          setPantallas(pantallasFromAPI);
 
-        const displayValues = procesarPantallasAPI(pantallasFromAPI);
-        setDisplayPantallas(displayValues);
+          const displayValues = procesarPantallasAPI(pantallasFromAPI);
+          setDisplayPantallas(displayValues);
 
-        setMediaURL(info.url || "");
-        setImagePreview(info.url || "");
-        setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+          setMediaURL(info.url || "");
+          setImagePreview(info.url || "");
+          setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+        }
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
+    };
 
-  loadData();
-}, [templateData, urlTemplatesGS, templateData.id]);
+    loadData();
+  }, [templateData, urlTemplatesGS, templateData.id]);
 
-// Segundo useEffect que se ejecuta cuando idPlantilla cambia
-useEffect(() => {
-  const loadParametros = async () => {
-    if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
-    
-    try {
-      const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
-      if (infoParametros === null || infoParametros.length === 0) {
-        console.log("infoParametros es null o vacío", infoParametros);
-      } else {
-        const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
-        const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
+  // Segundo useEffect que se ejecuta cuando idPlantilla cambia
+  useEffect(() => {
+    const loadParametros = async () => {
+      if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
 
-        setVariables(variablesFormateadas);
+      try {
+        const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
+        if (infoParametros === null || infoParametros.length === 0) {
+          console.log("infoParametros es null o vacío", infoParametros);
+        } else {
+          const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
+          const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
 
-        const descripcionesIniciales = {};
-        const ejemplosIniciales = {};
+          setVariables(variablesFormateadas);
 
-        parametrosOrdenados.forEach((param, index) => {
-          const variableKey = `{{${index + 1}}}`;
-          descripcionesIniciales[variableKey] = param.NOMBRE;
-          ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-        });
+          const descripcionesIniciales = {};
+          const ejemplosIniciales = {};
 
-        setVariableDescriptions(descripcionesIniciales);
-        setVariableExamples(ejemplosIniciales);
+          parametrosOrdenados.forEach((param, index) => {
+            const variableKey = `{{${index + 1}}}`;
+            descripcionesIniciales[variableKey] = param.NOMBRE;
+            ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+          });
 
-        console.log("VARIABLES FORMATEADAS", variablesFormateadas);
-        console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
-        console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+          setVariableDescriptions(descripcionesIniciales);
+          setVariableExamples(ejemplosIniciales);
+
+          console.log("VARIABLES FORMATEADAS", variablesFormateadas);
+          console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
+          console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+        }
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
+    };
 
-  loadParametros();
-}, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
+    loadParametros();
+  }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
 
 
   // Función para mostrar Snackbar
@@ -265,65 +268,189 @@ useEffect(() => {
   const validateFields = () => {
     let isValid = true;
 
-    if (templateName.trim() === "") {
+    console.log("Iniciando validación de campos...");
+
+    if (!templateName || templateName.trim() === "") {
+      console.log("Error: templateName está vacío o no es válido.");
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
-      templateNameRef.current.focus();
-      return isValid; // Salir de la función después del primer error
+      if (templateNameRef.current) templateNameRef.current.focus();
+      console.log("Estado de isValid después de validar templateName:", isValid);
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+      console.log("templateName es válido.");
     }
 
-    if (templateType.trim() === "") {
+    if (!templateType || templateType.trim() === "") {
+      console.log("Error: templateType está vacío o no es válido.");
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
-      templateTypeRef.current.focus();
-      return isValid;
+      if (templateTypeRef.current) templateTypeRef.current.focus();
+      console.log("Estado de isValid después de validar templateType:", isValid);
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+      console.log("templateType es válido.");
     }
 
-    if (languageCode.trim() === "") {
+    if (displayPantallas.length === 0) {
+      console.log("Error: No se seleccionaron pantallas.");
+      setPantallasError(true);
+      setPantallasHelperText("Debes seleccionar al menos una pantalla");
+      isValid = false;
+      // No hay focus directo porque es un select con múltiples opciones
+    } else {
+      console.log("Pantallas seleccionadas correctamente.");
+      setPantallasError(false);
+      setPantallasHelperText("");
+    }
+
+    if (!languageCode || languageCode.trim() === "") {
+      console.log("Error: languageCode está vacío o no es válido.");
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
-      languageCodeRef.current.focus();
-      return isValid;
+      if (languageCodeRef.current) languageCodeRef.current.focus();
+      console.log("Estado de isValid después de validar languageCode:", isValid);
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+      console.log("languageCode es válido.");
     }
 
-    if (vertical.trim() === "") {
+    if (!vertical || vertical.trim() === "") {
+      console.log("Error: vertical está vacío o no es válido.");
       setetiquetaPlantillaError(true);
       isValid = false;
-      verticalRef.current.focus();
-      return isValid;
+      if (verticalRef.current) verticalRef.current.focus();
+      console.log("Estado de isValid después de validar vertical:", isValid);
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+      console.log("vertical es válido.");
     }
 
-    if (message.trim() === "") {
-      setcontenidoPlantillaTypeError(true)
+    if (!message || message.trim() === "") {
+      console.log("Error: message está vacío o no es válido.");
+      setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
-      messageRef.current.focus();
-      return isValid;
+      if (messageRef.current) messageRef.current.focus();
+      console.log("Estado de isValid después de validar message:", isValid);
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+      console.log("message es válido.");
     }
 
-    if (example.trim() === "") {
-      setejemploPlantillaError(true)
-      setejemploPlantillaHelperText("Este campo es requerido");
-      isValid = false;
-      exampleRef.current.focus();
-      return isValid;
-    }
-
-    if (selectedCategory.trim() === "") {
+    if (!selectedCategory || selectedCategory.trim() === "") {
+      console.log("Error: selectedCategory está vacío o no es válido.");
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
-      selectedCategoryRef.current.focus();
-      return isValid;
+      if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
+      console.log("Estado de isValid después de validar selectedCategory:", isValid);
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+      console.log("selectedCategory es válido.");
     }
 
-    return isValid;
+    // Validar que todas las variables tengan un texto de ejemplo
+    if (variables.length > 0) {
+      console.log("Validando variables...");
+      const newErrors = {};
+      const newDescriptionErrors = {};
+
+      for (const variable of variables) {
+        // Validar ejemplo
+        if (!variableExamples[variable]?.trim()) {
+          console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
+          isValid = false;
+          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+        } else {
+          newErrors[variable] = "";
+        }
+
+        // Validar descripción
+        if (!variableDescriptions[variable]?.trim()) {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+        } else {
+          newDescriptionErrors[variable] = "";
+        }
+      }
+
+      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+      if (duplicateVariables.size > 0) {
+        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        isValid = false;
+
+        // Marcar todas las variables con descripciones duplicadas
+        duplicateVariables.forEach(variable => {
+          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+        });
+
+        // Enfocar la primera variable con descripción duplicada
+        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+          descriptionRefs.current[firstDuplicateVariable].focus();
+        }
+      } else {
+        console.log("No se encontraron descripciones duplicadas.");
+        // Limpiar errores de descripción
+        variables.forEach(variable => {
+          newDescriptionErrors[variable] = "";
+        });
+      }
+
+      // 3. Validar que todas las variables tengan descripción (opcional)
+      for (const variable of variables) {
+        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "La descripción es requerida";
+
+          // Enfocar el campo de descripción vacío
+          if (descriptionRefs.current && descriptionRefs.current[variable]) {
+            descriptionRefs.current[variable].focus();
+          }
+        }
+      }
+
+      // Actualizar el estado de errores
+      setVariableErrors(newErrors);
+
+      // Si hay errores, no retornar aquí, continuar con el flujo
+      if (!isValid) {
+        console.log("Errores encontrados en las variables. isValid:", isValid);
+      } else {
+        console.log("Todas las variables son válidas.");
+      }
+    } else {
+      console.log("No hay variables para validar.");
+    }
+
+    console.log("Validación completada. isValid:", isValid);
+    return isValid; // Retornar el valor final de isValid
   };
 
   const iniciarRequest = async () => {
+
+    // Validar campos antes de enviar
+    const isValid = validateFields();
+    if (!isValid) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Campo incompletos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
+      return; // Detener si hay errores
+    }
+
+
     try {
       // Hacer el primer request
       const result = await sendRequest();
@@ -541,123 +668,123 @@ useEffect(() => {
 
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
   const sendRequest2 = async (templateId) => {
-  const url = `${urlTemplatesGS}plantillas/${templateId}`;
-  const headers = {
-    "Content-Type": "application/json",
-  };
+    const url = `${urlTemplatesGS}plantillas/${templateId}`;
+    const headers = {
+      "Content-Type": "application/json",
+    };
 
-  // Convertir selectedCategory a ID_PLANTILLA_CATEGORIA
-  let ID_PLANTILLA_CATEGORIA;
-  if (selectedCategory === "MARKETING") {
-    ID_PLANTILLA_CATEGORIA = 10;
-  } else if (selectedCategory === "UTILITY") {
-    ID_PLANTILLA_CATEGORIA = 13;
-  } else {
-    console.error("Categoría no válida:", selectedCategory);
-    return null;
-  }
+    // Convertir selectedCategory a ID_PLANTILLA_CATEGORIA
+    let ID_PLANTILLA_CATEGORIA;
+    if (selectedCategory === "MARKETING") {
+      ID_PLANTILLA_CATEGORIA = 10;
+    } else if (selectedCategory === "UTILITY") {
+      ID_PLANTILLA_CATEGORIA = 13;
+    } else {
+      console.error("Categoría no válida:", selectedCategory);
+      return null;
+    }
 
-  let TIPO_PLANTILLA;
-  if (templateType === "CAROUSEL") {
-    TIPO_PLANTILLA = 1;
-  } else {
-    TIPO_PLANTILLA = 0;
-  }
+    let TIPO_PLANTILLA;
+    if (templateType === "CAROUSEL") {
+      TIPO_PLANTILLA = 1;
+    } else {
+      TIPO_PLANTILLA = 0;
+    }
 
-  const mediaMap = {
-    image: "image",
-    video: "video",
-    document: "document",
-    carousel: "image"
-  };
+    const mediaMap = {
+      image: "image",
+      video: "video",
+      document: "document",
+      carousel: "image"
+    };
 
-  console.log("templateType: ", templateType);
-  const MEDIA = mediaMap[templateType] || null;
-  console.log("MEDIA: ", MEDIA);
+    console.log("templateType: ", templateType);
+    const MEDIA = mediaMap[templateType] || null;
+    console.log("MEDIA: ", MEDIA);
 
-  const mensajeProcesado = reordenarVariables(message);
-  const nombreProcesado = templateName.replace(/_/g, " ");
+    const mensajeProcesado = reordenarVariables(message);
+    const nombreProcesado = templateName.replace(/_/g, " ");
 
-  const data = {
-    ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
-    ID_BOT_REDES: idBotRedes,
-    NOMBRE: nombreProcesado,
-    NOMBRE_PLANTILLA: templateName,
-    MENSAJE: mensajeProcesado,
-    TIPO_PLANTILLA: TIPO_PLANTILLA,
-    MEDIA: MEDIA,
-    URL: uploadedUrl,
-    PANTALLAS: pantallas,
-    MODIFICADO_EL: new Date(),
-    MODIFICADO_POR: idNombreUsuarioTalkMe,
-  };
+    const data = {
+      ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
+      ID_BOT_REDES: idBotRedes,
+      NOMBRE: nombreProcesado,
+      NOMBRE_PLANTILLA: templateName,
+      MENSAJE: mensajeProcesado,
+      TIPO_PLANTILLA: TIPO_PLANTILLA,
+      MEDIA: MEDIA,
+      URL: uploadedUrl,
+      PANTALLAS: pantallas,
+      MODIFICADO_EL: new Date(),
+      MODIFICADO_POR: idNombreUsuarioTalkMe,
+    };
 
-  console.log("Segundo request enviado:", {
-    url: url,
-    headers: headers,
-    body: data,
-  });
-
-  try {
-    const response = await fetch(url, {
-      method: "PUT",
+    console.log("Segundo request enviado:", {
+      url: url,
       headers: headers,
-      body: JSON.stringify(data),
+      body: data,
     });
 
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      console.error("Error response:", errorResponse);
-      return { status: "error", message: errorResponse };
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error response:", errorResponse);
+        return { status: "error", message: errorResponse };
+      }
+
+      const result = await response.json();
+      console.log("Response del segundo request: ", result);
+
+      // Moví esta condición después de obtener el resultado y antes del return
+      if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
+        // Primero eliminamos los parámetros existentes
+        //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
+        await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
+        await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
+        // Aquí deberías agregar la lógica para insertar los nuevos parámetros
+        // await insertarNuevosParametros(...);
+      }
+
+      return { status: "success", data: result };
+
+    } catch (error) {
+      console.error("Error en el segundo request:", error);
+      showSnackbar("❌ Error en el segundo request", "error");
+      return null;
+    }
+  };
+
+
+  function reordenarVariables(message) {
+    // Encontrar todas las variables en el mensaje
+    const variables = message.match(/\{\{\d+\}\}/g) || [];
+
+    // Crear un mapa para el reordenamiento: {{1}} -> {{0}}, {{2}} -> {{1}}, etc.
+    const reordenamiento = {};
+    variables.forEach((variable, index) => {
+      const numeroOriginal = variable.match(/\d+/)[0];
+      reordenamiento[variable] = `{{${index}}}`;
+    });
+
+    // Reemplazar cada variable con su nuevo número
+    let nuevoMensaje = message;
+    for (const [vieja, nueva] of Object.entries(reordenamiento)) {
+      nuevoMensaje = nuevoMensaje.replace(new RegExp(escapeRegExp(vieja), 'g'), nueva);
     }
 
-    const result = await response.json();
-    console.log("Response del segundo request: ", result);
-
-    // Moví esta condición después de obtener el resultado y antes del return
-    if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-      // Primero eliminamos los parámetros existentes
-      //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
-      await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
-      await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
-      // Aquí deberías agregar la lógica para insertar los nuevos parámetros
-      // await insertarNuevosParametros(...);
-    }
-
-    return { status: "success", data: result };
-
-  } catch (error) {
-    console.error("Error en el segundo request:", error);
-    showSnackbar("❌ Error en el segundo request", "error");
-    return null;
+    return nuevoMensaje;
   }
-};
 
-
-function reordenarVariables(message) {
-  // Encontrar todas las variables en el mensaje
-  const variables = message.match(/\{\{\d+\}\}/g) || [];
-  
-  // Crear un mapa para el reordenamiento: {{1}} -> {{0}}, {{2}} -> {{1}}, etc.
-  const reordenamiento = {};
-  variables.forEach((variable, index) => {
-    const numeroOriginal = variable.match(/\d+/)[0];
-    reordenamiento[variable] = `{{${index}}}`;
-  });
-  
-  // Reemplazar cada variable con su nuevo número
-  let nuevoMensaje = message;
-  for (const [vieja, nueva] of Object.entries(reordenamiento)) {
-    nuevoMensaje = nuevoMensaje.replace(new RegExp(escapeRegExp(vieja), 'g'), nueva);
+  // Función auxiliar para escapar caracteres especiales en regex
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
-  
-  return nuevoMensaje;
-}
-
-// Función auxiliar para escapar caracteres especiales en regex
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
   //const [variables, setVariables] = useState([{ key: '{{1}}', value: '' }, { key: '{{2}}', value: '' }]);
 
   //MEDIA
@@ -900,42 +1027,42 @@ function escapeRegExp(string) {
   };
 
   const handleAddVariable = () => {
-      const newVariable = `{{${variables.length + 1}}}`;
-  
-      // Verificar si al añadir la variable se superaría el límite de caracteres
+    const newVariable = `{{${variables.length + 1}}}`;
+
+    // Verificar si al añadir la variable se superaría el límite de caracteres
     if (message.length + newVariable.length > 550) {
       // Puedes mostrar un mensaje de error o simplemente no hacer nada
       Swal.fire({
-          title: 'Limite de caracteres',
-          text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
-          icon: 'warning',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#00c3ff'
-        });
+        title: 'Limite de caracteres',
+        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
       return;
     }
-  
-      // Obtener la posición actual del cursor
-      const cursorPosition = messageRef.current.selectionStart;
-  
-      // Dividir el texto en dos partes: antes y después del cursor
-      const textBeforeCursor = message.substring(0, cursorPosition);
-      const textAfterCursor = message.substring(cursorPosition);
-  
-      // Insertar la variable en la posición del cursor
-      const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
-      setMessage(newMessage);
-  
-      // Actualizar el array de variables
-      setVariables([...variables, newVariable]);
-  
-      // OPCIONAL: Colocar el cursor después de la variable insertada
-      setTimeout(() => {
-        const newPosition = cursorPosition + newVariable.length;
-        messageRef.current.focus();
-        messageRef.current.setSelectionRange(newPosition, newPosition);
-      }, 0);
-    };
+
+    // Obtener la posición actual del cursor
+    const cursorPosition = messageRef.current.selectionStart;
+
+    // Dividir el texto en dos partes: antes y después del cursor
+    const textBeforeCursor = message.substring(0, cursorPosition);
+    const textAfterCursor = message.substring(cursorPosition);
+
+    // Insertar la variable en la posición del cursor
+    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
+    setMessage(newMessage);
+
+    // Actualizar el array de variables
+    setVariables([...variables, newVariable]);
+
+    // OPCIONAL: Colocar el cursor después de la variable insertada
+    setTimeout(() => {
+      const newPosition = cursorPosition + newVariable.length;
+      messageRef.current.focus();
+      messageRef.current.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
 
   const handleEmojiClick = (emojiObject) => {
     setMessage((prev) => `${prev} ${emojiObject.emoji}`);
@@ -950,12 +1077,12 @@ function escapeRegExp(string) {
     const maxLength = 550;
     const emojiCount = countEmojis(newText);
     const maxEmojis = 10;
-  
+
     // Renumerar variables solo si se detectan (ej: al pegar)
     if (newText.includes("{{")) {
       newText = renumberVariables(newText); // ✅ Ahora funciona correctamente
     }
-  
+
     // Verificar si se excede el límite de emojis
     if (emojiCount > maxEmojis) {
       // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
@@ -970,7 +1097,7 @@ function escapeRegExp(string) {
       }
       return; // No actualizar el texto si excede el límite de emojis
     }
-  
+
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
@@ -981,15 +1108,15 @@ function escapeRegExp(string) {
       });
       return;
     }
-  
+
     // Continuar con tu lógica existente si está dentro del límite de caracteres
     if (newText.length <= maxLength) {
       // Guardar el nuevo texto
       setMessage(newText);
-  
+
       // Actualizar el contador de emojis (necesitas agregar este estado)
       setEmojiCount(emojiCount);
-  
+
       // Extraer y actualizar variables automáticamente
       const detectedVariables = extractVariables(newText);
       if (
@@ -998,7 +1125,7 @@ function escapeRegExp(string) {
       ) {
         setVariables(detectedVariables);
       }
-  
+
       // Verificar qué variables se han eliminado del texto
       const deletedVariables = [];
       variables.forEach(variable => {
@@ -1006,33 +1133,33 @@ function escapeRegExp(string) {
           deletedVariables.push(variable);
         }
       });
-  
+
       // Si se eliminaron variables, actualiza el estado
       if (deletedVariables.length > 0) {
         // Filtrar las variables eliminadas
         const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
-  
+
         // Actualizar el estado de las variables
         setVariables(remainingVariables);
-  
+
         // Actualizar las descripciones y ejemplos
         const newDescriptions = { ...variableDescriptions };
         const newExamples = { ...variableExamples };
         const newErrors = { ...variableErrors };
-  
+
         deletedVariables.forEach(v => {
           delete newDescriptions[v];
           delete newExamples[v];
           delete newErrors[v];
         });
-  
+
         setVariableDescriptions(newDescriptions);
         setVariableExamples(newExamples);
         setVariableErrors(newErrors);
       }
     }
   };
- 
+
   const extractVariables = (text) => {
     const regex = /\{\{\d+\}\}/g;
     return [...new Set(text.match(regex) || [])];
@@ -1041,15 +1168,15 @@ function escapeRegExp(string) {
   const renumberVariables = (text) => {
     const variableMap = new Map();
     let counter = 1;
-    
+
     return text.replace(/\{\{\d+\}\}/g, (match) => {
-        if (!variableMap.has(match)) {
-            variableMap.set(match, `{{${counter}}}`);
-            counter++;
-        }
-        return variableMap.get(match);
+      if (!variableMap.has(match)) {
+        variableMap.set(match, `{{${counter}}}`);
+        counter++;
+      }
+      return variableMap.get(match);
     });
-};
+  };
 
   // Nueva función para borrar una variable específica
   const deleteVariable = (variableToDelete) => {
@@ -1149,21 +1276,21 @@ function escapeRegExp(string) {
     }));
   };
 
-const replaceVariables = (text, variables) => {
-  let result = text;
-  
-  Object.keys(variables).forEach(variable => {
-    // Remover las llaves de la clave para crear el regex correcto
-    const cleanVariable = variable.replace(/[{}]/g, '');
-    const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-    console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
-    result = result.replace(regex, variables[variable]);
-  });
-  
-  return result;
-};
+  const replaceVariables = (text, variables) => {
+    let result = text;
 
-// Función para previsualizar el mensaje con ejemplos aplicados
+    Object.keys(variables).forEach(variable => {
+      // Remover las llaves de la clave para crear el regex correcto
+      const cleanVariable = variable.replace(/[{}]/g, '');
+      const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
+      console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
+      result = result.replace(regex, variables[variable]);
+    });
+
+    return result;
+  };
+
+  // Función para previsualizar el mensaje con ejemplos aplicados
   const previewMessage = () => {
     let previewHeader = header;
     let previewFooter = footer;
@@ -1223,6 +1350,38 @@ const replaceVariables = (text, variables) => {
 
     return displayValues;
   };
+
+  // 1. Función para detectar duplicados
+  const getDuplicateDescriptions = (descriptions) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
+
+    // Contar ocurrencias de cada descripción (ignorando vacías)
+    Object.entries(descriptions).forEach(([variable, description]) => {
+      if (description && description.trim()) {
+        const cleanDesc = description.trim().toLowerCase();
+        if (descriptionCounts[cleanDesc]) {
+          descriptionCounts[cleanDesc].push(variable);
+          duplicates.add(cleanDesc);
+        } else {
+          descriptionCounts[cleanDesc] = [variable];
+        }
+      }
+    });
+
+    // Retornar variables que tienen descripciones duplicadas
+    const duplicateVariables = new Set();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(variable => {
+        duplicateVariables.add(variable);
+      });
+    });
+
+    return duplicateVariables;
+  };
+
+  // 3. En tu componente, calcular duplicados
+  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
@@ -1631,6 +1790,12 @@ const replaceVariables = (text, variables) => {
                         placeholder="¿Para qué sirve esta variable?"
                         value={variableDescriptions[variable] || ''}
                         onChange={(e) => handleUpdateDescriptions(variable, e)}
+                        error={duplicateVariables.has(variable)}
+                        helperText={
+                          duplicateVariables.has(variable)
+                            ? "Esta descripción ya existe en otra variable"
+                            : ""
+                        }
                         sx={{ flexGrow: 1 }}
                       />
 

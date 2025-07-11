@@ -89,6 +89,8 @@ const TemplateForm = () => {
   const [variableDescriptions, setVariableDescriptions] = useState({});
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
+  const [descriptionErrors, setDescriptionErrors] = useState({});
+  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
 
   //ESTE ES PARA EL EXAMPLE MEDIA
   const [mediaId, setMediaId] = useState('');
@@ -104,6 +106,7 @@ const TemplateForm = () => {
   const exampleRef = useRef(null);
   const selectedCategoryRef = useRef(null);
   const exampleRefs = useRef({});
+  const descriptionRefs = useRef({});
 
   const resetForm = () => {
     setTemplateName("");
@@ -232,21 +235,65 @@ const TemplateForm = () => {
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
       console.log("Validando variables...");
-      const newErrors = {}; // Objeto para almacenar los errores
+      const newErrors = {};
+      const newDescriptionErrors = {};
 
       for (const variable of variables) {
-        if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
+        // Validar ejemplo
+        if (!variableExamples[variable]?.trim()) {
           console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
           isValid = false;
-          newErrors[variable] = "Este campo es requerido"; // Asignar mensaje de error
-
-          // Colocar el foco en el campo de texto de ejemplo vacío
-          if (exampleRefs.current[variable]) {
-            exampleRefs.current[variable].focus();
-          }
+          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
-          console.log(`La variable ${variable} es válida.`);
-          newErrors[variable] = ""; // Sin error
+          newErrors[variable] = "";
+        }
+
+        // Validar descripción
+        if (!variableDescriptions[variable]?.trim()) {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+        } else {
+          newDescriptionErrors[variable] = "";
+        }
+      }
+
+      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+      if (duplicateVariables.size > 0) {
+        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        isValid = false;
+
+        // Marcar todas las variables con descripciones duplicadas
+        duplicateVariables.forEach(variable => {
+          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+        });
+
+        // Enfocar la primera variable con descripción duplicada
+        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+          descriptionRefs.current[firstDuplicateVariable].focus();
+        }
+      } else {
+        console.log("No se encontraron descripciones duplicadas.");
+        // Limpiar errores de descripción
+        variables.forEach(variable => {
+          newDescriptionErrors[variable] = "";
+        });
+      }
+
+      // 3. Validar que todas las variables tengan descripción (opcional)
+      for (const variable of variables) {
+        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
+          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          isValid = false;
+          newDescriptionErrors[variable] = "La descripción es requerida";
+
+          // Enfocar el campo de descripción vacío
+          if (descriptionRefs.current && descriptionRefs.current[variable]) {
+            descriptionRefs.current[variable].focus();
+          }
         }
       }
 
@@ -309,22 +356,22 @@ const TemplateForm = () => {
     }
   } //
 
-   //
+  //
 
- /* let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  idBotRedes = 721;
-  idBot = 257;
-  urlTemplatesGS = 'http://localhost:3004/api/';
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  urlWsFTP = 'https://cloud-s2.talkme.pro/WsFTP/api/ftp/echo';
-*/
+  /* let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+ 
+   appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+   authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+   appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+   idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+   idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+   empresaTalkMe = 2;
+   idBotRedes = 721;
+   idBot = 257;
+   urlTemplatesGS = 'http://localhost:3004/api/';
+   apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+   urlWsFTP = 'https://cloud-s2.talkme.pro/WsFTP/api/ftp/echo';
+ */
 
 
   /*
@@ -341,17 +388,17 @@ const TemplateForm = () => {
   const iniciarRequest = async () => {
 
     // Validar campos antes de enviar
-  const isValid = validateFields();
-  if (!isValid) {
-    Swal.fire({
-          title: 'Error',
-          text: 'Campo incompletos.',
-          icon: 'error',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#00c3ff'
-        });
-    return; // Detener si hay errores
-  }
+    const isValid = validateFields();
+    if (!isValid) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Campo incompletos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
+      return; // Detener si hay errores
+    }
 
     try {
       //
@@ -415,9 +462,9 @@ const TemplateForm = () => {
           idNombreUsuarioTalkMe || "Sistema.TalkMe",
           variables,
           variableDescriptions,
-          [], 
-          idBotRedes, 
-          urlTemplatesGS 
+          [],
+          idBotRedes,
+          urlTemplatesGS
         );
 
         // Limpia todos los campos si todo fue bien
@@ -502,22 +549,22 @@ const TemplateForm = () => {
 
   //NOMBRE PLANTILLA
   const handleTemplateNameChange = (event) => {
-  const inputValue = event.target.value;
-  const hasUpperCase = /[A-Z]/.test(inputValue);
-  
-  const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
-  setTemplateName(newValue);
+    const inputValue = event.target.value;
+    const hasUpperCase = /[A-Z]/.test(inputValue);
 
-  if (hasUpperCase) {
-    setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
-  } else if (newValue.trim() === "") {
-    setTemplateNameError(true);
-    setTemplateNameHelperText("Este campo es requerido");
-  } else {
-    setTemplateNameError(false);
-    setTemplateNameHelperText("");
-  }
-};
+    const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
+    setTemplateName(newValue);
+
+    if (hasUpperCase) {
+      setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
+    } else if (newValue.trim() === "") {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Este campo es requerido");
+    } else {
+      setTemplateNameError(false);
+      setTemplateNameHelperText("");
+    }
+  };
 
   //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
@@ -623,7 +670,7 @@ const TemplateForm = () => {
     }
   };
 
-  
+
   const handleHeaderChange = (e) => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
@@ -633,7 +680,7 @@ const TemplateForm = () => {
     }
     console.log("Nuevo valor de header:", e.target.value);
   };
-  
+
 
   //FOOTER PLANTILLA
   const handleFooterChange = (e) => {
@@ -675,121 +722,121 @@ const TemplateForm = () => {
   const renumberVariables = (text) => {
     const variableMap = new Map();
     let counter = 1;
-    
+
     return text.replace(/\{\{\d+\}\}/g, (match) => {
-        if (!variableMap.has(match)) {
-            variableMap.set(match, `{{${counter}}}`);
-            counter++;
-        }
-        return variableMap.get(match);
+      if (!variableMap.has(match)) {
+        variableMap.set(match, `{{${counter}}}`);
+        counter++;
+      }
+      return variableMap.get(match);
     });
-};
+  };
 
   // Función actualizada con límite de emojis
   const handleBodyMessageChange = (e) => {
-  let newText = e.target.value; // ✅ Cambiar const por let
-  const maxLength = 550;
-  const emojiCount = countEmojis(newText);
-  const maxEmojis = 10;
+    let newText = e.target.value; // ✅ Cambiar const por let
+    const maxLength = 550;
+    const emojiCount = countEmojis(newText);
+    const maxEmojis = 10;
 
-  // Renumerar variables solo si se detectan (ej: al pegar)
-  if (newText.includes("{{")) {
-    newText = renumberVariables(newText); // ✅ Ahora funciona correctamente
-  }
+    // Renumerar variables solo si se detectan (ej: al pegar)
+    if (newText.includes("{{")) {
+      newText = renumberVariables(newText); // ✅ Ahora funciona correctamente
+    }
 
-  // Verificar si se excede el límite de emojis
-  if (emojiCount > maxEmojis) {
-    // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
-    if (countEmojis(message) <= maxEmojis) {
+    // Verificar si se excede el límite de emojis
+    if (emojiCount > maxEmojis) {
+      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+      if (countEmojis(message) <= maxEmojis) {
+        Swal.fire({
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+      return; // No actualizar el texto si excede el límite de emojis
+    }
+
+    if (newText.length > maxLength) {
       Swal.fire({
-        title: 'Límite de emojis',
-        text: 'Solo puedes incluir un máximo de 10 emojis',
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
       });
-    }
-    return; // No actualizar el texto si excede el límite de emojis
-  }
-
-  if (newText.length > maxLength) {
-    Swal.fire({
-      title: 'Limite de caracteres',
-      text: 'Solo puedes incluir un máximo de 550 caracteres',
-      icon: 'warning',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#00c3ff'
-    });
-    return;
-  }
-
-  // Continuar con tu lógica existente si está dentro del límite de caracteres
-  if (newText.length <= maxLength) {
-    // Guardar el nuevo texto
-    setMessage(newText);
-
-    // Actualizar el contador de emojis (necesitas agregar este estado)
-    setEmojiCount(emojiCount);
-
-    // Extraer y actualizar variables automáticamente
-    const detectedVariables = extractVariables(newText);
-    if (
-      detectedVariables.length !== variables.length ||
-      !detectedVariables.every(v => variables.includes(v))
-    ) {
-      setVariables(detectedVariables);
+      return;
     }
 
-    // Verificar qué variables se han eliminado del texto
-    const deletedVariables = [];
-    variables.forEach(variable => {
-      if (!newText.includes(variable)) {
-        deletedVariables.push(variable);
+    // Continuar con tu lógica existente si está dentro del límite de caracteres
+    if (newText.length <= maxLength) {
+      // Guardar el nuevo texto
+      setMessage(newText);
+
+      // Actualizar el contador de emojis (necesitas agregar este estado)
+      setEmojiCount(emojiCount);
+
+      // Extraer y actualizar variables automáticamente
+      const detectedVariables = extractVariables(newText);
+      if (
+        detectedVariables.length !== variables.length ||
+        !detectedVariables.every(v => variables.includes(v))
+      ) {
+        setVariables(detectedVariables);
       }
-    });
 
-    // Si se eliminaron variables, actualiza el estado
-    if (deletedVariables.length > 0) {
-      // Filtrar las variables eliminadas
-      const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
-
-      // Actualizar el estado de las variables
-      setVariables(remainingVariables);
-
-      // Actualizar las descripciones y ejemplos
-      const newDescriptions = { ...variableDescriptions };
-      const newExamples = { ...variableExamples };
-      const newErrors = { ...variableErrors };
-
-      deletedVariables.forEach(v => {
-        delete newDescriptions[v];
-        delete newExamples[v];
-        delete newErrors[v];
+      // Verificar qué variables se han eliminado del texto
+      const deletedVariables = [];
+      variables.forEach(variable => {
+        if (!newText.includes(variable)) {
+          deletedVariables.push(variable);
+        }
       });
 
-      setVariableDescriptions(newDescriptions);
-      setVariableExamples(newExamples);
-      setVariableErrors(newErrors);
+      // Si se eliminaron variables, actualiza el estado
+      if (deletedVariables.length > 0) {
+        // Filtrar las variables eliminadas
+        const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
+
+        // Actualizar el estado de las variables
+        setVariables(remainingVariables);
+
+        // Actualizar las descripciones y ejemplos
+        const newDescriptions = { ...variableDescriptions };
+        const newExamples = { ...variableExamples };
+        const newErrors = { ...variableErrors };
+
+        deletedVariables.forEach(v => {
+          delete newDescriptions[v];
+          delete newExamples[v];
+          delete newErrors[v];
+        });
+
+        setVariableDescriptions(newDescriptions);
+        setVariableExamples(newExamples);
+        setVariableErrors(newErrors);
+      }
     }
-  }
-};
+  };
 
   // VARIABLES DEL BODY MESSAGE
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
 
     // Verificar si al añadir la variable se superaría el límite de caracteres
-  if (message.length + newVariable.length > 550) {
-    // Puedes mostrar un mensaje de error o simplemente no hacer nada
-    Swal.fire({
+    if (message.length + newVariable.length > 550) {
+      // Puedes mostrar un mensaje de error o simplemente no hacer nada
+      Swal.fire({
         title: 'Limite de caracteres',
         text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
       });
-    return;
-  }
+      return;
+    }
 
     // Obtener la posición actual del cursor
     const cursorPosition = messageRef.current.selectionStart;
@@ -813,72 +860,72 @@ const TemplateForm = () => {
     }, 0);
   };
 
-const handleEmojiClick = (emojiObject) => {
-  const cursor = messageRef.current.selectionStart;
-  const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
-  
-  // Contar los emojis en el nuevo texto
-  const newEmojiCount = countEmojis(newText);
-  
-  // Verificar si excedería el límite de 10 emojis
-  if (newEmojiCount > 10) {
-    // Mostrar alerta
-    Swal.fire({
-      title: 'Límite de emojis',
-      text: 'Solo puedes incluir un máximo de 10 emojis',
-      icon: 'warning',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#00c3ff'
-    });
-    setShowEmojiPicker(false);
-    
-    // Mantener el foco en el campo de texto
-    setTimeout(() => {
-      if (messageRef.current) {
-        messageRef.current.focus();
-        messageRef.current.setSelectionRange(cursor, cursor);
-      }
-    }, 100);
-    
-    return; // No actualizar el texto
-  }
+  const handleEmojiClick = (emojiObject) => {
+    const cursor = messageRef.current.selectionStart;
+    const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
 
-  // Verificar si excedería el límite de 550 caracteres
-  if (newText.length > 550) {
-    Swal.fire({
-      title: 'Límite de caracteres',
-      text: 'Solo puedes incluir un máximo de 550 caracteres',
-      icon: 'warning',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#00c3ff'
-    });
-    setShowEmojiPicker(false);
+    // Contar los emojis en el nuevo texto
+    const newEmojiCount = countEmojis(newText);
 
-    // Mantener el foco en el campo de texto
-    setTimeout(() => {
-      if (messageRef.current) {
-        messageRef.current.focus();
-        messageRef.current.setSelectionRange(cursor, cursor);
-      }
-    }, 100);
-    
-    return; // No actualizar el texto
-  }
-  
-  // Si está dentro del límite, actualizar el mensaje
-  setMessage(newText);
-  // Actualizar el contador de emojis
-  setEmojiCount(newEmojiCount);
-  setShowEmojiPicker(false);
+    // Verificar si excedería el límite de 10 emojis
+    if (newEmojiCount > 10) {
+      // Mostrar alerta
+      Swal.fire({
+        title: 'Límite de emojis',
+        text: 'Solo puedes incluir un máximo de 10 emojis',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      setShowEmojiPicker(false);
 
-  // Mantener el foco y posicionar el cursor después del emoji insertado
-  setTimeout(() => {
-    if (messageRef.current) {
-      messageRef.current.focus();
-      messageRef.current.setSelectionRange(cursor + emojiObject.emoji.length, cursor + emojiObject.emoji.length);
+      // Mantener el foco en el campo de texto
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.focus();
+          messageRef.current.setSelectionRange(cursor, cursor);
+        }
+      }, 100);
+
+      return; // No actualizar el texto
     }
-  }, 100);
-};
+
+    // Verificar si excedería el límite de 550 caracteres
+    if (newText.length > 550) {
+      Swal.fire({
+        title: 'Límite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      setShowEmojiPicker(false);
+
+      // Mantener el foco en el campo de texto
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.focus();
+          messageRef.current.setSelectionRange(cursor, cursor);
+        }
+      }, 100);
+
+      return; // No actualizar el texto
+    }
+
+    // Si está dentro del límite, actualizar el mensaje
+    setMessage(newText);
+    // Actualizar el contador de emojis
+    setEmojiCount(newEmojiCount);
+    setShowEmojiPicker(false);
+
+    // Mantener el foco y posicionar el cursor después del emoji insertado
+    setTimeout(() => {
+      if (messageRef.current) {
+        messageRef.current.focus();
+        messageRef.current.setSelectionRange(cursor + emojiObject.emoji.length, cursor + emojiObject.emoji.length);
+      }
+    }, 100);
+  };
 
   // Nueva función para borrar una variable específica
   const deleteVariable = (variableToDelete) => {
@@ -973,7 +1020,7 @@ const handleEmojiClick = (emojiObject) => {
       previewText = previewText.replaceAll(variable, example);
     });
   }
-    //
+  //
 
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
@@ -990,8 +1037,6 @@ const handleEmojiClick = (emojiObject) => {
       [variable]: newValue
     }));
   };
-  
-  
 
   // Función para generar el ejemplo combinando el mensaje y los valores de las variables
   const generateExample = () => {
@@ -1002,34 +1047,34 @@ const handleEmojiClick = (emojiObject) => {
     return generatedExample;
   };
 
-const replaceVariables = (text, variables) => {
-  let result = text;
-  
-  Object.keys(variables).forEach(variable => {
-    // Remover las llaves de la clave para crear el regex correcto
-    const cleanVariable = variable.replace(/[{}]/g, '');
-    const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-    console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
-    result = result.replace(regex, variables[variable]);
-  });
-  
-  return result;
-};
+  const replaceVariables = (text, variables) => {
+    let result = text;
+
+    Object.keys(variables).forEach(variable => {
+      // Remover las llaves de la clave para crear el regex correcto
+      const cleanVariable = variable.replace(/[{}]/g, '');
+      const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
+      console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
+      result = result.replace(regex, variables[variable]);
+    });
+
+    return result;
+  };
 
   const handlePantallas = (event) => {
     const { target: { value } } = event;
-  
+
     // Procesar los valores seleccionados
     const selectedOptions = typeof value === 'string' ? value.split(',') : value;
-  
+
     // Extraer solo los números
     const numericValues = selectedOptions.map(option => {
       return option.split(' - ')[0].trim();
     });
-    
+
     // Guardar como string con comas para la API
     setPantallas(numericValues.join(','));
-  
+
     // Guardar el texto completo para mostrar (displayPantallas)
     setDisplayPantallas(selectedOptions);
   };
@@ -1042,7 +1087,37 @@ const replaceVariables = (text, variables) => {
     return matches ? matches.length : 0;
   };
 
+  // 1. Función para detectar duplicados
+  const getDuplicateDescriptions = (descriptions) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
 
+    // Contar ocurrencias de cada descripción (ignorando vacías)
+    Object.entries(descriptions).forEach(([variable, description]) => {
+      if (description && description.trim()) {
+        const cleanDesc = description.trim().toLowerCase();
+        if (descriptionCounts[cleanDesc]) {
+          descriptionCounts[cleanDesc].push(variable);
+          duplicates.add(cleanDesc);
+        } else {
+          descriptionCounts[cleanDesc] = [variable];
+        }
+      }
+    });
+
+    // Retornar variables que tienen descripciones duplicadas
+    const duplicateVariables = new Set();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(variable => {
+        duplicateVariables.add(variable);
+      });
+    });
+
+    return duplicateVariables;
+  };
+
+  // 3. En tu componente, calcular duplicados
+  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
 
 
@@ -1223,7 +1298,7 @@ const replaceVariables = (text, variables) => {
               </FormLabel>
             </FormControl>
 
-            
+
             {/* Componente para subir archivos */}
             {console.log("Valor de templateType:", templateType)}
             {/*<FileUploadComponent
@@ -1238,18 +1313,18 @@ const replaceVariables = (text, variables) => {
               onImagePreview={(preview) => setImagePreview(preview)} // Recibe la vista previa
               onHeaderChange={(newHeader) => setHeader(newHeader)} // Nueva prop
             />*/}
-              <FileUploadComponent
-                templateType={templateType}
-                onUploadSuccess={(uploadData) => {
-                  setMediaId(uploadData.mediaId);
-                  setUploadedUrl(uploadData.url);
-                  console.log("UploadData: ", uploadData)
-                  console.log('Datos recibidos del componente hijo mediaId: ', uploadData.mediaId);
-                  console.log('Datos recibidos del componente hijo uploadedUrl: ', uploadData.url) ;
-                }}
-                onImagePreview={(preview) => setImagePreview(preview)}
-                onHeaderChange={(newHeader) => setHeader(newHeader)}
-              />
+            <FileUploadComponent
+              templateType={templateType}
+              onUploadSuccess={(uploadData) => {
+                setMediaId(uploadData.mediaId);
+                setUploadedUrl(uploadData.url);
+                console.log("UploadData: ", uploadData)
+                console.log('Datos recibidos del componente hijo mediaId: ', uploadData.mediaId);
+                console.log('Datos recibidos del componente hijo uploadedUrl: ', uploadData.url);
+              }}
+              onImagePreview={(preview) => setImagePreview(preview)}
+              onHeaderChange={(newHeader) => setHeader(newHeader)}
+            />
           </Box>
         )}
 
@@ -1458,6 +1533,12 @@ const replaceVariables = (text, variables) => {
                         placeholder="¿Para qué sirve esta variable?"
                         value={variableDescriptions[variable] || ''}
                         onChange={(e) => handleUpdateDescriptions(variable, e)}
+                        error={duplicateVariables.has(variable)}
+                        helperText={
+                          duplicateVariables.has(variable)
+                            ? "Esta descripción ya existe en otra variable"
+                            : ""
+                        }
                         sx={{ flexGrow: 1 }}
                       />
 
@@ -1582,10 +1663,10 @@ const replaceVariables = (text, variables) => {
                 )}
 
                 {/* Icono según el tipo de botón */}
-                <Box sx={{ display: "flex", alignItems: "center", pt:2 }}>
-                {button.type === "QUICK_REPLY" && <ArrowForward />}
-                {button.type === "URL" && <Link />}
-                {button.type === "PHONE_NUMBER" && <Phone />}
+                <Box sx={{ display: "flex", alignItems: "center", pt: 2 }}>
+                  {button.type === "QUICK_REPLY" && <ArrowForward />}
+                  {button.type === "URL" && <Link />}
+                  {button.type === "PHONE_NUMBER" && <Phone />}
                 </Box>
 
                 {/* Botón para eliminar */}
@@ -1724,7 +1805,7 @@ const replaceVariables = (text, variables) => {
               <Typography variant="body1" color="text.primary">
                 {header}
               </Typography>
-              
+
               <Typography variant="body1" color="text.primary" sx={{ fontFamily: "Helvetica Neue, Arial, sans-serif", whiteSpace: "pre-line", overflowWrap: "break-word" }}>
                 {example}
               </Typography>
