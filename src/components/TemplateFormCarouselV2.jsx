@@ -2452,6 +2452,7 @@ const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
 
                                       <Divider orientation="vertical" flexItem />
 
+{/*
                                       <Button
                                         variant="contained"
                                         size="small"
@@ -2460,7 +2461,7 @@ const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
                                         sx={{ borderRadius: 1 }}
                                       >
                                         Agregar Variable
-                                      </Button>
+                                      </Button> */}
 
                                       {card.variablesCard.length > 0 && (
                                         <Button
