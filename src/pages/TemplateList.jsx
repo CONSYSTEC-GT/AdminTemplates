@@ -216,7 +216,7 @@ export default function BasicCard() {
           navigate('/modify-template-carousel', { state: { template } });
           break;
         case 'CATALOG':
-          navigate('/modify-template-catalog', { state: { template } });
+          navigate('/modify-template-catalogo', { state: { template } });
           break;
         case 'TEXT':
         case 'IMAGE':
