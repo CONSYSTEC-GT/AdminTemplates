@@ -38,96 +38,96 @@ const TemplateForm = () => {
   const templateData = location.state?.template || {}; // Datos del template
 
   // Primer useEffect: Cargar los datos en el formulario al montar el componente
-useEffect(() => {
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+  useEffect(() => {
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType(templateData.templateType || "");
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-      // Parsear containerMeta si existe
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          const messageText = meta.data || "";
+        // Parsear containerMeta si existe
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
+            const messageText = meta.data || "";
 
-          setMessage(messageText);
-          setExample(meta.sampleText || "");
+            setMessage(messageText);
+            setExample(meta.sampleText || "");
 
-          // Extrae variables del mensaje y actualiza el estado
-          const extractedVariables = extractVariables(messageText);
-          setVariables(extractedVariables); // <- Aquí las guardas
-        } catch (error) {
-          console.error("Error al parsear containerMeta:", error);
+            // Extrae variables del mensaje y actualiza el estado
+            const extractedVariables = extractVariables(messageText);
+            setVariables(extractedVariables); // <- Aquí las guardas
+          } catch (error) {
+            console.error("Error al parsear containerMeta:", error);
+          }
         }
       }
-    }
 
-    // Segundo bloque try-catch movido dentro de loadData
-    try {
-      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-      if (info === null) {
-        console.log("info es null", info);
-      } else {
-        const pantallasFromAPI = info.pantallas || "";
-        setPantallas(pantallasFromAPI);
+      // Segundo bloque try-catch movido dentro de loadData
+      try {
+        const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+        if (info === null) {
+          console.log("info es null", info);
+        } else {
+          const pantallasFromAPI = info.pantallas || "";
+          setPantallas(pantallasFromAPI);
 
-        const displayValues = procesarPantallasAPI(pantallasFromAPI);
-        setDisplayPantallas(displayValues);
+          const displayValues = procesarPantallasAPI(pantallasFromAPI);
+          setDisplayPantallas(displayValues);
 
-        setMediaURL(info.url || "");
-        setImagePreview(info.url || "");
-        setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+          setMediaURL(info.url || "");
+          setImagePreview(info.url || "");
+          setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+        }
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
+    };
 
-  loadData(); // Llamada a la función dentro del useEffect
-}, [templateData, urlTemplatesGS]);
+    loadData(); // Llamada a la función dentro del useEffect
+  }, [templateData, urlTemplatesGS]);
 
-// Segundo useEffect que se ejecuta cuando idPlantilla cambia
-useEffect(() => {
-  const loadParametros = async () => {
-    if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
+  // Segundo useEffect que se ejecuta cuando idPlantilla cambia
+  useEffect(() => {
+    const loadParametros = async () => {
+      if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
 
-    try {
-      const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
-      if (infoParametros === null || infoParametros.length === 0) {
-        console.log("infoParametros es null o vacío", infoParametros);
-      } else {
-        const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
-        const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
+      try {
+        const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
+        if (infoParametros === null || infoParametros.length === 0) {
+          console.log("infoParametros es null o vacío", infoParametros);
+        } else {
+          const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
+          const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
 
-        setVariables(variablesFormateadas);
+          setVariables(variablesFormateadas);
 
-        const descripcionesIniciales = {};
-        const ejemplosIniciales = {};
+          const descripcionesIniciales = {};
+          const ejemplosIniciales = {};
 
-        parametrosOrdenados.forEach((param, index) => {
-          const variableKey = `{{${index + 1}}}`;
-          descripcionesIniciales[variableKey] = param.NOMBRE;
-          ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-        });
+          parametrosOrdenados.forEach((param, index) => {
+            const variableKey = `{{${index + 1}}}`;
+            descripcionesIniciales[variableKey] = param.NOMBRE;
+            ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+          });
 
-        setVariableDescriptions(descripcionesIniciales);
-        setVariableExamples(ejemplosIniciales);
+          setVariableDescriptions(descripcionesIniciales);
+          setVariableExamples(ejemplosIniciales);
 
-        console.log("VARIABLES FORMATEADAS", variablesFormateadas);
-        console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
-        console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+          console.log("VARIABLES FORMATEADAS", variablesFormateadas);
+          console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
+          console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+        }
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
+    };
 
-  loadParametros();
-}, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
+    loadParametros();
+  }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
   const [templateName, setTemplateName] = useState("");
@@ -429,23 +429,23 @@ useEffect(() => {
   const token = localStorage.getItem('authToken');
 
   // Decodifica el token para obtener appId y authCode
-  let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
       const decoded = jwtDecode(token);
       appId = decoded.app_id; // Extrae appId del token
       authCode = decoded.auth_code; // Extrae authCode del token
-      idUsuarioTalkMe = decoded.id_usuario;
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;
+      appName = decoded.app_name; // Extrae el nombre de la aplicación
+      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
       empresaTalkMe = decoded.empresa;
-      console.log('appId:', appId);
-      console.log('authCode:', authCode);
-      console.log('idUsuarioTalkMe:', idUsuarioTalkMe);
-      console.log('idNombreUsuarioTalkMe:', idNombreUsuarioTalkMe);
-      console.log('empresaTalkMe:', empresaTalkMe);
-
+      idBotRedes = decoded.id_bot_redes;
+      idBot = decoded.id_bot;
+      urlTemplatesGS = decoded.urlTemplatesGS;
+      urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
+      console.log('urlWsFTP', urlWsFTP);
     }
   }
 
@@ -815,7 +815,7 @@ useEffect(() => {
     setDisplayPantallas(selectedOptions);
   };
 
-    // 1. Función para detectar duplicados
+  // 1. Función para detectar duplicados
   const getDuplicateDescriptions = (descriptions) => {
     const descriptionCounts = {};
     const duplicates = new Set();
