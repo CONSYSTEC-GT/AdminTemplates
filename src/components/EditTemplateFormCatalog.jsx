@@ -28,14 +28,18 @@ import { editTemplateToTalkMe } from '../api/templatesGSApi';
 
 import { CustomDialog } from '../utils/CustomDialog';
 
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
+
+
 const TemplateForm = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
 
-  // Cargar los datos en el formulario al montar el componente
-  useEffect(() => {
+  // Primer useEffect: Cargar los datos en el formulario al montar el componente
+useEffect(() => {
+  const loadData = async () => {
     if (templateData) {
       setTemplateName(templateData.elementName || "");
       setSelectedCategory(templateData.category || "");
@@ -61,7 +65,69 @@ const TemplateForm = () => {
         }
       }
     }
-  }, [templateData]);
+
+    // Segundo bloque try-catch movido dentro de loadData
+    try {
+      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+      if (info === null) {
+        console.log("info es null", info);
+      } else {
+        const pantallasFromAPI = info.pantallas || "";
+        setPantallas(pantallasFromAPI);
+
+        const displayValues = procesarPantallasAPI(pantallasFromAPI);
+        setDisplayPantallas(displayValues);
+
+        setMediaURL(info.url || "");
+        setImagePreview(info.url || "");
+        setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  loadData(); // Llamada a la función dentro del useEffect
+}, [templateData, urlTemplatesGS]);
+
+// Segundo useEffect que se ejecuta cuando idPlantilla cambia
+useEffect(() => {
+  const loadParametros = async () => {
+    if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
+
+    try {
+      const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
+      if (infoParametros === null || infoParametros.length === 0) {
+        console.log("infoParametros es null o vacío", infoParametros);
+      } else {
+        const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
+        const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
+
+        setVariables(variablesFormateadas);
+
+        const descripcionesIniciales = {};
+        const ejemplosIniciales = {};
+
+        parametrosOrdenados.forEach((param, index) => {
+          const variableKey = `{{${index + 1}}}`;
+          descripcionesIniciales[variableKey] = param.NOMBRE;
+          ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+        });
+
+        setVariableDescriptions(descripcionesIniciales);
+        setVariableExamples(ejemplosIniciales);
+
+        console.log("VARIABLES FORMATEADAS", variablesFormateadas);
+        console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
+        console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  loadParametros();
+}, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
   const [templateName, setTemplateName] = useState("");
@@ -780,6 +846,20 @@ const TemplateForm = () => {
 
   // 3. En tu componente, calcular duplicados
   const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+  const procesarPantallasAPI = (pantallasString) => {
+    if (!pantallasString) return [];
+
+    const pantallasArray = pantallasString.split(',');
+    const displayValues = pantallasArray.map(pantallaNum => {
+      const pantallaOption = pantallasTalkMe.find(option =>
+        option.startsWith(pantallaNum.trim() + ' -')
+      );
+      return pantallaOption || pantallaNum;
+    });
+
+    return displayValues;
+  };
 
 
 
