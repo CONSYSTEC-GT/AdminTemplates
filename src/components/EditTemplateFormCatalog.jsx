@@ -61,6 +61,83 @@ const TemplateForm = () => {
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
 
+  //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [idPlantilla, setIdPlantilla] = useState(";")
+  const [templateName, setTemplateName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [templateType, setTemplateType] = useState("CATALOG");
+  const [pantallas, setPantallas] = useState([]);
+  const [displayPantallas, setDisplayPantallas] = useState([]);
+  const [templateNameHelperText, setTemplateNameHelperText] = useState("El nombre debe hacer referencia al texto de su plantilla.");
+  const [templateNameError, setTemplateNameError] = useState(false);
+  const [vertical, setVertical] = useState("");
+  const [message, setMessage] = useState("");
+  const [header, setHeader] = useState("");
+  const [footer, setFooter] = useState("");
+  const [buttons, setButtons] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [example, setExample] = useState("");
+  const [exampleMedia, setExampleMedia] = useState("");
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const [languageCode, setLanguageCode] = useState("es"); // Valor predeterminado: español
+  const [languageTypeError, setLanguageTypeError] = useState(false);
+  const [languageTypeHelperText, setLanguageTypeHelperText] = useState("");
+
+  const [categoriaPlantilla, setcategoriaPlantilla] = useState("");
+  const [categoriaPlantillaError, setcategoriaPlantillaError] = useState(false);
+  const [categoriaPlantillaHelperText, setcategoriaPlantillaHelperText] = useState("");
+
+  const [etiquetaPlantilla, setetiquetaPlantilla] = useState("");
+  const [etiquetaPlantillaError, setetiquetaPlantillaError] = useState(false);
+  const [etiquetaPlantillaHelperText, setetiquetaPlantillaHelperText] = useState("");
+
+  const [contenidoPlantilla, setcontenidoPlantilla] = useState("");
+  const [contenidoPlantillaTypeError, setcontenidoPlantillaTypeError] = useState(false);
+  const [contenidoPlantillaTypeHelperText, setcontenidoPlantillaTypeHelperText] = useState("");
+
+  const [ejemploPlantilla, setejemploPlantilla] = useState("");
+  const [ejemploPlantillaError, setejemploPlantillaError] = useState(false);
+  const [ejemploPlantillaHelperText, setejemploPlantillaHelperText] = useState("");
+
+  //const [message, setMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [variables, setVariables] = useState([]);
+
+  // Estado para almacenar ejemplos de variables
+  const [variableExamples, setVariableExamples] = useState({});
+  const [variableExamplesError, setvariableExamplesError] = useState(false);
+  const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
+  const [variableErrors, setVariableErrors] = useState({});
+
+  // Estado para almacenar descripciones de variables
+  const [variableDescriptions, setVariableDescriptions] = useState({});
+  const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
+  const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
+  const [descriptionErrors, setDescriptionErrors] = useState({});
+  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
+
+  //ESTE ES PARA EL EXAMPLE MEDIA
+  const [mediaId, setMediaId] = useState('');
+  const [uploadedUrl, setUploadedUrl] = useState('');
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const templateNameRef = useRef(null);
+  const templateTypeRef = useRef(null);
+  const languageCodeRef = useRef(null);
+  const verticalRef = useRef(null);
+  const messageRef = useRef(null);
+  const exampleRef = useRef(null);
+  const selectedCategoryRef = useRef(null);
+  const exampleRefs = useRef({});
+  const descriptionRefs = useRef({});
+
+  const [idTemplate, setIdTemplate] = useState("");
+
   // Primer useEffect: Cargar los datos en el formulario al montar el componente
   useEffect(() => {
     const loadData = async () => {
@@ -152,83 +229,6 @@ const TemplateForm = () => {
 
     loadParametros();
   }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
-
-  //CAMPOS DEL FORMULARIO PARA EL REQUEST
-  const [idPlantilla, setIdPlantilla] = useState(";")
-  const [templateName, setTemplateName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [templateType, setTemplateType] = useState("CATALOG");
-  const [pantallas, setPantallas] = useState([]);
-  const [displayPantallas, setDisplayPantallas] = useState([]);
-  const [templateNameHelperText, setTemplateNameHelperText] = useState("El nombre debe hacer referencia al texto de su plantilla.");
-  const [templateNameError, setTemplateNameError] = useState(false);
-  const [vertical, setVertical] = useState("");
-  const [message, setMessage] = useState("");
-  const [header, setHeader] = useState("");
-  const [footer, setFooter] = useState("");
-  const [buttons, setButtons] = useState([]);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [example, setExample] = useState("");
-  const [exampleMedia, setExampleMedia] = useState("");
-
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  const [languageCode, setLanguageCode] = useState("es"); // Valor predeterminado: español
-  const [languageTypeError, setLanguageTypeError] = useState(false);
-  const [languageTypeHelperText, setLanguageTypeHelperText] = useState("");
-
-  const [categoriaPlantilla, setcategoriaPlantilla] = useState("");
-  const [categoriaPlantillaError, setcategoriaPlantillaError] = useState(false);
-  const [categoriaPlantillaHelperText, setcategoriaPlantillaHelperText] = useState("");
-
-  const [etiquetaPlantilla, setetiquetaPlantilla] = useState("");
-  const [etiquetaPlantillaError, setetiquetaPlantillaError] = useState(false);
-  const [etiquetaPlantillaHelperText, setetiquetaPlantillaHelperText] = useState("");
-
-  const [contenidoPlantilla, setcontenidoPlantilla] = useState("");
-  const [contenidoPlantillaTypeError, setcontenidoPlantillaTypeError] = useState(false);
-  const [contenidoPlantillaTypeHelperText, setcontenidoPlantillaTypeHelperText] = useState("");
-
-  const [ejemploPlantilla, setejemploPlantilla] = useState("");
-  const [ejemploPlantillaError, setejemploPlantillaError] = useState(false);
-  const [ejemploPlantillaHelperText, setejemploPlantillaHelperText] = useState("");
-
-  //const [message, setMessage] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [variables, setVariables] = useState([]);
-
-  // Estado para almacenar ejemplos de variables
-  const [variableExamples, setVariableExamples] = useState({});
-  const [variableExamplesError, setvariableExamplesError] = useState(false);
-  const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
-  const [variableErrors, setVariableErrors] = useState({});
-
-  // Estado para almacenar descripciones de variables
-  const [variableDescriptions, setVariableDescriptions] = useState({});
-  const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
-  const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
-  const [descriptionErrors, setDescriptionErrors] = useState({});
-  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
-
-  //ESTE ES PARA EL EXAMPLE MEDIA
-  const [mediaId, setMediaId] = useState('');
-  const [uploadedUrl, setUploadedUrl] = useState('');
-  const [uploadStatus, setUploadStatus] = useState('');
-  const [imagePreview, setImagePreview] = useState(null);
-
-  const templateNameRef = useRef(null);
-  const templateTypeRef = useRef(null);
-  const languageCodeRef = useRef(null);
-  const verticalRef = useRef(null);
-  const messageRef = useRef(null);
-  const exampleRef = useRef(null);
-  const selectedCategoryRef = useRef(null);
-  const exampleRefs = useRef({});
-  const descriptionRefs = useRef({});
-
-  const [idTemplate, setIdTemplate] = useState("");
 
   const resetForm = () => {
     setTemplateName("");
