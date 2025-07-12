@@ -33,6 +33,30 @@ import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, 
 
 const TemplateForm = () => {
 
+  // Recupera el token del localStorage
+  const token = localStorage.getItem('authToken');
+
+  // Decodifica el token para obtener appId y authCode
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      appId = decoded.app_id; // Extrae appId del token
+      authCode = decoded.auth_code; // Extrae authCode del token
+      appName = decoded.app_name; // Extrae el nombre de la aplicación
+      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+      empresaTalkMe = decoded.empresa;
+      idBotRedes = decoded.id_bot_redes;
+      idBot = decoded.id_bot;
+      urlTemplatesGS = decoded.urlTemplatesGS;
+      urlWsFTP = decoded.urlWsFTP;
+    } catch (error) {
+      console.error('Error decodificando el token:', error);
+      console.log('urlWsFTP', urlWsFTP);
+    }
+  }
+
   const location = useLocation();
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
@@ -424,30 +448,6 @@ const TemplateForm = () => {
       return 'null'; // En caso de que la extensión no sea reconocida
     }
   };
-
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
-
-  // Decodifica el token para obtener appId y authCode
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
-      appName = decoded.app_name; // Extrae el nombre de la aplicación
-      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
-      empresaTalkMe = decoded.empresa;
-      idBotRedes = decoded.id_bot_redes;
-      idBot = decoded.id_bot;
-      urlTemplatesGS = decoded.urlTemplatesGS;
-      urlWsFTP = decoded.urlWsFTP;
-    } catch (error) {
-      console.error('Error decodificando el token:', error);
-      console.log('urlWsFTP', urlWsFTP);
-    }
-  }
 
   const iniciarRequest = async () => {
     try {
