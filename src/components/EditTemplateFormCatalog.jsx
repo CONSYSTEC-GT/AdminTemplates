@@ -154,6 +154,7 @@ const TemplateForm = () => {
   }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("CATALOG");
