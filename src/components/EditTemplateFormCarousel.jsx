@@ -71,6 +71,23 @@ const EditTemplateFormCarousel = () => {
       }
     }
 
+    /*
+
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+
+  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+  empresaTalkMe = 2;
+  idBotRedes = 721;
+  idBot = 257;
+  urlTemplatesGS = 'http://dev.talkme.pro/templatesGS/api/';
+  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+  urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+  */  
+
   const location = useLocation();
   const navigate = useNavigate();
   const templateData = location.state?.template || {}; // Datos del template
@@ -2091,11 +2108,18 @@ const handlePantallas = (event) => {
                               </AccordionSummary>
                               <AccordionDetails>
                                 <Box component="form" sx={{ '& .MuiTextField-root': { mb: 2, width: '100%' } }}>
-                                  <FileUploadCarousel
+                                  {/*<FileUploadCarousel
                                     initialFile={card.fileData}  // <- Archivo actual de la API
                                     onUploadSuccess={(nuevosDatos) => {
                                       // Actualiza el estado reemplazando el archivo viejo
                                       handleFileUpload(card.id, nuevosDatos);
+                                    }}
+                                  />*/}
+                                  <FileUploadCarousel
+                                    carouselType={carouselType}
+                                    onUploadSuccess={(uploadData) => {
+
+                                      handleFileUpload(card.id, uploadData);
                                     }}
                                   />
 

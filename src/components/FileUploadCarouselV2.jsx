@@ -42,10 +42,6 @@ if (token) {
     urlTemplatesGS = decoded.urlTemplatesGS;
     urlWsFTP = decoded.urlWsFTP;
     //apiToken = decoded.apiToken;
-    
-    
-    
-    //
   } catch (error) {
     console.error('Error decodificando el token:', error);
   }
@@ -125,7 +121,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
     // Validar archivo
     const validationErrors = validateFile(file);
     if (validationErrors.length > 0) {
-      
       setUploadState('error');
       setErrorMessage(validationErrors.join(' '));
       return; // Esto ahora sí debería detener la ejecución
@@ -175,13 +170,10 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
       try {
         apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
-        
       } catch (error) {
-        console.error("Fallo al obtener token:", error);
         throw new Error('Error al obtener token de autenticación');
       }
 
-      
 
       const response = await axios.post(
         urlWsFTP,
@@ -194,7 +186,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
         }
       );
 
-      
 
       if (response.status !== 200 || !response.data) {
         throw new Error('Error en la respuesta del servicio');
@@ -216,7 +207,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
       return { mediaId, url: response.data.url };
 
     } catch (error) {
-      console.error('❌ Error en el proceso de subida:', error);
+
 
       // SweetAlert removido - el componente ya muestra el estado de error
 
