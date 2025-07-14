@@ -66,7 +66,7 @@ idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre
 empresaTalkMe = 2;
 idBotRedes = 721;
 idBot = 257;
-urlTemplatesGS = 'http://localhost:3004/api/';
+urlTemplatesGS = 'http://dev.talkme.pro/templatesGS/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 */

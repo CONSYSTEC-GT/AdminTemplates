@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Alert, Box, Button, Checkbox, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, FormHelperText, Grid, Grid2, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Radio, RadioGroup, Select, Snackbar, Stack, TextField, Tooltip, Typography, alpha } from '@mui/material';
+import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode';
 
 import { Smile } from "react-feather"; // Icono para emojis
@@ -56,6 +57,22 @@ const TemplateForm = () => {
       
     }
   }
+    /*
+
+let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+
+appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+empresaTalkMe = 2;
+idBotRedes = 721;
+idBot = 257;
+urlTemplatesGS = 'http://localhost:3004/api/';
+apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+*/
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -452,6 +469,19 @@ const TemplateForm = () => {
   };
 
   const iniciarRequest = async () => {
+    // Validar campos antes de enviar
+    const isValid = validateFields();
+    if (!isValid) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Campo incompletos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
+      return; // Detener si hay errores
+    }
+
     try {
       // Hacer el primer request a GupShup API
       const result = await editTemplateCatalogGupshup(
@@ -470,8 +500,14 @@ const TemplateForm = () => {
         idNombreUsuarioTalkMe,
         urlTemplatesGS,
         validateFields
-
       );
+      /*
+      const result = {
+        status: "success",
+        template: {
+          id: "d1235eab-405f-4f20-9727-a9e4bc840191" // Puedes poner cualquier ID de prueba aquí
+        }
+      };*/
 
       // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
@@ -490,18 +526,42 @@ const TemplateForm = () => {
           idNombreUsuarioTalkMe || "Sistema.TalkMe",
           variables,
           variableDescriptions,
+          [],
           urlTemplatesGS
         );
 
         // El tercer request se maneja dentro de saveTemplateToTalkMe
+        if (result2) {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La plantilla se actualizó correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+
+          navigate('/Dashboard');
+        }
       } else {
-        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
-        console.error("Resultado del primer request:", result);
+        Swal.fire({
+        title: 'Error',
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
       }
     } catch (error) {
-      console.error("Ocurrió un error:", error);
+      console.log("Ocurrió un error:", error);
+      Swal.fire({
+        title: 'Error',
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
     }
-  };
+};
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {

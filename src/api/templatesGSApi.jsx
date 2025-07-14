@@ -271,12 +271,12 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   }
 };
 
-export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = []) => {
+export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
 
   // URL para actualizar plantilla por ID_INTERNO
   //const url = `https://certificacion.talkme.pro/templatesGS/api/plantillas/${idTemplate}`;
-  const url = urlTemplatesGS + 'plantillas/${idTemplate}';
+  const url = `${urlTemplatesGS}plantillas/${idTemplate}`;
   const headers = {
     "Content-Type": "application/json",
   };
