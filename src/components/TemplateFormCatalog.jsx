@@ -144,11 +144,11 @@ const TemplateForm = () => {
     let isValid = true;
     let firstErrorFieldRef = null;
 
-    console.log("Iniciando validación de campos...");
+    
 
     // Validación de templateName
     if (!templateName || templateName.trim() === "") {
-      console.log("Error: templateName está vacío o no es válido.");
+      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
@@ -159,7 +159,7 @@ const TemplateForm = () => {
 
     // Validación de templateType
     if (!templateType || templateType.trim() === "") {
-      console.log("Error: templateType está vacío o no es válido.");
+      
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -169,20 +169,20 @@ const TemplateForm = () => {
     }
 
     if (displayPantallas.length === 0) {
-      console.log("Error: No se seleccionaron pantallas.");
+      
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-      console.log("Pantallas seleccionadas correctamente.");
+      
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
     // Validación de languageCode
     if (!languageCode || languageCode.trim() === "") {
-      console.log("Error: languageCode está vacío o no es válido.");
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -193,7 +193,7 @@ const TemplateForm = () => {
 
     // Validación de vertical
     if (!vertical || vertical.trim() === "") {
-      console.log("Error: vertical está vacío o no es válido.");
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current && !firstErrorFieldRef) {
@@ -203,7 +203,7 @@ const TemplateForm = () => {
 
     // Validación de message
     if (!message || message.trim() === "") {
-      console.log("Error: message está vacío o no es válido.");
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -214,7 +214,7 @@ const TemplateForm = () => {
 
     // Validación de example
     if (!example || example.trim() === "") {
-      console.log("Error: example está vacío o no es válido.");
+      
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -225,7 +225,7 @@ const TemplateForm = () => {
 
     // Validación de selectedCategory
     if (!selectedCategory || selectedCategory.trim() === "") {
-      console.log("Error: selectedCategory está vacío o no es válido.");
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -237,14 +237,14 @@ const TemplateForm = () => {
     // Validación de variables
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      console.log("Validando variables...");
+      
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
+          
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -253,7 +253,7 @@ const TemplateForm = () => {
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -265,7 +265,7 @@ const TemplateForm = () => {
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -279,7 +279,7 @@ const TemplateForm = () => {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        console.log("No se encontraron descripciones duplicadas.");
+        
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -289,7 +289,7 @@ const TemplateForm = () => {
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -305,11 +305,11 @@ const TemplateForm = () => {
 
     // Enfocar el primer campo con error encontrado
     if (!isValid && firstErrorFieldRef && firstErrorFieldRef.current) {
-      console.log("Enfocando el primer campo con error:", firstErrorFieldRef);
+      
       firstErrorFieldRef.current.focus();
     }
 
-    console.log("Validación completada. isValid:", isValid);
+    
     return isValid;
   };
 
@@ -347,11 +347,11 @@ const TemplateForm = () => {
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS
-      console.log('appId:', appId);
-      console.log('authCode:', authCode);
-      console.log('idUsuarioTalkMe:', idUsuarioTalkMe);
-      console.log('idNombreUsuarioTalkMe:', idNombreUsuarioTalkMe);
-      console.log('empresaTalkMe:', empresaTalkMe);
+      
+      
+      
+      
+      
 
     } catch (error) {
       console.error('Error decodificando el token:', error);
@@ -469,7 +469,7 @@ const TemplateForm = () => {
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-    console.log('Media subida exitosamente, ID:', uploadedMediaId);
+    
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -629,7 +629,7 @@ const TemplateForm = () => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      console.log('Archivo seleccionado:', selectedFile);
+      
     }
   };
 
@@ -637,7 +637,7 @@ const TemplateForm = () => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    console.log("Nuevo valor de header:", event.target.value);
+    
   };
 
   //FOOTER PLANTILLA
@@ -934,7 +934,7 @@ useClickOutside(
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      console.log("Ejemplo actualizado:", updatedExamples);
+      
       return updatedExamples;
     });
   };
@@ -964,7 +964,7 @@ useClickOutside(
     // Remover las llaves de la clave para crear el regex correcto
     const cleanVariable = variable.replace(/[{}]/g, '');
     const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-    console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
+    
     result = result.replace(regex, variables[variable]);
   });
   
@@ -1034,12 +1034,12 @@ useClickOutside(
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-    console.log("Mensaje original:", message);
-    console.log("Variables y ejemplos:", variableExamples);
+    
+    
 
     const newExample = replaceVariables(message, variableExamples);
 
-    console.log("Mensaje después de reemplazo:", newExample);
+    
 
     setExample(newExample);
   }, [message, variableExamples]);

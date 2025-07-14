@@ -5,7 +5,7 @@ export const saveTemplateLog = async (logData) => {
     const { urlTemplatesGS, ...rest } = logData;
 
     const url = urlTemplatesGS + 'logs';
-    console.log("LOG URL: ", url)
+    
 
     const headers = {
       "Content-Type": "application/json",
@@ -24,7 +24,7 @@ export const saveTemplateLog = async (logData) => {
     }
 
     const result = await response.json();
-    console.log("Log guardado exitosamente:", result);
+    
     return result;
   } catch (error) {
     console.error("Error en la solicitud de log:", error);

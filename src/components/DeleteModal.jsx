@@ -131,7 +131,7 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
         return { status: "error" }; // Devuelve un estado de error
       }
     } catch (error) {
-      console.log('Error en la solicitud:', error);
+      
       return { status: "error" }; // Devuelve un estado de error
     }
   };
@@ -156,7 +156,7 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
       }
 
       const result = await response.json();
-      console.log("Response del segundo request: ", result);
+      
       return result;
     } catch (error) {
       console.error("Error en el segundo request:", error);

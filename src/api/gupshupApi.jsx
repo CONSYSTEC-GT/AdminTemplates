@@ -55,7 +55,7 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
   data.append("enableSample", true);
   data.append("allowTemplateCategoryChange", false);
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+  
 
   try {
     const response = await fetch(url, {
@@ -64,8 +64,8 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
       body: data,
     });
 
-    console.log("Status code:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    
+    
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -152,7 +152,7 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
       confirmButtonColor: '#00c3ff'
     });
 
-    console.log("Response: ", result);
+    
     return result;
   } catch (error) {
     console.error("Error en la solicitud:", error);
@@ -231,7 +231,7 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
   data.append("allowTemplateCategoryChange", "false");
 
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+  
 
 
   try {
@@ -241,8 +241,8 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
       body: data,
     });
 
-    console.log("Status code:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    
+    
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -260,7 +260,7 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
 
     const result = await response.json();
     showSnackbar("✅ Plantilla editada exitosamente", "success");
-    console.log("Response: ", result);
+    
     return result; // Retornar el resultado
   } catch (error) {
     console.error("Error en la solicitud:", error);
@@ -308,7 +308,7 @@ export const createTemplateCatalogGupshup = async (appId, authCode, templateData
   data.append("enableSample", true);
   data.append("allowTemplateCategoryChange", false);
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+  
 
   try {
     const response = await fetch(url, {
@@ -317,8 +317,8 @@ export const createTemplateCatalogGupshup = async (appId, authCode, templateData
       body: data,
     });
 
-    console.log("Status code:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    
+    
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -392,7 +392,7 @@ export const createTemplateCatalogGupshup = async (appId, authCode, templateData
       });
 
     showSnackbar("✅ Plantilla creada exitosamente", "success");
-    console.log("Response: ", result);
+    
     return result; // Retornar el resultado
   } catch (error) {
     console.error("Error en la solicitud:", error);
@@ -466,7 +466,7 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
   data.append("allowTemplateCategoryChange", "false");
 
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+  
 
 
   try {
@@ -476,8 +476,8 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
       body: data,
     });
 
-    console.log("Status code:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    
+    
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -554,7 +554,7 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
 
 
     showSnackbar("✅ Plantilla editada exitosamente", "success");
-    console.log("Response: ", result);
+    
     return result; // Retornar el resultado
   } catch (error) {
     console.error("Error en la solicitud:", error);
@@ -629,7 +629,7 @@ export const createTemplateCarouselGupshup = async (appId, authCode, templateDat
   data.append("allowTemplateCategoryChange", false);
   data.append("cards", carousel)
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+  
 
   try {
     const response = await fetch(url, {
@@ -638,8 +638,8 @@ export const createTemplateCarouselGupshup = async (appId, authCode, templateDat
       body: data,
     });
 
-    console.log("Status code:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    
+    
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -717,7 +717,7 @@ export const createTemplateCarouselGupshup = async (appId, authCode, templateDat
 
 
     showSnackbar("✅ Plantilla creada exitosamente", "success");
-    console.log("Response: ", result);
+    
     return result; // Retornar el resultado
   } catch (error) {
     console.error("Error en la solicitud:", error);
@@ -794,7 +794,7 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
   data.append("cards", carousel);
 
 
-  console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+  
 
 
   try {
@@ -804,8 +804,8 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
       body: data,
     });
 
-    console.log("Status code:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    
+    
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -823,7 +823,7 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
 
     const result = await response.json();
     showSnackbar("✅ Plantilla editada exitosamente", "success");
-    console.log("Response: ", result);
+    
     return result; // Retornar el resultado
   } catch (error) {
     console.error("Error en la solicitud:", error);

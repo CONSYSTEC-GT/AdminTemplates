@@ -203,11 +203,11 @@ const TemplateFormCarousel = () => {
     let isValid = true;
     let firstErrorFieldRef = null;
   
-    console.log("Iniciando validación de campos...");
+    
   
     // Validación de templateName
     if (!templateName || templateName.trim() === "") {
-      console.log("Error: templateName está vacío o no es válido.");
+      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
@@ -218,7 +218,7 @@ const TemplateFormCarousel = () => {
   
     // Validación de templateType
     if (!templateType || templateType.trim() === "") {
-      console.log("Error: templateType está vacío o no es válido.");
+      
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -228,20 +228,20 @@ const TemplateFormCarousel = () => {
     }
 
     if (displayPantallas.length === 0) {
-      console.log("Error: No se seleccionaron pantallas.");
+      
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-      console.log("Pantallas seleccionadas correctamente.");
+      
       setPantallasError(false);
       setPantallasHelperText("");
     }
   
     // Validación de languageCode
     if (!languageCode || languageCode.trim() === "") {
-      console.log("Error: languageCode está vacío o no es válido.");
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -252,7 +252,7 @@ const TemplateFormCarousel = () => {
   
     // Validación de vertical
     if (!vertical || vertical.trim() === "") {
-      console.log("Error: vertical está vacío o no es válido.");
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current && !firstErrorFieldRef) {
@@ -262,7 +262,7 @@ const TemplateFormCarousel = () => {
   
     // Validación de message
     if (!message || message.trim() === "") {
-      console.log("Error: message está vacío o no es válido.");
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -273,7 +273,7 @@ const TemplateFormCarousel = () => {
   
     // Validación de example
     if (!example || example.trim() === "") {
-      console.log("Error: example está vacío o no es válido.");
+      
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -284,7 +284,7 @@ const TemplateFormCarousel = () => {
   
     // Validación de selectedCategory
     if (!selectedCategory || selectedCategory.trim() === "") {
-      console.log("Error: selectedCategory está vacío o no es válido.");
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -295,14 +295,14 @@ const TemplateFormCarousel = () => {
   
     // Validación de variables
     if (variables.length > 0) {
-      console.log("Validando variables...");
+      
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
+          
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -311,7 +311,7 @@ const TemplateFormCarousel = () => {
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -323,7 +323,7 @@ const TemplateFormCarousel = () => {
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -337,7 +337,7 @@ const TemplateFormCarousel = () => {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        console.log("No se encontraron descripciones duplicadas.");
+        
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -347,7 +347,7 @@ const TemplateFormCarousel = () => {
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -363,7 +363,7 @@ const TemplateFormCarousel = () => {
 
     // Validación de selectedCategory
     if (!cantidadBotones || cantidadBotones.trim() === "") {
-      console.log("Error: cantidadBotones está vacío o no es válido.");
+      
       setcantidadBotonesError(true);
       isValid = false;
       if (cantidadBotonesRefs.current && !firstErrorFieldRef) {
@@ -373,11 +373,11 @@ const TemplateFormCarousel = () => {
   
     // Enfocar el primer campo con error encontrado
     if (!isValid && firstErrorFieldRef && firstErrorFieldRef.current) {
-      console.log("Enfocando el primer campo con error:", firstErrorFieldRef);
+      
       firstErrorFieldRef.current.focus();
     }
   
-    console.log("Validación completada. isValid:", isValid);
+    
     return isValid;
   };
 
@@ -416,12 +416,12 @@ const TemplateFormCarousel = () => {
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
       apiToken = decoded.apiToken;
-      console.log('apiToken', apiToken);
-      //console.log('appId:', appId);
-      //console.log('authCode:', authCode);
-      //console.log('idUsuarioTalkMe:', idUsuarioTalkMe);
-      //console.log('idNombreUsuarioTalkMe:', idNombreUsuarioTalkMe);
-      //console.log('empresaTalkMe:', empresaTalkMe);
+      
+      //
+      //
+      //
+      //
+      //
 
     } catch (error) {
       console.error('Error decodificando el token:', error);
@@ -448,7 +448,7 @@ const TemplateFormCarousel = () => {
     try {
 
       // Hacer debug de las cards antes de formatear
-      console.log("Cards antes de formatear:", JSON.stringify(cards));
+      
       // Primero verifica que cards esté definido
       if (!cards || cards.length === 0) {
         console.error("No hay tarjetas disponibles");
@@ -456,7 +456,7 @@ const TemplateFormCarousel = () => {
       }
       
       // Ahora sí puedes hacer log de formattedCards
-      //console.log("Cards formateadas:", formattedCards);
+      //
       // Asegúrate de que todas las cards tengan los datos necesarios
 
       // format de cards
@@ -748,7 +748,7 @@ const TemplateFormCarousel = () => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      console.log('Archivo seleccionado:', selectedFile);
+      
     }
   };
 
@@ -756,7 +756,7 @@ const TemplateFormCarousel = () => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    console.log("Nuevo valor de header:", event.target.value);
+    
   };
 
   //FOOTER PLANTILLA
@@ -1360,7 +1360,7 @@ useClickOutside(
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      console.log("Ejemplo actualizado:", updatedExamples);
+      
       return updatedExamples;
     });
   };
@@ -1422,7 +1422,7 @@ const replaceVariables = (text, variables) => {
     // Remover las llaves de la clave para crear el regex correcto
     const cleanVariable = variable.replace(/[{}]/g, '');
     const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-    console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
+    
     result = result.replace(regex, variables[variable]);
   });
   
@@ -1454,12 +1454,12 @@ const replaceVariables = (text, variables) => {
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-    console.log("Mensaje original:", message);
-    console.log("Variables y ejemplos:", variableExamples);
+    
+    
 
     const newExample = replaceVariables(message, variableExamples);
 
-    console.log("Mensaje después de reemplazo:", newExample);
+    
 
     setExample(newExample);
   }, [message, variableExamples]);
@@ -1492,7 +1492,7 @@ const replaceVariables = (text, variables) => {
   // Inicializar botones basado en la cantidad seleccionada
   // Efecto para inicializar botones
   useEffect(() => {
-    console.log("Inicializando tarjetas con botones...");
+    
     const count = parseInt(cantidadBotones, 10);
   
     setCards(prevCards => {
@@ -1521,7 +1521,7 @@ const replaceVariables = (text, variables) => {
           });
         }
         
-        console.log("Botones inicializados para tarjeta:", newButtons);
+        
         return {
           ...card,
           buttons: newButtons
@@ -1533,7 +1533,7 @@ const replaceVariables = (text, variables) => {
 
 // Validación mejorada para URLs
 const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, setValidationErrors) => {
-  console.log(`Actualizando botón ${buttonId} en tarjeta ${cardId}, campo ${field} con valor: ${value}`);
+  
   
   // Actualiza la tarjeta y sus botones
   setCards(prevCards => {
@@ -1546,7 +1546,7 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
         button.id === buttonId ? { ...button, [field]: value } : button
       );
       
-      console.log("Botones actualizados para tarjeta:", updatedButtons);
+      
       return {
         ...card,
         buttons: updatedButtons
@@ -1617,8 +1617,8 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
         mediaUrl = card.fileData.url;
       }
 
-      console.log(`Tarjeta ${card.id} - mediaUrl:`, mediaUrl);
-      console.log(`Tarjeta ${card.id} - body:`, card.messageCard || "");
+      
+      
 
       // Crear el formato requerido por Gupshup
       return {
@@ -1635,7 +1635,7 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
 
   // Uso de la función
   //const formattedCardsForGupshup = formatCardsForGupshup(cards);
-  //console.log("Formato para Gupshup:", JSON.stringify(formattedCardsForGupshup, null, 2));
+  //
 
 
   // Estado para los acordeones - solo guardamos el ID único y el contenido del formulario
@@ -1763,14 +1763,14 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
 
   // Estado principal que contiene todas las tarjetas
   const [cards, setCards] = useState([initialCardState]);
-  console.log("Cards data:", cards);
+  
   const currentCardId = cards[0].id;
 
 
 
   // Función para manejar la subida de archivos para una card específica
   const handleFileUpload = (cardId, uploadResponse) => {
-    console.log("Respuesta completa de subida recibida:", uploadResponse);
+    
 
     if (uploadResponse) {
       // Estructura esperada del uploadResponse después de las modificaciones
@@ -1779,7 +1779,7 @@ const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, se
         mediaId: uploadResponse.mediaId || null
       };
 
-      console.log("Datos de archivo a guardar:", fileData);
+      
 
       setCards(prevCards => prevCards.map(card => {
         if (card.id === cardId) {
@@ -2397,7 +2397,7 @@ const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
                                   <FileUploadCarousel
                                     carouselType={carouselType}
                                     onUploadSuccess={(uploadData) => {
-                                      console.log('Datos recibidos del componente hijo:', uploadData);
+                                      
                                       handleFileUpload(card.id, uploadData);
                                     }}
                                   />
@@ -2620,7 +2620,7 @@ const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
                                           label="URL"
                                           value={button.url || ''}
                                           onChange={(e) => {
-                                            console.log("Evento onChange - Valor ingresado:", e.target.value);
+                                            
                                             // Asumiendo que tiene acceso al cardId actual
                                             updateButtonWithValidation(
                                               card.id,           // ID de la tarjeta actual

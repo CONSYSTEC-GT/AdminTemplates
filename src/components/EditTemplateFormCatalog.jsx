@@ -53,7 +53,7 @@ const TemplateForm = () => {
       urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
-      console.log('urlWsFTP', urlWsFTP);
+      
     }
   }
 
@@ -172,7 +172,7 @@ const TemplateForm = () => {
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
         if (info === null) {
-          console.log("info es null", info);
+          
         } else {
           const pantallasFromAPI = info.pantallas || "";
           setPantallas(pantallasFromAPI);
@@ -185,7 +185,7 @@ const TemplateForm = () => {
           setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
         }
       } catch (error) {
-        console.log("Error: ", error);
+        
       }
     };
 
@@ -200,7 +200,7 @@ const TemplateForm = () => {
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
         if (infoParametros === null || infoParametros.length === 0) {
-          console.log("infoParametros es null o vacío", infoParametros);
+          
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -219,12 +219,12 @@ const TemplateForm = () => {
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-          console.log("VARIABLES FORMATEADAS", variablesFormateadas);
-          console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
-          console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+          
+          
+          
         }
       } catch (error) {
-        console.log("Error: ", error);
+        
       }
     };
 
@@ -266,102 +266,102 @@ const TemplateForm = () => {
   const validateFields = () => {
     let isValid = true;
 
-    console.log("Iniciando validación de campos...");
+    
 
     if (!templateName || templateName.trim() === "") {
-      console.log("Error: templateName está vacío o no es válido.");
+      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      console.log("Estado de isValid después de validar templateName:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("templateName es válido.");
+      
     }
 
     if (!templateType || templateType.trim() === "") {
-      console.log("Error: templateType está vacío o no es válido.");
+      
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
-      console.log("Estado de isValid después de validar templateType:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("templateType es válido.");
+      
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      console.log("Error: languageCode está vacío o no es válido.");
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      console.log("Estado de isValid después de validar languageCode:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("languageCode es válido.");
+      
     }
 
     if (!vertical || vertical.trim() === "") {
-      console.log("Error: vertical está vacío o no es válido.");
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      console.log("Estado de isValid después de validar vertical:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("vertical es válido.");
+      
     }
 
     if (!message || message.trim() === "") {
-      console.log("Error: message está vacío o no es válido.");
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      console.log("Estado de isValid después de validar message:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("message es válido.");
+      
     }
 
     if (!example || example.trim() === "") {
-      console.log("Error: example está vacío o no es válido.");
+      
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (exampleRef.current) exampleRef.current.focus();
-      console.log("Estado de isValid después de validar example:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("example es válido.");
+      
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      console.log("Error: selectedCategory está vacío o no es válido.");
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      console.log("Estado de isValid después de validar selectedCategory:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("selectedCategory es válido.");
+      
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      console.log("Validando variables...");
+      
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
+          
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -370,7 +370,7 @@ const TemplateForm = () => {
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -382,7 +382,7 @@ const TemplateForm = () => {
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -396,7 +396,7 @@ const TemplateForm = () => {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        console.log("No se encontraron descripciones duplicadas.");
+        
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -406,7 +406,7 @@ const TemplateForm = () => {
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -422,15 +422,15 @@ const TemplateForm = () => {
 
       // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-        console.log("Errores encontrados en las variables. isValid:", isValid);
+        
       } else {
-        console.log("Todas las variables son válidas.");
+        
       }
     } else {
-      console.log("No hay variables para validar.");
+      
     }
 
-    console.log("Validación completada. isValid:", isValid);
+    
     return isValid; // Retornar el valor final de isValid
   };
 
@@ -505,7 +505,7 @@ const TemplateForm = () => {
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-    console.log('Media subida exitosamente, ID:', uploadedMediaId);
+    
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -662,7 +662,7 @@ const TemplateForm = () => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      console.log('Archivo seleccionado:', selectedFile);
+      
     }
   };
 
@@ -670,7 +670,7 @@ const TemplateForm = () => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    console.log("Nuevo valor de header:", event.target.value);
+    
   };
 
   //FOOTER PLANTILLA
@@ -768,7 +768,7 @@ const TemplateForm = () => {
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      console.log("Ejemplo actualizado:", updatedExamples);
+      
       return updatedExamples;
     });
   };
@@ -793,15 +793,15 @@ const TemplateForm = () => {
   // Función para reemplazar las variables en el mensaje con sus ejemplos
   const replaceVariables = (text, variables) => {
     let result = text;
-    console.log("Texto antes de reemplazar:", text);
+    
 
     Object.keys(variables).forEach(variable => {
       const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
-      console.log(`Reemplazando: {{${variable}}} por ${variables[variable]}`);
+      
       result = result.replace(regex, variables[variable]);
     });
 
-    console.log("Texto después de reemplazar:", result);
+    
     return result;
   };
 
@@ -875,12 +875,12 @@ const TemplateForm = () => {
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-    console.log("Mensaje original:", message);
-    console.log("Variables y ejemplos:", variableExamples);
+    
+    
 
     const newExample = replaceVariables(message, variableExamples);
 
-    console.log("Mensaje después de reemplazo:", newExample);
+    
 
     setExample(newExample);
   }, [message, variableExamples]);

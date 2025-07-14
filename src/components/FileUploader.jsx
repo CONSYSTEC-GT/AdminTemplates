@@ -55,7 +55,7 @@ const FileUploader = ({
         }
 
         try {
-            console.log('Iniciando proceso de subida de archivo...');
+            
             setUploadStatus('uploading');
             setUploadProgress(10);
 
@@ -100,7 +100,7 @@ const FileUploader = ({
             }
 
             const ownServiceData = await ownServiceResponse.json();
-            console.log('Datos del servicio propio:', ownServiceData);
+            
 
             // Notificar al componente padre con la URL
             if (onUploadSuccess) {
@@ -109,7 +109,7 @@ const FileUploader = ({
 
             setUploadProgress(100);
             setUploadStatus('success');
-            console.log('Proceso de subida completado exitosamente.');
+            
         } catch (error) {
             console.error('Error en el proceso de subida:', error);
 
@@ -125,7 +125,7 @@ const FileUploader = ({
             video: '.mp4, .3gp',
             document: '.pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt'
         };
-        //console.log('Tipos de archivo aceptados:', types[mediaType] || '');
+        //
         return types[mediaType] || '';
     };
 

@@ -51,7 +51,7 @@ const EditTemplateForm = () => {
       urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
-      console.log('urlWsFTP', urlWsFTP);
+      
     }
   }
   /*
@@ -194,7 +194,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
         if (info === null) {
-          console.log("info es null", info);
+          
         } else {
           const pantallasFromAPI = info.pantallas || "";
           setPantallas(pantallasFromAPI);
@@ -207,7 +207,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
         }
       } catch (error) {
-        console.log("Error: ", error);
+        
       }
     };
 
@@ -222,7 +222,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
         if (infoParametros === null || infoParametros.length === 0) {
-          console.log("infoParametros es null o vacío", infoParametros);
+          
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -241,12 +241,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-          console.log("VARIABLES FORMATEADAS", variablesFormateadas);
-          console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
-          console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+          
+          
+          
         }
       } catch (error) {
-        console.log("Error: ", error);
+        
       }
     };
 
@@ -270,101 +270,101 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const validateFields = () => {
     let isValid = true;
 
-    console.log("Iniciando validación de campos...");
+    
 
     if (!templateName || templateName.trim() === "") {
-      console.log("Error: templateName está vacío o no es válido.");
+      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      console.log("Estado de isValid después de validar templateName:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("templateName es válido.");
+      
     }
 
     if (!templateType || templateType.trim() === "") {
-      console.log("Error: templateType está vacío o no es válido.");
+      
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
-      console.log("Estado de isValid después de validar templateType:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("templateType es válido.");
+      
     }
 
     if (displayPantallas.length === 0) {
-      console.log("Error: No se seleccionaron pantallas.");
+      
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-      console.log("Pantallas seleccionadas correctamente.");
+      
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      console.log("Error: languageCode está vacío o no es válido.");
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      console.log("Estado de isValid después de validar languageCode:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("languageCode es válido.");
+      
     }
 
     if (!vertical || vertical.trim() === "") {
-      console.log("Error: vertical está vacío o no es válido.");
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      console.log("Estado de isValid después de validar vertical:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("vertical es válido.");
+      
     }
 
     if (!message || message.trim() === "") {
-      console.log("Error: message está vacío o no es válido.");
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      console.log("Estado de isValid después de validar message:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("message es válido.");
+      
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      console.log("Error: selectedCategory está vacío o no es válido.");
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      console.log("Estado de isValid después de validar selectedCategory:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("selectedCategory es válido.");
+      
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      console.log("Validando variables...");
+      
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
+          
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -373,7 +373,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -385,7 +385,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        console.log(`Error: Se encontraron ${duplicateVariables.size} variables con descripciones duplicadas.`);
+        
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -399,7 +399,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        console.log("No se encontraron descripciones duplicadas.");
+        
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -409,7 +409,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          console.log(`Error: La variable ${variable} no tiene descripción.`);
+          
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -425,15 +425,15 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
       // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-        console.log("Errores encontrados en las variables. isValid:", isValid);
+        
       } else {
-        console.log("Todas las variables son válidas.");
+        
       }
     } else {
-      console.log("No hay variables para validar.");
+      
     }
 
-    console.log("Validación completada. isValid:", isValid);
+    
     return isValid; // Retornar el valor final de isValid
   };
 
@@ -563,7 +563,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     data.append("enableSample", true);
     data.append("allowTemplateCategoryChange", false);
 
-    console.log("Request enviado:", JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+    
 
     try {
       const response = await fetch(url, {
@@ -626,9 +626,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         REJECTION_REASON: null
       });
 
-      console.log("Response: ", responseData);
-      console.log("Plantilla:", templateId);
-      console.log("URL:", url);
+      
+      
+      
 
       return {
         status: "success",
@@ -700,9 +700,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       carousel: "image"
     };
 
-    console.log("templateType: ", templateType);
+    
     const MEDIA = mediaMap[templateType] || null;
-    console.log("MEDIA: ", MEDIA);
+    
 
     const mensajeProcesado = reordenarVariables(message);
     const nombreProcesado = templateName.replace(/_/g, " ");
@@ -741,7 +741,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       }
 
       const result = await response.json();
-      console.log("Response del segundo request: ", result);
+      
 
       // Moví esta condición después de obtener el resultado y antes del return
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
@@ -791,7 +791,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-    console.log('Media subida exitosamente, ID:', uploadedMediaId);
+    
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -942,7 +942,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      console.log('Archivo seleccionado:', selectedFile);
+      
     }
   };
 
@@ -1271,7 +1271,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      console.log("Ejemplo actualizado:", updatedExamples);
+      
       return updatedExamples;
     });
   };
@@ -1291,7 +1291,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       // Remover las llaves de la clave para crear el regex correcto
       const cleanVariable = variable.replace(/[{}]/g, '');
       const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-      console.log(`Reemplazando: {{${cleanVariable}}} por ${variables[variable]}`);
+      
       result = result.replace(regex, variables[variable]);
     });
 
@@ -1582,9 +1582,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
               onUploadSuccess={(uploadData) => {
                 setMediaId(uploadData.mediaId);
                 setUploadedUrl(uploadData.url);
-                console.log("UploadData: ", uploadData)
-                console.log('Datos recibidos del componente hijo mediaId: ', uploadData.mediaId);
-                console.log('Datos recibidos del componente hijo uploadedUrl: ', uploadData.url);
+                
+                
+                
               }}
               onImagePreview={(preview) => setImagePreview(preview)}
               onHeaderChange={(newHeader) => setHeader(newHeader)}

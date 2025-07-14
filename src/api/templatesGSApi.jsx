@@ -5,7 +5,7 @@ import { getMediaType } from '../utils/validarUrl';
 const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS) => {
   const tipoDatoId = 1;
   const url = urlTemplatesGS + 'parametros'
-  console.log(url);
+  
 
   try {
     const results = [];
@@ -37,7 +37,7 @@ const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions,
       results.push(result);
     }
 
-    console.log('Variables guardadas:', results);
+    
     showSnackbar("✅ Variables guardadas exitosamente", "success");
     return results;
   } catch (error) {
@@ -66,7 +66,7 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
     }
 
     const result = await response.json();
-    console.log(`✅ ${result.count} parámetros eliminados de la plantilla ${ID_PLANTILLA}`);
+    
     showSnackbar("🗑️ Parámetros eliminados correctamente", "success");
     return result;
   } catch (error) {
@@ -77,7 +77,7 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
 };
 
 const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTalkMe, urlTemplatesGS) => {
-  console.log("Entrando a saveCardsTemplate con:", cards.length, "tarjetas");
+  
   const url = urlTemplatesGS + 'tarjetas/';
   const headers = {
     "Content-Type": "application/json",
@@ -108,7 +108,7 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
       CREADO_POR: idNombreUsuarioTalkMe,
     };
 
-    console.log("Enviando tarjeta:", data);
+    
 
     try {
       const response = await fetch(url, {
@@ -125,7 +125,7 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
       }
 
       const result = await response.json();
-      console.log("Tarjeta guardada exitosamente:", result);
+      
       showSnackbar("✅ Tarjeta guardada correctamente", "success");
     } catch (error) {
       console.error("Error en la petición de tarjeta:", error);
@@ -169,7 +169,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     TIPO_PLANTILLA = 0;
   }
 
-  console.log("TEMPLATE TYPE:", templateType);
+  
 
   const mediaMap = {
     image: "image",
@@ -239,7 +239,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#00c3ff'
     });
-    console.log("Response del segundo request: ", result);
+    
 
     // Si tenemos variables, hacer el tercer request
     if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
@@ -357,7 +357,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
 
     const result = await response.json();
     showSnackbar("✅ Plantilla actualizada exitosamente", "success");
-    console.log("Response de la edición: ", result);
+    
 
     // Para actualizar los parámetros y tarjetas, necesitamos el ID_PLANTILLA
     // que viene en la respuesta del servidor
@@ -374,8 +374,8 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
       }
     }
 
-    console.log("Número de tarjetas a guardar:", cards.length);
-    console.log("Contenido de cards:", cards);
+    
+    
     if (talkmeId && cards && cards.length > 0) {
       try {
         // 1. Eliminar todas las tarjetas existentes de una sola vez
@@ -385,8 +385,8 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
             "Content-Type": "application/json",
           }
         });
-        console.log("Número de tarjetas ELIMINADAS:", cards.length);
-        console.log("Contenido de cards:", cards);
+        
+        
 
 
         // Solo lanzamos error si la respuesta no es exitosa Y no es un 404 (no encontrado)
@@ -396,7 +396,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
 
         // 2. Agregar las nuevas tarjetas
         for (const card of cards) {
-          console.log("Guardando tarjeta:", card);
+          
           await saveCardsTemplate({
             ID_PLANTILLA: talkmeId,
             cards: [card]  // <- Esta es la clave
@@ -446,7 +446,7 @@ export const obtenerApiToken = async (urlTemplatesGS, idEmpresa) => {
 
 export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
   const url = `${urlTemplatesGS}plantillas/${id_interno}/pantallas-media`;
-  console.log("url del endpoint obtenerPantallasMedia: ", url);
+  
 
   try{
     const response = await fetch(url, {
@@ -472,7 +472,7 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
 
 export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
-  console.log("url del endpoint obtenerParametros: ", url);
+  
 
   try{
     const response = await fetch(url, {
@@ -497,7 +497,7 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
 
 export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
-  console.log("url del endpoint eliminarParametrosPlantilla: ", url);
+  
 
   try {
     const response = await fetch(url, {

@@ -67,7 +67,7 @@ const EditTemplateFormCarousel = () => {
         urlWsFTP = decoded.urlWsFTP;
       } catch (error) {
         console.error('Error decodificando el token:', error);
-        console.log('urlWsFTP', urlWsFTP);
+        
       }
     }
 
@@ -199,20 +199,20 @@ useEffect(() => {
       if (templateData.containerMeta) {
         try {
           const meta = JSON.parse(templateData.containerMeta);
-          console.log("Meta parsed:", meta);
+          
           setMessage(meta.data || "");
           setExample(meta.sampleText || "");
 
           // Detectar el tipo de carrusel basado en la primera tarjeta
           if (meta.cards && meta.cards.length > 0) {
-            console.log("Cards:", meta.cards);
+            
             setCarouselType(meta.cards[0].headerType);
             
             // Detectar cantidad de botones y su tipo basado en la primera tarjeta
             if (meta.cards[0].buttons && meta.cards[0].buttons.length > 0) {
               setCantidadBotones(String(meta.cards[0].buttons.length));
-              console.log("Cantidad de botones:", meta.cards[0].buttons.length);
-              console.log("Tipo de dato:", typeof Number(meta.cards[0].buttons.length));
+              
+              
 
               setTipoBoton(meta.cards[0].buttons[0].type || "QUICK_REPLY");
             }
@@ -252,7 +252,7 @@ useEffect(() => {
     try {
       const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
       if (info === null) {
-        console.log("info es null", info);
+        
       } else {
         const pantallasFromAPI = info.pantallas || "";
         setPantallas(pantallasFromAPI);
@@ -265,7 +265,7 @@ useEffect(() => {
         setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
       }
     } catch (error) {
-      console.log("Error: ", error);
+      
     }
   };
 
@@ -280,7 +280,7 @@ useEffect(() => {
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
         if (infoParametros === null || infoParametros.length === 0) {
-          console.log("infoParametros es null o vacío", infoParametros);
+          
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -299,12 +299,12 @@ useEffect(() => {
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-          console.log("VARIABLES FORMATEADAS", variablesFormateadas);
-          console.log("DESCRIPCIONES INICIALES", descripcionesIniciales);
-          console.log("EJEMPLOS INICIALES", ejemplosIniciales);
+          
+          
+          
         }
       } catch (error) {
-        console.log("Error: ", error);
+        
       }
     };
 
@@ -347,99 +347,99 @@ useEffect(() => {
   const validateFields = () => {
     let isValid = true;
 
-    console.log("Iniciando validación de campos...");
+    
 
     if (!templateName || templateName.trim() === "") {
-      console.log("Error: templateName está vacío o no es válido.");
+      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      console.log("Estado de isValid después de validar templateName:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("templateName es válido.");
+      
     }
 
     if (!templateType || templateType.trim() === "") {
-      console.log("Error: templateType está vacío o no es válido.");
+      
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
-      console.log("Estado de isValid después de validar templateType:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("templateType es válido.");
+      
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      console.log("Error: languageCode está vacío o no es válido.");
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      console.log("Estado de isValid después de validar languageCode:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("languageCode es válido.");
+      
     }
 
     if (!vertical || vertical.trim() === "") {
-      console.log("Error: vertical está vacío o no es válido.");
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      console.log("Estado de isValid después de validar vertical:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("vertical es válido.");
+      
     }
 
     if (!message || message.trim() === "") {
-      console.log("Error: message está vacío o no es válido.");
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      console.log("Estado de isValid después de validar message:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("message es válido.");
+      
     }
 
     if (!example || example.trim() === "") {
-      console.log("Error: example está vacío o no es válido.");
+      
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (exampleRef.current) exampleRef.current.focus();
-      console.log("Estado de isValid después de validar example:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("example es válido.");
+      
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      console.log("Error: selectedCategory está vacío o no es válido.");
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      console.log("Estado de isValid después de validar selectedCategory:", isValid);
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      console.log("selectedCategory es válido.");
+      
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      console.log("Validando variables...");
+      
       const newErrors = {}; // Objeto para almacenar los errores
 
       for (const variable of variables) {
         if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
-          console.log(`Error: La variable ${variable} no tiene un ejemplo válido.`);
+          
           isValid = false;
           newErrors[variable] = "Este campo es requerido"; // Asignar mensaje de error
 
@@ -448,7 +448,7 @@ useEffect(() => {
             exampleRefs.current[variable].focus();
           }
         } else {
-          console.log(`La variable ${variable} es válida.`);
+          
           newErrors[variable] = ""; // Sin error
         }
       }
@@ -458,15 +458,15 @@ useEffect(() => {
 
       // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-        console.log("Errores encontrados en las variables. isValid:", isValid);
+        
       } else {
-        console.log("Todas las variables son válidas.");
+        
       }
     } else {
-      console.log("No hay variables para validar.");
+      
     }
 
-    console.log("Validación completada. isValid:", isValid);
+    
     return isValid; // Retornar el valor final de isValid
   };
 
@@ -490,7 +490,7 @@ useEffect(() => {
   const iniciarRequest = async () => {
     try {
       // Hacer debug de las cards antes de formatear
-      console.log("Cards antes de formatear:", JSON.stringify(cards));
+      
 
       // Primero verifica que cards esté definido
       if (!cards || cards.length === 0) {
@@ -502,7 +502,7 @@ useEffect(() => {
       const formattedCards = formatCardsForGupshup(cards);
 
       // Ahora sí puedes hacer log de formattedCards
-      console.log("Cards formateadas:", formattedCards);
+      
 
       // Asegúrate de que todas las cards tengan los datos necesarios
       const isValid = formattedCards.every(card =>
@@ -748,7 +748,7 @@ useEffect(() => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      console.log('Archivo seleccionado:', selectedFile);
+      
     }
   };
 
@@ -756,7 +756,7 @@ useEffect(() => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    console.log("Nuevo valor de header:", event.target.value);
+    
   };
 
   //FOOTER PLANTILLA
@@ -1191,7 +1191,7 @@ useEffect(() => {
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      console.log("Ejemplo actualizado:", updatedExamples);
+      
       return updatedExamples;
     });
   };
@@ -1248,15 +1248,15 @@ useEffect(() => {
   // Función para reemplazar las variables en el mensaje con sus ejemplos
   const replaceVariables = (text, variables) => {
     let result = text;
-    console.log("Texto antes de reemplazar:", text);
+    
 
     Object.keys(variables).forEach(variable => {
       const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
-      console.log(`Reemplazando: {{${variable}}} por ${variables[variable]}`);
+      
       result = result.replace(regex, variables[variable]);
     });
 
-    console.log("Texto después de reemplazar:", result);
+    
     return result;
   };
 
@@ -1267,12 +1267,12 @@ useEffect(() => {
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-    console.log("Mensaje original:", message);
-    console.log("Variables y ejemplos:", variableExamples);
+    
+    
 
     const newExample = replaceVariables(message, variableExamples);
 
-    console.log("Mensaje después de reemplazo:", newExample);
+    
 
     setExample(newExample);
   }, [message, variableExamples]);
@@ -1420,8 +1420,8 @@ useEffect(() => {
         mediaUrl = card.fileData.url;
       }
 
-      console.log(`Tarjeta ${card.id} - mediaUrl:`, mediaUrl);
-      console.log(`Tarjeta ${card.id} - body:`, card.messageCard || "");
+      
+      
 
       // Crear el formato requerido por Gupshup
       return {
@@ -1438,7 +1438,7 @@ useEffect(() => {
 
   // Uso de la función
   //const formattedCardsForGupshup = formatCardsForGupshup(cards);
-  //console.log("Formato para Gupshup:", JSON.stringify(formattedCardsForGupshup, null, 2));
+  //
 
 
   // Estado para los acordeones - solo guardamos el ID único y el contenido del formulario
@@ -1535,14 +1535,14 @@ const addAccordion = () => {
 
   // Estado principal que contiene todas las tarjetas
   const [cards, setCards] = useState([initialCardState]);
-  console.log("Cards data:", cards);
+  
   const currentCardId = cards[0].id;
 
 
 
   // Función para manejar la subida de archivos para una card específica
 const handleFileUpload = (cardId, uploadResponse) => {
-  console.log("Respuesta completa de subida recibida:", uploadResponse);
+  
 
   if (uploadResponse) {
     // Estructura esperada del uploadResponse después de las modificaciones
@@ -1551,7 +1551,7 @@ const handleFileUpload = (cardId, uploadResponse) => {
       mediaId: uploadResponse.mediaId || null
     };
 
-    console.log("Datos de archivo a guardar:", fileData);
+    
 
     setCards(prevCards => prevCards.map(card => {
       if (card.id === cardId) {

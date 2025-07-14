@@ -38,10 +38,10 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       urlTemplatesGS = decoded.urlTemplatesGS;
       urlWsFTP = decoded.urlWsFTP;
       //apiToken = decoded.apiToken;
-      console.log('idBot:', idBot);
-      console.log('idBotRedes:', idBotRedes);
-      console.log('urlTemplatesGS', urlTemplatesGS);
-      //console.log('apiToken', apiToken);
+      
+      
+      
+      //
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -79,7 +79,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
 
   const handleMediaTypeChange = (event) => {
-    console.log('Tipo de medio cambiado a:', event.target.value);
+    
     setMediaType(event.target.value);
     setSelectedFile(null);
     setMediaId('');
@@ -88,7 +88,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    console.log('Archivo seleccionado:', file);
+    
 
     if (!file) return;
 
@@ -137,7 +137,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
     }
 
     try {
-      console.log('Iniciando proceso de subida de archivo...');
+      
       setIsLoading(true);
 
       // Subir archivo a Gupshup
@@ -145,11 +145,11 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       const gupshupFormData = new FormData();
       gupshupFormData.append('file', selectedFile);
       gupshupFormData.append('file_type', selectedFile.type);
-      console.log('filetype', setSelectedFile.type);
+      
 
       const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
 
-      console.log('Preparando solicitud a Gupshup...');
+      
       setUploadStatus('Subiendo archivo a Gupshup...');
 
       const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
@@ -167,7 +167,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
         data: gupshupFormData,
       });
 
-      console.log('Respuesta de Gupshup recibida:', gupshupResponse);
+      
 
       if (gupshupResponse.status !== 200 || !gupshupResponse.data) {
         console.error('Error en la respuesta de Gupshup:', {
@@ -179,7 +179,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       }
 
       const gupshupData = gupshupResponse.data;
-      console.log('Datos de Gupshup:', gupshupData);
+      
 
       if (!gupshupData.handleId) {
         console.error('Error: Respuesta de Gupshup incompleta o no válida');
@@ -187,7 +187,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       }
 
       const mediaId = gupshupData.handleId.message;
-      console.log('Media ID obtenido de Gupshup:', mediaId);
+      
       //
 
       //obtengo el API_TOKEN desde templatesGS
@@ -196,7 +196,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
       try {
          apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe); // Solo recibes el string del token
-        console.log("Token:", apiToken);
+        
         // Aquí puedes guardarlo en el estado, localStorage, o usarlo directamente
       } catch (error) {
         console.error("Fallo al obtener token:", error);
@@ -206,9 +206,9 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
 
       // Subir archivo al servicio propio
-      console.log('Convirtiendo archivo a Base64...');
+      
       const base64Content = await convertToBase64(selectedFile);
-      console.log('Archivo convertido a Base64.');
+      
 
       const payload = {
         idEmpresa: empresaTalkMe,
@@ -220,7 +220,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
         contenidoArchivo: base64Content.split(',')[1],
       };
 
-      console.log('Preparando solicitud al servicio propio...');
+      
       setUploadStatus('Subiendo archivo al servicio propio...');
 
       console.log('Request completo al servicio propio:', {
@@ -247,7 +247,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
       
 
-      console.log('Respuesta del servicio propio recibida:', ownServiceResponse);
+      
 
       if (ownServiceResponse.status !== 200 || !ownServiceResponse.data) {
         console.error('Error en la respuesta del servicio propio:', {
@@ -268,16 +268,16 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       }
 
       const ownServiceData = ownServiceResponse.data;
-      console.log('Datos del servicio propio:', ownServiceData);
+      
 
       // Notificar al componente padre con el mediaId y la URL
       if (onUploadSuccess) {
-        console.log('Notificando al componente padre con el mediaId y la URL...');
+        
         onUploadSuccess(mediaId, ownServiceData.url); // Pasar ambos valores
         setIsLoading(false);
       }
 
-      console.log('Proceso de subida completado exitosamente.');
+      
 
       // Mostrar SweetAlert de éxito
       await Swal.fire({

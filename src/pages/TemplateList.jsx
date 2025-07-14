@@ -108,7 +108,7 @@ export default function BasicCard() {
       urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
-      console.log('urlWsFTP', urlWsFTP);
+      
     }
   }
   
@@ -223,7 +223,7 @@ export default function BasicCard() {
         case 'DOCUMENT':
         case 'VIDEO':
           navigate('/modify-template', { state: { template } });
-          console.log("TEMPLATE ID ES : ", template.id);
+          
           break;
         default:
           // Ruta por defecto si no coincide con ningún tipo conocido
@@ -247,14 +247,14 @@ export default function BasicCard() {
   };
 
   const handleClick = (event, template) => {
-    console.log("Template seleccionado:", template); // Verifica el template seleccionado
+     // Verifica el template seleccionado
     setAnchorEl(event.currentTarget); // Abre el menú
     setSelectedTemplate(template); // Guarda el template seleccionado en el estado
   };
 
   // Función para manejar el clic en eliminar
   const handleDeleteClick = () => {
-    console.log("Template a eliminar:", selectedTemplate); // Verifica el template en el estado
+     // Verifica el template en el estado
     setDeleteModalOpen(true); // Abre el modal
     handleClose(); // Cierra el menú
   };
@@ -269,7 +269,7 @@ export default function BasicCard() {
   const handleDeleteConfirm = async () => {
     try {
       // Aquí iría tu lógica para eliminar la plantilla
-      console.log('Eliminando plantilla:', selectedTemplate);
+      
 
       // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
@@ -747,7 +747,7 @@ export default function BasicCard() {
                       aria-expanded={anchorEl ? 'true' : undefined}
                       variant="contained"
                       disableElevation
-                      onClick={(event) => { console.log("Template seleccionado:", template); handleClick(event, template) }}
+                      onClick={(event) => {  }}
                       endIcon={<KeyboardArrowDownIcon />}
                       color="primary"
                       sx={{

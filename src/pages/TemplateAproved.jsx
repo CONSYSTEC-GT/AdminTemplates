@@ -161,7 +161,7 @@ const TemplateAproved = () => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event, template) => {
-    console.log("Template seleccionado:", template); // Verifica el template seleccionado
+     // Verifica el template seleccionado
     setAnchorEl(event.currentTarget); // Abre el menú
     setSelectedTemplate(template); // Guarda el template seleccionado en el estado
   };
@@ -205,7 +205,7 @@ const TemplateAproved = () => {
 
   // Función para manejar el clic en eliminar
   const handleDeleteClick = () => {
-    console.log("Template a eliminar:", selectedTemplate); // Verifica el template en el estado
+     // Verifica el template en el estado
     setDeleteModalOpen(true); // Abre el modal
     handleClose(); // Cierra el menú
   };
@@ -220,7 +220,7 @@ const TemplateAproved = () => {
   const handleDeleteConfirm = async () => {
     try {
       // Aquí iría tu lógica para eliminar la plantilla
-      console.log('Eliminando plantilla:', selectedTemplate);
+      
 
       // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
@@ -622,7 +622,7 @@ const TemplateAproved = () => {
                           aria-expanded={anchorEl ? 'true' : undefined}
                           variant="contained"
                           disableElevation
-                          onClick={(event) => { console.log("Template seleccionado:", template); handleClick(event, template) }}
+                          onClick={(event) => {  }}
                           endIcon={<KeyboardArrowDownIcon />}
                           color="primary"
                           sx={{

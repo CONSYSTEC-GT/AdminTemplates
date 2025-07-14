@@ -42,10 +42,10 @@ if (token) {
     urlTemplatesGS = decoded.urlTemplatesGS;
     urlWsFTP = decoded.urlWsFTP;
     //apiToken = decoded.apiToken;
-    console.log('idBot:', idBot);
-    console.log('idBotRedes:', idBotRedes);
-    console.log('urlTemplatesGS', urlTemplatesGS);
-    //console.log('apiToken', apiToken);
+    
+    
+    
+    //
   } catch (error) {
     console.error('Error decodificando el token:', error);
   }
@@ -125,7 +125,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
     // Validar archivo
     const validationErrors = validateFile(file);
     if (validationErrors.length > 0) {
-      console.log('Errores de validación:', validationErrors);
+      
       setUploadState('error');
       setErrorMessage(validationErrors.join(' '));
       return; // Esto ahora sí debería detener la ejecución
@@ -175,13 +175,13 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
       try {
         apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
-        console.log("Token:", apiToken);
+        
       } catch (error) {
         console.error("Fallo al obtener token:", error);
         throw new Error('Error al obtener token de autenticación');
       }
 
-      console.log('📤 Payload enviado:', payload);
+      
 
       const response = await axios.post(
         urlWsFTP,
@@ -194,7 +194,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
         }
       );
 
-      console.log('📥 Respuesta recibida:', response);
+      
 
       if (response.status !== 200 || !response.data) {
         throw new Error('Error en la respuesta del servicio');

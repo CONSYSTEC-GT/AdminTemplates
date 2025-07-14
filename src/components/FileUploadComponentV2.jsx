@@ -42,10 +42,10 @@ if (token) {
     urlTemplatesGS = decoded.urlTemplatesGS;
     urlWsFTP = decoded.urlWsFTP;
     //apiToken = decoded.apiToken;
-    console.log('idBot:', idBot);
-    console.log('idBotRedes:', idBotRedes);
-    console.log('urlTemplatesGS', urlTemplatesGS);
-    //console.log('apiToken', apiToken);
+    
+    
+    
+    //
   } catch (error) {
     console.error('Error decodificando el token:', error);
   }
@@ -122,12 +122,12 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     const errors = [];
 
     // Mostrar detalles del archivo
-    console.log("📁 Validando archivo:");
-    console.log("Nombre:", file.name);
-    console.log("Tipo MIME:", file.type);
-    console.log("Tamaño (bytes):", file.size);
-    console.log("Tipos permitidos:", fileConfig.allowedTypes);
-    console.log("Tamaño máximo permitido (bytes):", fileConfig.maxSize);
+    
+    
+    
+    
+    
+    
 
     // Validar tipo de archivo
     if (!fileConfig.allowedTypes.includes(file.type)) {
@@ -165,7 +165,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     // Validar archivo
     const validationErrors = validateFile(file);
     if (validationErrors.length > 0) {
-      console.log('Errores de validación:', validationErrors);
+      
       setUploadState('error');
       setErrorMessage(validationErrors.join(' '));
       return; // Esto ahora sí debería detener la ejecución
@@ -220,18 +220,18 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
   const realUpload = async (file) => {
 
     try {
-      console.log('Iniciando proceso de subida de archivo...');
+      
 
       // Subir archivo a Gupshup
 
       const gupshupFormData = new FormData();
       gupshupFormData.append('file', file);
       gupshupFormData.append('file_type', file.type);
-      console.log('filetype', setSelectedFile.type);
+      
 
       const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
 
-      console.log('Preparando solicitud a Gupshup...');
+      
 
       const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
         headers: {
@@ -248,7 +248,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         data: gupshupFormData,
       });
 
-      console.log('Respuesta de Gupshup recibida:', gupshupResponse);
+      
 
       if (gupshupResponse.status !== 200 || !gupshupResponse.data) {
         console.error('Error en la respuesta de Gupshup:', {
@@ -260,7 +260,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
       }
 
       const gupshupData = gupshupResponse.data;
-      console.log('Datos de Gupshup:', gupshupData);
+      
 
       if (!gupshupData.handleId) {
         console.error('Error: Respuesta de Gupshup incompleta o no válida');
@@ -268,7 +268,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
       }
 
       const mediaId = gupshupData.handleId.message;
-      console.log('Media ID obtenido de Gupshup:', mediaId);
+      
 
       //### SERVICIO WSFTP PROPIO DE CONSYSTEC
 
@@ -276,16 +276,16 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
       try {
         apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe); // Solo recibes el string del token
-        console.log("Token:", apiToken);
+        
         // Aquí puedes guardarlo en el estado, localStorage, o usarlo directamente
       } catch (error) {
         console.error("Fallo al obtener token:", error);
       }
 
       // Subir archivo al servicio propio
-      console.log('Convirtiendo archivo a Base64...');
+      
       const base64Content = await convertToBase64(file);
-      console.log('Archivo convertido a Base64.');
+      
 
       const payload = {
         idEmpresa: empresaTalkMe,
@@ -297,7 +297,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         contenidoArchivo: base64Content.split(',')[1],
       };
 
-      console.log('Preparando solicitud al servicio propio...');
+      
 
       const ownServiceResponse = await axios.post(
         urlWsFTP,
@@ -310,7 +310,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         }
       );
 
-      console.log('Respuesta del servicio propio recibida:', ownServiceResponse);
+      
 
       if (ownServiceResponse.status !== 200 || !ownServiceResponse.data) {
         console.error('Error en la respuesta del servicio propio:', {
@@ -331,15 +331,15 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
       }
 
       const ownServiceData = ownServiceResponse.data;
-      console.log('Datos del servicio propio:', ownServiceData);
+      
 
       // Notificar al componente padre con el mediaId y la URL
       if (onUploadSuccess) {
-        console.log('Notificando al componente padre con el mediaId y la URL...');
+        
         onUploadSuccess({ mediaId, url: ownServiceData.url });
       }
 
-      console.log('Proceso de subida completado exitosamente.');
+      
 
       // Mostrar SweetAlert de éxito
       await Swal.fire({

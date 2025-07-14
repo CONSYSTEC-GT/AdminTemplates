@@ -27,10 +27,10 @@ const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, 
       urlTemplatesGS = decoded.urlTemplatesGS;
       urlWsFTP = decoded.urlWsFTP;
       //apiToken = decoded.apiToken;
-      console.log('idBot:', idBot);
-      console.log('idBotRedes:', idBotRedes);
-      console.log('urlTemplatesGS', urlTemplatesGS);
-      //console.log('apiToken', apiToken);
+      
+      
+      
+      //
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -97,7 +97,7 @@ const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, 
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    console.log('Archivo seleccionado:', file);
+    
 
     if (!file) return;
 
@@ -157,13 +157,13 @@ const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, 
 
     try {
       apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
-      console.log("Token:", apiToken);
+      
       
     } catch (error) {
       console.error("Fallo al obtener token:", error);
     }
 
-    console.log('📤 Payload enviado:', payload);
+    
 
     const response = await axios.post(
       urlWsFTP,
@@ -176,7 +176,7 @@ const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, 
       }
     );
 
-    console.log('📥 Respuesta recibida:', response);
+    
 
     if (response.status !== 200 || !response.data) {
       throw new Error('Error en la respuesta del servicio');
@@ -256,7 +256,7 @@ const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, 
       video: '.mp4, .3gp',
       document: '.pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt'
     };
-    //console.log('Tipos de archivo aceptados:', types[mediaType] || '');
+    //
     return types[mediaType] || '';
   };
 

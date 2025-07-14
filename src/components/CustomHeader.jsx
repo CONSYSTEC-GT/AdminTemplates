@@ -15,7 +15,7 @@ const CustomHeader = () => {
   //const handleFileChange = (event) => {
   //const file = event.target.files[0];
   //setSelectedFile(file);
-  //console.log('Archivo seleccionado:', file);
+  //
   //};
 
   //const handleHeaderChange = (event) => {
