@@ -23,6 +23,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
 import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
+import { useClickOutside } from '../utils/emojiClick';
 
 
 const EditTemplateForm = () => {
@@ -142,6 +143,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const exampleRefs = useRef({});
   const selectedCategoryRef = useRef(null);
   const descriptionRefs = useRef({});
+  const emojiPickerRef = useRef(null);
 
   const [emojiCount, setEmojiCount] = useState(0);
 
@@ -1069,6 +1071,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setShowEmojiPicker(false);
   };
 
+  // Llamada correcta al hook (sin el tercer parámetro)
+  useClickOutside(
+    emojiPickerRef, 
+    () => setShowEmojiPicker(false)
+  );
+
   // FUNCIONES DEL BODY
 
   // Función actualizada con límite de emojis
@@ -1731,6 +1739,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             {/* Selector de emojis */}
             {showEmojiPicker && (
               <Paper
+                ref={emojiPickerRef}
                 elevation={3}
                 sx={{
                   position: "absolute",

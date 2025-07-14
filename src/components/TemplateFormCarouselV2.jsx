@@ -42,6 +42,9 @@ import { saveTemplateToTalkMe } from '../api/templatesGSApi';
 
 import { CustomDialog } from '../utils/CustomDialog';
 
+import { useClickOutside } from '../utils/emojiClick';
+import { useClickOutsideCards } from '../utils/emojiClick';
+
 const TemplateFormCarousel = () => {
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
@@ -152,6 +155,7 @@ const TemplateFormCarousel = () => {
   const exampleCardRefs = useRef({});
   const cantidadBotonesRefs = useRef({});
   const descriptionRefs = useRef({});
+  
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
@@ -1159,7 +1163,11 @@ const handleEmojiClick = (emojiObject) => {
     }, 100);
 };
 
-
+// Llamada correcta al hook (sin el tercer parámetro)
+useClickOutside(
+  emojiPickerRef, 
+  () => setShowEmojiPicker(false)
+);
 
 
   // Función para borrar una variable específica
@@ -2157,6 +2165,7 @@ const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
               {/* Selector de emojis */}
               {showEmojiPicker && (
                 <Paper
+                  ref={emojiPickerRef}
                   elevation={3}
                   sx={{
                     position: "absolute",
@@ -2480,6 +2489,7 @@ const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
                                     {/* Selector de emojis */}
                                     {showEmojiPickerCards && (
                                       <Paper
+                                        ref={emojiPickerCardRef}
                                         elevation={3}
                                         sx={{
                                           position: "absolute",

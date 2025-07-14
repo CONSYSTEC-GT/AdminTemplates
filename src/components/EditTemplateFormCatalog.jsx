@@ -27,7 +27,7 @@ import { editTemplateCatalogGupshup } from '../api/gupshupApi';
 import { editTemplateToTalkMe } from '../api/templatesGSApi';
 
 import { CustomDialog } from '../utils/CustomDialog';
-
+import { useClickOutside } from '../utils/emojiClick';
 import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 
 
@@ -135,6 +135,7 @@ const TemplateForm = () => {
   const selectedCategoryRef = useRef(null);
   const exampleRefs = useRef({});
   const descriptionRefs = useRef({});
+  const emojiPickerRef = useRef(null);
 
   const [idTemplate, setIdTemplate] = useState("");
 
@@ -722,6 +723,12 @@ const TemplateForm = () => {
     setShowEmojiPicker(false);
   };
 
+  // Llamada correcta al hook (sin el tercer parámetro)
+  useClickOutside(
+    emojiPickerRef, 
+    () => setShowEmojiPicker(false)
+  );
+
   // Nueva función para borrar una variable específica
   const deleteVariable = (variableToDelete) => {
     // Eliminar la variable del texto
@@ -1155,6 +1162,7 @@ const TemplateForm = () => {
             {/* Selector de emojis */}
             {showEmojiPicker && (
               <Paper
+                ref={emojiPickerRef}
                 elevation={3}
                 sx={{
                   position: "absolute",

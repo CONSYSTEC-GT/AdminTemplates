@@ -41,7 +41,7 @@ import { editTemplateCarouselGupshup } from '../api/gupshupApi';
 import { saveTemplateToTalkMe } from '../api/templatesGSApi';
 import { editTemplateToTalkMe } from '../api/templatesGSApi';
 import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
-
+import { useClickOutside } from '../utils/emojiClick';
 
 import { CustomDialog } from '../utils/CustomDialog';
 
@@ -177,6 +177,7 @@ const EditTemplateFormCarousel = () => {
   const selectedCategoryRef = useRef(null);
   const exampleRefs = useRef({});
   const exampleCardRefs = useRef({});
+  
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
@@ -990,6 +991,12 @@ useEffect(() => {
       }
     }, 100);
   };
+  
+    // Llamada correcta al hook (sin el tercer parámetro)
+    useClickOutside(
+      emojiPickerRef, 
+      () => setShowEmojiPicker(false)
+    );
   
 
 
@@ -1881,6 +1888,7 @@ const handlePantallas = (event) => {
               {/* Selector de emojis */}
               {showEmojiPicker && (
                 <Paper
+                  ref={emojiPickerRef}
                   elevation={3}
                   sx={{
                     position: "absolute",
@@ -2176,6 +2184,7 @@ const handlePantallas = (event) => {
                                     {/* Selector de emojis */}
                                     {showEmojiPickerCards && (
                                       <Paper
+                                        ref={emojiPickerCardRef}
                                         elevation={3}
                                         sx={{
                                           position: "absolute",
