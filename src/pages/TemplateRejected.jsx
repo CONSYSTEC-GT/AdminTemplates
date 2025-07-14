@@ -614,7 +614,7 @@ const TemplateAproved = () => {
                           aria-expanded={anchorEl ? 'true' : undefined}
                           variant="contained"
                           disableElevation
-                          onClick={(event) => {  }}
+                          onClick={(event) => handleClick(event, template)}
                           endIcon={<KeyboardArrowDownIcon />}
                           color="primary"
                           sx={{
