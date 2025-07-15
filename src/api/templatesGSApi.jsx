@@ -79,6 +79,7 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
 const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTalkMe, urlTemplatesGS) => {
   
   const url = urlTemplatesGS + 'tarjetas/';
+  console.log ("URL EN SAVE CARDS", url);
   const headers = {
     "Content-Type": "application/json",
   };
@@ -364,19 +365,29 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
     const talkmeId = result.ID_PLANTILLA;
 
     // Actualizar variables si existen
-    if (talkmeId && variables && variables.length > 0) {
+    if (talkmeId) {
       try {
+
+        // Obtener y limpiar parámetros existentes
+        const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
+        
+        if (parametros && parametros.length > 0) {
+          const parametrosIds = parametros.map(param => param.ID_PLANTILLA_PARAMETRO);
+          await eliminarBroadcastParametros(urlTemplatesGS, parametrosIds);
+        }
+
         await deleteTemplateParams(talkmeId, urlTemplatesGS);
-        await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
+
+        // Insertar nuevos parámetros solo si existen
+        if (variables && variables.length > 0) {
+          await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
+        }
+
       } catch (error) {
-        console.error("Error al actualizar los parámetros:", error);
-        showSnackbar("⚠️ Error al actualizar los parámetros", "warning");
       }
     }
-
     
-    
-    if (talkmeId && cards && cards.length > 0) {
+    if (talkmeId) {
       try {
         // 1. Eliminar todas las tarjetas existentes de una sola vez
         const deleteResponse = await fetch(`${urlTemplatesGS}tarjetas/plantilla/${talkmeId}`, {
@@ -386,9 +397,6 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
           }
         });
         
-        
-
-
         // Solo lanzamos error si la respuesta no es exitosa Y no es un 404 (no encontrado)
         if (!deleteResponse.ok && deleteResponse.status !== 404) {
           throw new Error("No se pudieron eliminar las tarjetas existentes");
@@ -399,21 +407,16 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
           
           await saveCardsTemplate({
             ID_PLANTILLA: talkmeId,
-            cards: [card]  // <- Esta es la clave
-          }, idNombreUsuarioTalkMe);
+            cards: [card]
+          }, idNombreUsuarioTalkMe, urlTemplatesGS); // <-- Añade la URL aquí
         }
 
-
       } catch (error) {
-        console.error("Error al gestionar las tarjetas:", error);
-        showSnackbar("⚠️ La plantilla se actualizó pero hubo un problema con las tarjetas", "warning");
       }
     }
 
     return result;
   } catch (error) {
-    console.error("Error al editar la plantilla:", error);
-    showSnackbar("❌ Error al editar la plantilla", "error");
     return null;
   }
 };
@@ -472,6 +475,7 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
 
 export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
+  console.log(url);
   
 
   try{
@@ -481,6 +485,8 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
         "Content-Type": "application/json",
       },
     });
+
+    console.log(response);
 
     if (!response.ok){
       throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
@@ -519,6 +525,43 @@ export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) 
     return null;
   }
 }
+
+export const eliminarBroadcastParametros = async (urlTemplatesGS, parametrosIds) => {
+  try {
+    const resultados = [];
+    
+    // Iterar sobre cada ID de parámetro
+    for (const idParametro of parametrosIds) {
+      const url = `${urlTemplatesGS}broadcast_plantilla_valores/ID_PLANTILLA_PARAMETRO/${idParametro}`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'DELETE',
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          resultados.push({ id: idParametro, eliminado: true });
+        } else if (response.status === 404) {
+          // El parámetro no existe en broadcast, no es un error
+          resultados.push({ id: idParametro, eliminado: false, motivo: 'no_existe' });
+        } else {
+          throw new Error(`Error ${response.status}`);
+        }
+      } catch (error) {
+        console.error(`Error al eliminar parámetro ${idParametro}:`, error);
+        resultados.push({ id: idParametro, eliminado: false, motivo: 'error', error: error.message });
+      }
+    }
+
+    return resultados;
+  } catch (error) {
+    console.error("Error general al eliminar parámetros de broadcast:", error);
+    return null;
+  }
+};
 
 
 

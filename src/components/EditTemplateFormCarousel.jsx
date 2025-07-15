@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Accordion, AccordionSummary, AccordionDetails, Alert, Box, Button, Checkbox, Card, CardActions, CardContent, CardMedia, Chip, Container, Dialog, DialogTitle, DialogContent, DialogActions, Divider, FormControl, FormControlLabel, FormLabel, FormHelperText, Grid, Grid2, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Radio, RadioGroup, Select, Snackbar, Stack, TextField, Tooltip, Typography, alpha } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import { v4 as uuidv4 } from 'uuid';
+import Swal from 'sweetalert2';
 
 
 
@@ -83,7 +84,7 @@ const EditTemplateFormCarousel = () => {
   empresaTalkMe = 2;
   idBotRedes = 721;
   idBot = 257;
-  urlTemplatesGS = 'http://dev.talkme.pro/templatesGS/api/';
+  urlTemplatesGS = 'http://localhost:3004/api/';
   apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
   urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   */  
@@ -507,7 +508,6 @@ useEffect(() => {
   const iniciarRequest = async () => {
     try {
       // Hacer debug de las cards antes de formatear
-      
 
       // Primero verifica que cards esté definido
       if (!cards || cards.length === 0) {
@@ -519,7 +519,6 @@ useEffect(() => {
       const formattedCards = formatCardsForGupshup(cards);
 
       // Ahora sí puedes hacer log de formattedCards
-      
 
       // Asegúrate de que todas las cards tengan los datos necesarios
       const isValid = formattedCards.every(card =>
@@ -536,9 +535,7 @@ useEffect(() => {
       const cardsToSendArray = [...cards]; // Esto es un array de objetos
       const cardsToSend = JSON.stringify([...cards]); // Convertir a JSON string
 
-      /******************************
-       * COMENTADO EL PRIMER REQUEST *
-       ******************************/
+      // COMENTADO EL PRIMER REQUEST
       
       
       const result = await editTemplateCarouselGupshup(
@@ -561,29 +558,17 @@ useEffect(() => {
         idTemplate,
         validateFields
       );
-      
+      //
 
-      /* Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
-      const mockResult = {
+      /*const result = {
         status: "success",
         template: {
-          id: "ID_DE_PRUEBA_1234" // Usa un ID de prueba aquí
+          id: "e885dbea-06e5-433d-82b6-6391e6d76ae9" // Puedes poner cualquier ID de prueba aquí
         }
-      };
+      };*/
 
-      // Verificar si el primer request fue exitoso (ahora usando el mock)
-      if (mockResult && mockResult.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
-        const templateId = mockResult.template.id;
-
-        */
-        
-
-        // Verificar si el primer request fue exitoso
+      // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
-        //
-        
 
         // Hacer el segundo request a TalkMe API
         const result2 = await editTemplateToTalkMe(
@@ -598,23 +583,43 @@ useEffect(() => {
           idNombreUsuarioTalkMe || "Sistema.TalkMe",
           variables,
           variableDescriptions,
-          cardsToSendArray
+          cardsToSendArray,
+          urlTemplatesGS
         );
 
-        // Limpia todos los campos si todo fue bien
-        resetForm();
-        setShowSuccessModal(true);
+        // Si el segundo request también fue exitoso
+        if (result2) {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La plantilla se actualizó correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
 
-      } else {
-        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
-        setErrorMessageGupshup(result?.message || "La plantilla no pudo ser creada.");
-        setShowErrorModal(true);
-        
+          navigate('/Dashboard');
+
+        } else {
+          Swal.fire({
+            title: 'Error al actualizar',
+            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+
+        }
       }
     } catch (error) {
-      console.error("Ocurrió un error:", error);
+      Swal.fire({
+        title: 'Error',
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
     }
-  };
+};
 
     // PANTALLAS
     const pantallasTalkMe = [

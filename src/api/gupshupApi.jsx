@@ -817,12 +817,12 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
         errorResponse = { message: "Error no JSON", raw: errorText };
         console.error("Error response (texto):", errorText);
       }
-      showSnackbar(`❌ Error al crear la plantilla: ${errorResponse.message || "Solicitud inválida"}`, "error");
+      //showSnackbar(`❌ Error al crear la plantilla: ${errorResponse.message || "Solicitud inválida"}`, "error");
       throw new Error(errorResponse.message || "Error al editar la plantilla");
     }
 
     const result = await response.json();
-    showSnackbar("✅ Plantilla editada exitosamente", "success");
+    //showSnackbar("✅ Plantilla editada exitosamente", "success");
     
     return result; // Retornar el resultado
   } catch (error) {
@@ -832,7 +832,7 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
       message: error.message,
       stack: error.stack
     });
-    showSnackbar("❌ Error al crear la plantilla", "error");
+    //showSnackbar("❌ Error al crear la plantilla", "error");
     return null; // Retornar null en caso de error
   }
 };
