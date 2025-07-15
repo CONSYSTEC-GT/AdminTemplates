@@ -80,6 +80,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [templateType, setTemplateType] = useState("text");
   const [pantallas, setPantallas] = useState([]);
   const [displayPantallas, setDisplayPantallas] = useState([]);
+  const [pantallasError, setPantallasError] = useState(false);
   const [templateNameHelperText, setTemplateNameHelperText] = useState("El nombre debe hacer referencia al texto de su plantilla.");
   const [templateNameError, setTemplateNameError] = useState(false);
   const [vertical, setVertical] = useState("");
