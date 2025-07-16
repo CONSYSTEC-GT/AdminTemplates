@@ -6,7 +6,6 @@ import { Box } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import AppRoutes from './routes';
 import LoadingSpinner from './utils/LoadingSpinner';
-import SessionManager from './hooks/SessionManager'; // Importar el SessionManager
 
 function App() {
   const location = useLocation();
@@ -40,17 +39,6 @@ function App() {
             }
             
             localStorage.setItem('authToken', token);
-            
-            // Calcular minutos restantes y guardar en localStorage
-            const remainingTimeInSeconds = decoded.exp - currentTime;
-            const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
-            
-            // Guardamos en localStorage solo si no existe un valor previo
-            if (!localStorage.getItem('initialRemainingMinutes')) {
-              localStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
-              console.log('Minutos iniciales guardados en localStorage:', remainingMinutesOnly);
-            }
-            
             const { app_id, auth_code, app_name } = decoded;
             window.history.replaceState({}, document.title, window.location.pathname);
             
@@ -95,7 +83,6 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SessionManager />
       <Box sx={{ display: "flex" }}>
         <AppRoutes />
       </Box>
