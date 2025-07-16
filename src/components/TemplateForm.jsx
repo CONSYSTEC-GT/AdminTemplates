@@ -1809,6 +1809,8 @@ useClickOutside(
                 flexDirection: "column",
                 gap: 0.5,
                 boxShadow: 1,
+                overflowY: "auto", // Scroll vertical cuando el contenido excede la altura
+                overflowX: "hidden" // Previene scroll horizontal no deseado
               }}
             >
 
