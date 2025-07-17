@@ -176,11 +176,10 @@ const TemplateAproved = () => {
     navigate('/modify-template', { state: { template } });
   };
 
-  // Función para manejar el clic en eliminar
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (template) => {
     // Verifica el template en el estado
+    setSelectedTemplate(template);
     setDeleteModalOpen(true); // Abre el modal
-    handleClose(); // Cierra el menú
   };
 
   // Función para cancelar la eliminación

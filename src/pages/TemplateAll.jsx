@@ -220,10 +220,10 @@ const TemplateAll = () => {
   };
 
   // Función para manejar el clic en eliminar
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (template) => {
     // Verifica el template en el estado
+    setSelectedTemplate(template); 
     setDeleteModalOpen(true); // Abre el modal
-    handleClose(); // Cierra el menú
   };
 
   // Función para cancelar la eliminación
@@ -252,6 +252,8 @@ const TemplateAll = () => {
     }
   };
 
+  const [anchorEl2, setAnchorEl2] = useState(null);
+  const open2 = Boolean(anchorEl2);
 
   // Estilo personalizado para el menú
   const StyledMenu = styled((props) => (
