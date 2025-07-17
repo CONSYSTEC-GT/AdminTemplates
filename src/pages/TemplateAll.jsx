@@ -401,7 +401,7 @@ const TemplateAll = () => {
               ))
               :
               // Mostrar los datos reales cuando termine de cargar
-              templates.map((template) => {
+                filteredTemplates.map((template) => {
                 // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
                 const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
