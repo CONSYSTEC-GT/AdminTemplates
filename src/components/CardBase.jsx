@@ -29,6 +29,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import ReplyIcon from '@mui/icons-material/Reply';
+import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 
 import FechaModificacion from '../utils/FechaModificacion';
 
@@ -68,6 +69,16 @@ const TemplateCard = ({
     handleDeleteClick(selectedTemplate);
     handleClose();
   };
+
+  const getButtonsFromTemplate = (template) => {
+  try {
+    const containerMeta = JSON.parse(template.containerMeta);
+    return containerMeta.buttons || [];
+  } catch (error) {
+    console.error('Error parsing containerMeta:', error);
+    return [];
+  }
+};
 
   return (
     <Card
@@ -261,7 +272,8 @@ const TemplateCard = ({
                 flexDirection: 'column'
               }}
             >
-              {parseTemplateContent(template.data).buttons?.map((button, index) => {
+              {getButtonsFromTemplate(template).map((button, index) => {
+                console.log(button)
                 let styles = {
                   borderRadius: 20,
                   px: 2,
@@ -293,6 +305,12 @@ const TemplateCard = ({
                     backgroundColor: '#ffffff',
                     color: '#297c86',
                   };
+                } else if (button.type === 'CATALOG') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86',
+                  };
                 }
 
                 return (
@@ -300,7 +318,8 @@ const TemplateCard = ({
                     {button.type === 'QUICK_REPLY' && <ReplyIcon size={14} />}
                     {button.type === 'URL' && <Link size={14} />}
                     {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
-                    {button.title}
+                    {button.type === 'CATALOG' && <ProductionQuantityLimitsIcon size={14} />}
+                    {button.text}
                   </Box>
                 );
               })}
