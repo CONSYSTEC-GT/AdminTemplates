@@ -500,7 +500,7 @@ export default function BasicCard() {
             ))
             :
             // Mostrar los datos reales cuando termine de cargar
-            filteredTemplates.map((template) => {
+            templates.map((template) => {
               // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
               const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
