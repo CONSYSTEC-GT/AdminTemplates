@@ -278,108 +278,112 @@ const CardBaseCarousel = ({
 
 
 
-
-          <Swiper
-            modules={[Pagination]}
-            effect="coverflow"
-            spaceBetween={10}
-            slidesPerView={1.1}
-            centeredSlides={true}
-            pagination={{ clickable: true }}
-            style={{ width: '100%', height: '100%', paddingBottom: '1rem' }}
-          >
-            {cards.map((card, index) => (
-              <SwiperSlide key={index}>
-                <Box
-                  sx={{
-                    borderRadius: 3,
-                    border: '1px solid #ccc',
-                    backgroundColor: '#fdfdfd',
-                    overflow: 'hidden',
-                    boxShadow: 1,
-                    p: 1
-                  }}
-                >
-                  {card.headerType === "IMAGE" && (
-                    <img
-                      src={card.mediaUrl}
-                      alt="Card Header"
-                      style={{ width: '100%', maxHeight: '100px', borderRadius: 8 }}
-                    />
-                  )}
-
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 1, mb: 1, fontWeight: 500 }}
-                  >
-                    {card.body}
-                  </Typography>
-
+          <Box sx={{ flex: 1, width: '100%', minHeight: 0 }}>
+            <Swiper
+              modules={[Pagination]}
+              effect="coverflow"
+              spaceBetween={10}
+              slidesPerView={1.1}
+              centeredSlides={true}
+              pagination={{ clickable: true }}
+              style={{ width: '100%', paddingBottom: '1rem', flex: 1, minHeight: 0, }}
+            >
+              {cards.map((card, index) => (
+                <SwiperSlide key={index}>
                   <Box
                     sx={{
-                      mt: 'auto', // empuja el botón al fondo si usas flexDirection: column
-                      width: '100%',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      gap: 1,
-                      flexWrap: 'wrap',
-                      borderTop: '1px solid #eee',
-                      pt: 1,
+                      borderRadius: 3,
+                      border: '1px solid #ccc',
+                      backgroundColor: '#fdfdfd',
+                      overflow: 'hidden',
+                      boxShadow: 1,
+                      p: 1,
+                      height: 'auto'
                     }}
                   >
-                    {card.buttons.map((button, btnIdx) => {
-                      console.log('button.type:', button.type);
-                      let styles = {
-                        borderRadius: 20,
-                        px: 2,
-                        py: 0.5,
-                        fontSize: 12,
-                        cursor: 'pointer',
+                    {card.headerType === "IMAGE" && (
+                      <img
+                        src={card.mediaUrl}
+                        alt="Card Header"
+                        style={{ width: '100%', maxHeight: '100px', borderRadius: 8 }}
+                      />
+                    )}
+
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 1, mb: 1, fontWeight: 500 }}
+                    >
+                      {card.body}
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        mt: 'auto', // empuja el botón al fondo si usas flexDirection: column
+                        width: '100%',
                         display: 'flex',
-                        alignItems: 'center',
+                        justifyContent: 'center',
                         gap: 1,
-                      };
+                        flexWrap: 'wrap',
+                        borderTop: '1px solid #eee',
+                        pt: 1,
+                      }}
+                    >
+                      {card.buttons.map((button, btnIdx) => {
+                        console.log('button.type:', button.type);
+                        let styles = {
+                          borderRadius: 20,
+                          px: 2,
+                          py: 0.5,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        };
 
-                      if (button.type === 'QUICK_REPLY') {
-                        styles = {
-                          ...styles,
-                          backgroundColor: '#ffffff',
-                          color: '#297c86'
-                        };
-                      } else if (button.type === 'URL') {
-                        styles = {
-                          ...styles,
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #ccc',
-                          color: '#297c86',
-                        };
-                      } else if (button.type === 'PHONE_NUMBER') {
-                        styles = {
-                          ...styles,
-                          backgroundColor: '#ffffff',
-                          color: '#297c86',
-                        };
-                      }
+                        if (button.type === 'QUICK_REPLY') {
+                          styles = {
+                            ...styles,
+                            backgroundColor: '#ffffff',
+                            color: '#297c86'
+                          };
+                        } else if (button.type === 'URL') {
+                          styles = {
+                            ...styles,
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #ccc',
+                            color: '#297c86',
+                          };
+                        } else if (button.type === 'PHONE_NUMBER') {
+                          styles = {
+                            ...styles,
+                            backgroundColor: '#ffffff',
+                            color: '#297c86',
+                          };
+                        }
 
-                      return (
-                        <Box key={btnIdx} sx={styles}>
-                          {button.type === 'QUICK_REPLY' && <ReplyIcon size={14} />}
-                          {button.type === 'URL' && <Link size={14} />}
-                          {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
-                          {button.text}
-                        </Box>
-                      );
-                    })}
+                        return (
+                          <Box key={btnIdx} sx={styles}>
+                            {button.type === 'QUICK_REPLY' && <ReplyIcon size={14} />}
+                            {button.type === 'URL' && <Link size={14} />}
+                            {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
+                            {button.text}
+                          </Box>
+                        );
+                      })}
+                    </Box>
                   </Box>
-                </Box>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
+              <FechaModificacion timestamp={template.modifiedOn} />
+            </Typography>
+          </Box>
 
 
-          <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
-            <FechaModificacion timestamp={template.modifiedOn} />
-          </Typography>
+
 
 
 

@@ -258,6 +258,7 @@ const TemplateCard = ({
                 flexWrap: 'wrap',
                 borderTop: '1px solid #eee',
                 pt: 1,
+                flexDirection: 'column'
               }}
             >
               {parseTemplateContent(template.data).buttons?.map((button, index) => {
@@ -269,6 +270,7 @@ const TemplateCard = ({
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent:'center',
                   gap: 1,
                 };
 
