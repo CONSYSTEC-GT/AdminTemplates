@@ -377,7 +377,7 @@ const CardBaseCarousel = ({
           </Swiper>
 
 
-          <Typography>
+          <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
             <FechaModificacion timestamp={template.modifiedOn} />
           </Typography>
 
@@ -413,7 +413,7 @@ const CardBaseCarousel = ({
               textTransform: 'none',
             }}
           >
-            Administrar Carrusel
+            Administrar
           </Button>
         </motion.div>
 

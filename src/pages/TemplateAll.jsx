@@ -24,6 +24,9 @@ import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 
 import TemplateCardSkeleton from '../utils/SkeletonTemplates';
+import CardBase from '../components/CardBase';
+import CardBaseCarousel from '../components/CardBaseCarousel';
+import CardBaseSkeleton from '../components/CardBaseSkeleton';
 
 const TemplateAll = () => {
   //PARA MANEJAR EL STATUS DE LAS PLANTILLAS | VARIABLES
@@ -44,7 +47,7 @@ const TemplateAll = () => {
   const token = localStorage.getItem('authToken');
 
 
-  // Decodifica el token para obtener appId y authCode
+  /* Decodifica el token para obtener appId y authCode
   let appId, authCode;
   if (token) {
     try {
@@ -56,17 +59,17 @@ const TemplateAll = () => {
     }
   }
 
-  /*
- let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
+  */
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
 
- appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
- authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
- appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
- idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
- idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
- empresaTalkMe = 2;
+  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+  empresaTalkMe = 2;
 
- */
+  //
 
   // Función para obtener las plantillas
   const fetchTemplates = async (appId, authCode) => {
@@ -174,7 +177,7 @@ const TemplateAll = () => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event, template) => {
-     // Verifica el template seleccionado
+    // Verifica el template seleccionado
     setAnchorEl(event.currentTarget); // Abre el menú
     setSelectedTemplate(template); // Guarda el template seleccionado en el estado
   };
@@ -218,7 +221,7 @@ const TemplateAll = () => {
 
   // Función para manejar el clic en eliminar
   const handleDeleteClick = () => {
-     // Verifica el template en el estado
+    // Verifica el template en el estado
     setDeleteModalOpen(true); // Abre el modal
     handleClose(); // Cierra el menú
   };
@@ -233,7 +236,7 @@ const TemplateAll = () => {
   const handleDeleteConfirm = async () => {
     try {
       // Aquí iría tu lógica para eliminar la plantilla
-      
+
 
       // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
@@ -299,6 +302,29 @@ const TemplateAll = () => {
     setOpenReasonDialog(true);
   };
 
+  const showReasonAlert = (reason) => {
+    Swal.fire({
+      title: '<strong>Razón de rechazo</strong>',
+      icon: 'error',
+      html: `<p>${reason}</p>`,
+      showCloseButton: true,
+      showConfirmButton: true,
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#00c3ff',
+      focusConfirm: false,
+      customClass: {
+        title: 'swal2-title-custom'
+      }
+    });
+  };
+
+  const CardComponents = {
+    CAROUSEL: CardBaseCarousel,
+    DEFAULT: CardBase,
+    // Agrega más tipos según necesites
+  };
+
+
   return (
     <Box>
       <Box sx={{ display: 'flex' }}>
@@ -361,6 +387,7 @@ const TemplateAll = () => {
           </Box>
 
           {/* Grid de tarjetas */}
+
           <Box sx={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
@@ -369,354 +396,31 @@ const TemplateAll = () => {
           }}>
             {loading ?
               // Mostrar skeletons mientras carga
-              Array.from(new Array(4)).map((_, index) => ( // Usamos 4 como en tu slice
-                <TemplateCardSkeleton key={index} />
+              Array.from(new Array(4)).map((_, index) => (
+                <CardBaseSkeleton key={index} />
               ))
               :
               // Mostrar los datos reales cuando termine de cargar
-              filteredTemplates.length > 0 ? (
-                filteredTemplates.map((template) => (
+              templates.map((template) => {
+                // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
+                const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
-                  <Card
+                return (
+                  <CardComponent
                     key={template.id}
-                    sx={{
-                      maxWidth: 300,
-                      height: 500, // Fija la altura a 480px
-                      borderRadius: 3,
-                      mt: 3, // Aumenta la separación superior
-                      mx: 2, // Agrega margen a los lados
-                      border: '1px solid #e0e0e0',
-                      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)',
-                      overflow: 'visible',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <CardContent sx={{ p: 0 }}>
-                      {/* Header Template Name */}
-                      <Box sx={{ p: 2, pb: 0 }}>
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight={700}
-                          sx={{
-                            mb: 0,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2, // muestra máximo 2 líneas
-                            WebkitBoxOrient: 'vertical'
-                          }}
-                        >
-                          {template.elementName}
-                        </Typography>
-
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                          {/* Status badge */}
-                          <Box
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              backgroundColor: getStatusColor(template.status),
-                              borderRadius: 1,
-                              px: 1,
-                              py: 0.5,
-                            }}
-                          >
-                            <Box
-                              component="span"
-                              sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                backgroundColor: getStatusDotColor(template.status),
-                                mr: 0.5
-                              }}
-                            />
-                            <Typography variant="caption" sx={{ color: getStatusTextColor(template.status), fontWeight: 500 }}>
-                              {template.status}
-                            </Typography>
-                          </Box>
-
-                          {/* Categoria badge */}
-                          <Box
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              backgroundColor: '#F3F4F6',
-                              borderRadius: 1,
-                              px: 1,
-                              py: 0.5,
-                            }}
-                          >
-                            <Typography variant="caption" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                              {template.category}
-                            </Typography>
-                          </Box>
-
-                          {/* Tipo badge */}
-                          <Box
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              backgroundColor: '#F3F4F6',
-                              borderRadius: 1,
-                              px: 1,
-                              py: 0.5,
-                            }}
-                          >
-                            <Typography variant="caption" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                              {template.templateType}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-
-                      {/* Razón rechazo */}
-                      {template.reason && (
-                        <React.Fragment>
-                          <Button
-                            color="error"
-                            variant="outlined"
-                            size="small"
-                            onClick={() => handleOpenReasonDialog(template.reason)}
-                            startIcon={<ErrorOutlineIcon />}
-                            sx={{
-                              mt: 1,
-                              textTransform: 'none',
-                              fontSize: '0.75rem',
-                              borderRadius: 1,
-                              py: 0.5,
-                              px: 1,
-                              ml: 2
-                            }}
-                          >
-                            Razón de rechazo
-                          </Button>
-
-                          <Dialog
-                            open={openReasonDialog}
-                            onClose={() => setOpenReasonDialog(false)}
-                            maxWidth="sm"
-                            fullWidth
-                          >
-                            <DialogTitle sx={{
-                              bgcolor: 'error.light',
-                              color: 'error.contrastText',
-                              py: 1,
-                              px: 2
-                            }}>
-                              <Box display="flex" alignItems="center">
-                                <ErrorIcon sx={{ mr: 1 }} />
-                                <Typography variant="subtitle1">Razón de rechazo</Typography>
-                              </Box>
-                            </DialogTitle>
-                            <DialogContent sx={{ py: 3, px: 2 }}>
-                              <Typography>{selectedReason}</Typography>
-                            </DialogContent>
-                            <DialogActions sx={{ px: 2, py: 1 }}>
-                              <Button
-                                onClick={() => setOpenReasonDialog(false)}
-                                variant="contained"
-                                color="primary"
-                                sx={{ borderRadius: 1 }}
-                              >
-                                Entendido
-                              </Button>
-                            </DialogActions>
-                          </Dialog>
-                        </React.Fragment>
-                      )}
-
-                      {/* Content */}
-                      <Box
-                        sx={{
-                          backgroundColor: '#FEF9F3', // Fondo amarillo
-                          p: 2, // Aumentar padding para dar más espacio alrededor de la caja blanca
-                          mx: 1,
-                          my: 1,
-                          borderRadius: 2,
-                          height: 302, // Altura mínima en lugar de fija AMARILLA
-                          width: 286,
-                          display: 'flex',
-                          flexDirection: 'column', // Ajusta la dirección del contenido a columna
-                          alignItems: 'center', // Centra horizontalmente
-                          justifyContent: 'flex-start', // Align content to the top
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            backgroundColor: 'white',
-                            p: 1,
-                            mt: 1,
-                            borderRadius: 4,
-                            width: 284,
-                            maxWidth: '100%',
-                            display: 'inline-flex',
-                            flexDirection: 'column',
-                            alignSelf: 'center',
-                            height: 298,
-                            overflowY: 'auto'
-                          }}
-                        >
-                          {/* Imagen para plantillas tipo CAROUSEL o IMAGE */}
-                          {(template.templateType === 'CAROUSEL' || template.templateType === 'IMAGE' || template.templateType === 'VIDEO') && (
-                            <Box sx={{ mb: 2, width: '100%', height: 140, borderRadius: 2, overflow: 'hidden' }}>
-                              <img
-                                src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-UPVXEk3VrllOtMWXfyrUi4GVlt71zdxigtTGguOkqRgWmIX8_aT35EdrnTc0Jn5yy5c&usqp=CAU'
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  borderRadius: '8px',
-                                  alignContent: 'center'
-                                }}
-                              />
-                            </Box>
-                          )}
-
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              width: 'fit-content', // Ensure typography width fits content
-                              whiteSpace: 'normal', // Allow text to wrap
-                              wordBreak: 'break-word', // Añadir esta propiedad para forzar el quiebre de palabras largas
-                              overflowWrap: 'break-word' // Asegurar que las palabras largas se quiebren
-                            }}
-                          >
-                            {parseTemplateContent(template.data).text}
-                          </Typography>
-
-                          {/* Botones */}
-                          <Stack spacing={1} sx={{ mt: 2 }}>
-                            {parseTemplateContent(template.data).buttons.map((button, index) => (
-                              <Box
-                                key={index}
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "flex-start",
-                                  gap: 1,
-                                  border: "1px solid #ccc",
-                                  borderRadius: "20px",
-                                  p: 1,
-                                  backgroundColor: "#ffffff",
-                                  boxShadow: 1,
-                                  cursor: "pointer",
-                                  "&:hover": {
-                                    backgroundColor: "#f5f5f5",
-                                  },
-                                }}
-                              >
-                                {button.type === "QUICK_REPLY" && (
-                                  <ArrowForward sx={{ fontSize: "16px", color: "#075e54" }} />
-                                )}
-                                {button.type === "URL" && (
-                                  <Link sx={{ fontSize: "16px", color: "#075e54" }} />
-                                )}
-                                {button.type === "PHONE_NUMBER" && (
-                                  <Phone sx={{ fontSize: "16px", color: "#075e54" }} />
-                                )}
-                                <Typography variant="body1" sx={{ fontWeight: "medium", color: "#075e54", fontSize: "14px" }}>
-                                  {button.title}
-                                </Typography>
-                              </Box>
-                            ))}
-                          </Stack>
-                        </Box>
-                      </Box>
-                    </CardContent>
-
-                    {/* Acciones */}<CardActions
-                      sx={{
-                        mt: 'auto',           // Empuja el CardActions hacia abajo
-                        justifyContent: 'flex-end', // Alinea contenido a la izquierda
-                        padding: 2,           // Añade padding consistente
-                        position: 'relative', // Necesario para el posicionamiento
-                      }}
-                    >
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                      >
-                        <Button
-                          id="manage-button"
-                          aria-controls={anchorEl ? 'manage-menu' : undefined}
-                          aria-haspopup="true"
-                          aria-expanded={anchorEl ? 'true' : undefined}
-                          variant="contained"
-                          disableElevation
-                          onClick={(event) => handleClick(event, template)}
-                          endIcon={<KeyboardArrowDownIcon />}
-                          color="primary"
-                          sx={{
-                            borderRadius: 1,
-                            textTransform: 'none',
-                          }}
-                        >
-                          Administrar
-                        </Button>
-                      </motion.div>
-
-                      <Menu
-                        id="manage-menu"
-                        MenuListProps={{
-                          'aria-labelledby': 'manage-button',
-                        }}
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}
-                        TransitionComponent={Fade}
-                      >
-                        {[
-                          {
-                            text: 'Editar',
-                            onClick: () => handleEdit(selectedTemplate),
-                            icon: <EditIcon fontSize="small" />
-                          },
-                          {
-                            text: 'Eliminar',
-                            onClick: handleDeleteClick,
-                            icon: <DeleteIcon fontSize="small" />
-                          }
-                        ].map((item, index) => (
-                          <MenuItem
-                            key={item.text}
-                            onClick={item.onClick}
-                            component={motion.div}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{
-                              delay: index * 0.1,
-                              type: "spring",
-                              stiffness: 300
-                            }}
-                            sx={{
-                              '&:hover': {
-                                transform: 'scale(1.02)',
-                                transition: 'all 0.2s ease'
-                              }
-                            }}
-                          >
-                            <ListItemIcon>{item.icon}</ListItemIcon>
-                            <ListItemText>{item.text}</ListItemText>
-                          </MenuItem>
-                        ))}
-
-
-
-                      </Menu>
-                    </CardActions>
-                  </Card>
-                ))
-              ) : (
-                <Typography variant="h6" sx={{ gridColumn: '1 / -1', textAlign: 'center', mt: 4 }}>
-                  No hay plantillas disponibles para esta categoría.
-                </Typography>
-              )
-            }
+                    template={template}
+                    handleEdit={handleEdit}
+                    handleDeleteClick={handleDeleteClick}
+                    showReasonAlert={showReasonAlert}
+                    parseTemplateContent={parseTemplateContent}
+                    getStatusColor={getStatusColor}
+                    getStatusDotColor={getStatusDotColor}
+                    getStatusTextColor={getStatusTextColor}
+                  />
+                );
+              })}
           </Box>
+
         </Box>
       </Box>
       {/* Modal de Eliminación */}

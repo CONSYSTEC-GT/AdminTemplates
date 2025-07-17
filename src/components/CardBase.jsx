@@ -28,6 +28,9 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CategoryIcon from '@mui/icons-material/Category';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import ReplyIcon from '@mui/icons-material/Reply';
+
+import FechaModificacion from '../utils/FechaModificacion';
 
 const TemplateCard = ({
   template,
@@ -60,11 +63,11 @@ const TemplateCard = ({
   };
 
   const handleDeleteClickLocal = () => {
-  console.log('selectedTemplate:', selectedTemplate);
-  console.log('handleDeleteClick function:', handleDeleteClick);
-  handleDeleteClick(selectedTemplate);
-  handleClose();      
-};
+    console.log('selectedTemplate:', selectedTemplate);
+    console.log('handleDeleteClick function:', handleDeleteClick);
+    handleDeleteClick(selectedTemplate);
+    handleClose();
+  };
 
   return (
     <Card
@@ -102,6 +105,8 @@ const TemplateCard = ({
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
             {/* Status badge */}
             <Box
+              component={template.reason ? "button" : "div"}
+              onClick={template.reason ? () => showReasonAlert(template.reason) : undefined}
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -109,6 +114,13 @@ const TemplateCard = ({
                 borderRadius: 1,
                 px: 1,
                 py: 0.5,
+                border: template.reason ? '1px dashed rgba(255,255,255,0.3)' : 'none',
+                cursor: template.reason ? 'pointer' : 'default',
+                '&:hover': template.reason ? {
+                  opacity: 0.8,
+                  transform: 'scale(1.02)'
+                } : {},
+                transition: 'all 0.2s ease'
               }}
             >
               <Box
@@ -160,63 +172,41 @@ const TemplateCard = ({
           </Box>
         </Box>
 
-        {/* Razón rechazo */}
-        {template.reason && (
-          <React.Fragment>
-            <Button
-              color="error"
-              variant="outlined"
-              size="small"
-              onClick={() => showReasonAlert(template.reason)}
-              startIcon={<ErrorOutlineIcon />}
-              sx={{
-                mt: 1,
-                textTransform: 'none',
-                fontSize: '0.75rem',
-                borderRadius: 1,
-                py: 0.5,
-                px: 1,
-                ml: 2
-              }}
-            >
-              Razón de rechazo
-            </Button>
-          </React.Fragment>
-        )}
-
         {/* Content */}
         <Box
           sx={{
             backgroundColor: '#FEF9F3',
-            p: 2,
+            p: 1,
             mx: 1,
-            my: 1,
+            mt: 1,
             borderRadius: 2,
-            height: 302,
+            height: 350,
             width: 286,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'flex-start',
+            overflowY: 'auto'
+
           }}
         >
           <Box
             sx={{
               backgroundColor: 'white',
               p: 1,
-              mt: 1,
+              mt: 0,
+              mb: 1,
               borderRadius: 4,
               width: 284,
               maxWidth: '100%',
               display: 'inline-flex',
               flexDirection: 'column',
               alignSelf: 'center',
-              height: 298,
-              overflowY: 'auto'
+              //overflowY: 'auto'
             }}
           >
             {/* Imagen para plantillas tipo CAROUSEL o IMAGE */}
-            {(template.templateType === 'CAROUSEL' || template.templateType === 'IMAGE' || template.templateType === 'VIDEO') && (
+            {(template.templateType === 'IMAGE' || template.templateType === 'VIDEO' || template.Type === 'DOCUMENT') && (
               <Box sx={{ mb: 2, width: '100%', height: 140, borderRadius: 2, overflow: 'hidden' }}>
                 <img
                   src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-UPVXEk3VrllOtMWXfyrUi4GVlt71zdxigtTGguOkqRgWmIX8_aT35EdrnTc0Jn5yy5c&usqp=CAU'
@@ -245,51 +235,80 @@ const TemplateCard = ({
               }}
               component="div"
             >
-              {parseTemplateContent(template.data).text.split('\n').map((line, i) => (
-                <span key={i}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+              {parseTemplateContent(template.data).text
+                .replace(/\|/g, '')  // elimina todos los pipes
+                .split('\n')
+                .map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    <br />
+                  </span>
+                ))
+              }
             </Typography>
 
             {/* Botones */}
-            <Stack spacing={1} sx={{ mt: 2 }}>
-              {parseTemplateContent(template.data).buttons?.map((button, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-start",
-                    gap: 1,
-                    border: "1px solid #ccc",
-                    borderRadius: "20px",
-                    p: 1,
-                    backgroundColor: "#ffffff",
-                    boxShadow: 1,
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#f5f5f5",
-                    },
-                  }}
-                >
-                  {button.type === "QUICK_REPLY" && (
-                    <ArrowForward sx={{ fontSize: "16px", color: "#075e54" }} />
-                  )}
-                  {button.type === "URL" && (
-                    <Link sx={{ fontSize: "16px", color: "#075e54" }} />
-                  )}
-                  {button.type === "PHONE_NUMBER" && (
-                    <Phone sx={{ fontSize: "16px", color: "#075e54" }} />
-                  )}
-                  <Typography variant="body1" sx={{ fontWeight: "medium", color: "#075e54", fontSize: "14px" }}>
+            <Box
+              sx={{
+                mt: 'auto', // empuja el botón al fondo si usas flexDirection: column
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 1,
+                flexWrap: 'wrap',
+                borderTop: '1px solid #eee',
+                pt: 1,
+              }}
+            >
+              {parseTemplateContent(template.data).buttons?.map((button, index) => {
+                let styles = {
+                  borderRadius: 20,
+                  px: 2,
+                  py: 0.5,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                };
+
+                if (button.type === 'QUICK_REPLY') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86'
+                  };
+                } else if (button.type === 'URL') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #ccc',
+                    color: '#297c86',
+                  };
+                } else if (button.type === 'PHONE_NUMBER') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86',
+                  };
+                }
+
+                return (
+                  <Box key={index} sx={styles}>
+                    {button.type === 'QUICK_REPLY' && <ReplyIcon size={14} />}
+                    {button.type === 'URL' && <Link size={14} />}
+                    {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
                     {button.title}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
+
+          <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
+            <FechaModificacion timestamp={template.modifiedOn} />
+          </Typography>
+
         </Box>
       </CardContent>
 
@@ -297,7 +316,7 @@ const TemplateCard = ({
       <CardActions
         sx={{
           mt: 'auto',
-          justifyContent: 'flex-end',
+          justifyContent: 'flex-start',
           padding: 2,
           position: 'relative',
         }}
@@ -332,6 +351,10 @@ const TemplateCard = ({
           open={Boolean(anchorEl)}
           onClose={handleClose}
           TransitionComponent={Fade}
+          anchorOrigin={{
+            vertical: 'bottom',   // Posición vertical respecto al botón (puedes usar 'top' o 'bottom')
+            horizontal: 'right',  // Posición horizontal respecto al botón (queremos que salga a la derecha)
+          }}
         >
           {[
             {
