@@ -1164,7 +1164,7 @@ useClickOutside(
     setExample(newExample);
   }, [message, variableExamples]);
 
-  // useEffect para validación con debounce
+  /* useEffect para validación con debounce
   useEffect(() => {
     // Limpiar timeout anterior
     if (debounceTimeout.current) {
@@ -1192,6 +1192,7 @@ useClickOutside(
       }
     };
   }, [templateName, idBotRedes]); // Dependencias: templateName e idBotRedes
+  */
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
