@@ -22,7 +22,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FileUploadComponent from './FileUploadComponent';
 import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
 import { createTemplateCatalogGupshup } from '../api/gupshupApi';
-import { saveTemplateToTalkMe } from '../api/templatesGSApi';
+import { saveTemplateToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
 
 import { CustomDialog } from '../utils/CustomDialog';
@@ -96,6 +96,8 @@ const TemplateForm = () => {
   const [uploadStatus, setUploadStatus] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
 
+  const [isValidating, setIsValidating] = useState(false);
+
   const templateNameRef = useRef(null);
   const templateTypeRef = useRef(null);
   const languageCodeRef = useRef(null);
@@ -106,6 +108,11 @@ const TemplateForm = () => {
   const exampleRefs = useRef({});
   const descriptionRefs = useRef({});
   const emojiPickerRef = useRef(null);
+  const debounceTimeout = useRef(null);
+
+
+
+  
 
   const resetForm = () => {
     setTemplateName("");
@@ -144,11 +151,11 @@ const TemplateForm = () => {
     let isValid = true;
     let firstErrorFieldRef = null;
 
-    
+
 
     // Validación de templateName
     if (!templateName || templateName.trim() === "") {
-      
+
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
@@ -159,7 +166,7 @@ const TemplateForm = () => {
 
     // Validación de templateType
     if (!templateType || templateType.trim() === "") {
-      
+
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -169,20 +176,20 @@ const TemplateForm = () => {
     }
 
     if (displayPantallas.length === 0) {
-      
+
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-      
+
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
     // Validación de languageCode
     if (!languageCode || languageCode.trim() === "") {
-      
+
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -193,7 +200,7 @@ const TemplateForm = () => {
 
     // Validación de vertical
     if (!vertical || vertical.trim() === "") {
-      
+
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current && !firstErrorFieldRef) {
@@ -203,7 +210,7 @@ const TemplateForm = () => {
 
     // Validación de message
     if (!message || message.trim() === "") {
-      
+
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -214,7 +221,7 @@ const TemplateForm = () => {
 
     // Validación de example
     if (!example || example.trim() === "") {
-      
+
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -225,7 +232,7 @@ const TemplateForm = () => {
 
     // Validación de selectedCategory
     if (!selectedCategory || selectedCategory.trim() === "") {
-      
+
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -237,14 +244,14 @@ const TemplateForm = () => {
     // Validación de variables
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      
+
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          
+
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -253,7 +260,7 @@ const TemplateForm = () => {
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -265,7 +272,7 @@ const TemplateForm = () => {
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        
+
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -279,7 +286,7 @@ const TemplateForm = () => {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        
+
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -289,7 +296,7 @@ const TemplateForm = () => {
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -305,11 +312,11 @@ const TemplateForm = () => {
 
     // Enfocar el primer campo con error encontrado
     if (!isValid && firstErrorFieldRef && firstErrorFieldRef.current) {
-      
+
       firstErrorFieldRef.current.focus();
     }
 
-    
+
     return isValid;
   };
 
@@ -347,47 +354,47 @@ const TemplateForm = () => {
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS
-      
-      
-      
-      
-      
+
+
+
+
+
 
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
   }
-//
-   /*
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+  //
+  /*
+ let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  idBotRedes = 721;
-  idBot = 257;
-  urlTemplatesGS = 'http://localhost:3004/api/';
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  urlWsFTP = 'https://cloud-s2.talkme.pro/WsFTP/api/ftp/echo';
+ appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+ authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+ appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+ idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+ idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+ empresaTalkMe = 2;
+ idBotRedes = 721;
+ idBot = 257;
+ urlTemplatesGS = 'http://localhost:3004/api/';
+ apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+ urlWsFTP = 'https://cloud-s2.talkme.pro/WsFTP/api/ftp/echo';
 */
 
   const iniciarRequest = async () => {
 
     // Validar campos antes de enviar
-      const isValid = validateFields();
-      if (!isValid) {
-        Swal.fire({
-              title: 'Error',
-              text: 'Campo incompletos.',
-              icon: 'error',
-              confirmButtonText: 'Cerrar',
-              confirmButtonColor: '#00c3ff'
-            });
-        return; // Detener si hay errores
-      }
+    const isValid = validateFields();
+    if (!isValid) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Campo incompletos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
+      return; // Detener si hay errores
+    }
 
     try {
       // Hacer el primer request a GupShup API
@@ -469,7 +476,7 @@ const TemplateForm = () => {
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-    
+
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -514,22 +521,58 @@ const TemplateForm = () => {
 
   //NOMBRE PLANTILLA
   const handleTemplateNameChange = (event) => {
-  const inputValue = event.target.value;
-  const hasUpperCase = /[A-Z]/.test(inputValue);
-  
-  const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
-  setTemplateName(newValue);
+    const inputValue = event.target.value;
+    const hasUpperCase = /[A-Z]/.test(inputValue);
 
-  if (hasUpperCase) {
-    setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
-  } else if (newValue.trim() === "") {
-    setTemplateNameError(true);
-    setTemplateNameHelperText("Este campo es requerido");
-  } else {
-    setTemplateNameError(false);
-    setTemplateNameHelperText("");
-  }
-};
+    const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
+    setTemplateName(newValue);
+
+    if (hasUpperCase) {
+      setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
+    } else if (newValue.trim() === "") {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Este campo es requerido");
+    } else {
+      setTemplateNameError(false);
+      setTemplateNameHelperText("");
+    }
+  };
+
+  const validateTemplateName = async (nombre) => {
+    // Reemplazar _ por espacios
+    const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
+
+    if (!nombreFormateado.trim() || !idBotRedes) return;
+
+    setIsValidating(true);
+
+    console.log("Datos a validar: ", urlTemplatesGS, nombreFormateado, idBotRedes);
+
+    try {
+      const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
+
+      if (existe === true) {
+        setTemplateNameError(true);
+        setTemplateNameHelperText("Ya existe una plantilla con este nombre");
+      } else if (existe === false) {
+        // Solo limpiar el error si no hay otros errores
+        if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
+          setTemplateNameError(false);
+          setTemplateNameHelperText("Nombre disponible");
+        }
+      } else {
+        // Error en la validación (existe === null)
+        setTemplateNameError(true);
+        setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+      }
+    } catch (error) {
+      console.error("Error en validación:", error);
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
@@ -629,7 +672,7 @@ const TemplateForm = () => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      
+
     }
   };
 
@@ -637,7 +680,7 @@ const TemplateForm = () => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    
+
   };
 
   //FOOTER PLANTILLA
@@ -691,20 +734,20 @@ const TemplateForm = () => {
 
         });
         setShowEmojiPicker(false);
-        }
-        return; // No actualizar el texto si excede el límite de emojis
+      }
+      return; // No actualizar el texto si excede el límite de emojis
     }
 
     if (newText.length > maxLength) {
-          Swal.fire({
-            title: 'Limite de caracteres',
-            text: 'Solo puedes incluir un máximo de 550 caracteres',
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#00c3ff'
-          });
-          return;
-        }
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
 
     if (newText.length <= maxLength) {
       // Guardar el nuevo texto
@@ -751,18 +794,18 @@ const TemplateForm = () => {
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
 
-       // Verificar si al añadir la variable se superaría el límite de caracteres
-      if (message.length + newVariable.length > 550) {
-        // Puedes mostrar un mensaje de error o simplemente no hacer nada
-        Swal.fire({
-            title: 'Limite de caracteres',
-            text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#00c3ff'
-          });
-        return;
-      }
+    // Verificar si al añadir la variable se superaría el límite de caracteres
+    if (message.length + newVariable.length > 550) {
+      // Puedes mostrar un mensaje de error o simplemente no hacer nada
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
 
     // Obtener la posición actual del cursor
     const cursorPosition = messageRef.current.selectionStart;
@@ -786,56 +829,56 @@ const TemplateForm = () => {
     }, 0);
   };
 
-const handleEmojiClick = (emojiObject) => {
-  const cursor = messageRef.current.selectionStart;
-  const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
-  
-  // Contar los emojis en el nuevo texto
-  const newEmojiCount = countEmojis(newText);
-  
-  // Verificar si excedería el límite de 10 emojis
-  if (newEmojiCount > 10) {
-    // Mostrar alerta
-    Swal.fire({
-      title: 'Límite de emojis',
-      text: 'Solo puedes incluir un máximo de 10 emojis',
-      icon: 'warning',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#00c3ff'
-    });
+  const handleEmojiClick = (emojiObject) => {
+    const cursor = messageRef.current.selectionStart;
+    const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
+
+    // Contar los emojis en el nuevo texto
+    const newEmojiCount = countEmojis(newText);
+
+    // Verificar si excedería el límite de 10 emojis
+    if (newEmojiCount > 10) {
+      // Mostrar alerta
+      Swal.fire({
+        title: 'Límite de emojis',
+        text: 'Solo puedes incluir un máximo de 10 emojis',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      setShowEmojiPicker(false);
+
+      // Mantener el foco en el campo de texto
+      setTimeout(() => {
+        if (messageRef.current) {
+          messageRef.current.focus();
+          messageRef.current.setSelectionRange(cursor, cursor);
+        }
+      }, 100);
+
+      return; // No actualizar el texto
+    }
+
+    // Si está dentro del límite, actualizar el mensaje
+    setMessage(newText);
+    // Actualizar el contador de emojis
+    setEmojiCount(newEmojiCount);
     setShowEmojiPicker(false);
-    
-    // Mantener el foco en el campo de texto
+
+    // Mantener el foco y posicionar el cursor después del emoji insertado
     setTimeout(() => {
       if (messageRef.current) {
         messageRef.current.focus();
-        messageRef.current.setSelectionRange(cursor, cursor);
+        messageRef.current.setSelectionRange(cursor + emojiObject.emoji.length, cursor + emojiObject.emoji.length);
       }
     }, 100);
-    
-    return; // No actualizar el texto
-  }
-  
-  // Si está dentro del límite, actualizar el mensaje
-  setMessage(newText);
-  // Actualizar el contador de emojis
-  setEmojiCount(newEmojiCount);
-  setShowEmojiPicker(false);
+  };
 
-  // Mantener el foco y posicionar el cursor después del emoji insertado
-  setTimeout(() => {
-    if (messageRef.current) {
-      messageRef.current.focus();
-      messageRef.current.setSelectionRange(cursor + emojiObject.emoji.length, cursor + emojiObject.emoji.length);
-    }
-  }, 100);
-};
-
-// Llamada correcta al hook (sin el tercer parámetro)
-useClickOutside(
-  emojiPickerRef, 
-  () => setShowEmojiPicker(false)
-);
+  // Llamada correcta al hook (sin el tercer parámetro)
+  useClickOutside(
+    emojiPickerRef,
+    () => setShowEmojiPicker(false)
+  );
 
   // Nueva función para borrar una variable específica
   const deleteVariable = (variableToDelete) => {
@@ -934,7 +977,7 @@ useClickOutside(
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      
+
       return updatedExamples;
     });
   };
@@ -958,18 +1001,18 @@ useClickOutside(
 
   // Función para reemplazar las variables en el mensaje con sus ejemplos
   const replaceVariables = (text, variables) => {
-  let result = text;
-  
-  Object.keys(variables).forEach(variable => {
-    // Remover las llaves de la clave para crear el regex correcto
-    const cleanVariable = variable.replace(/[{}]/g, '');
-    const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-    
-    result = result.replace(regex, variables[variable]);
-  });
-  
-  return result;
-};
+    let result = text;
+
+    Object.keys(variables).forEach(variable => {
+      // Remover las llaves de la clave para crear el regex correcto
+      const cleanVariable = variable.replace(/[{}]/g, '');
+      const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
+
+      result = result.replace(regex, variables[variable]);
+    });
+
+    return result;
+  };
 
   const handlePantallas = (event) => {
     const { target: { value } } = event;
@@ -989,7 +1032,7 @@ useClickOutside(
     setDisplayPantallas(selectedOptions);
   };
 
-    // Función para contar emojis en un texto
+  // Función para contar emojis en un texto
   const countEmojis = (text) => {
     // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
     const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
@@ -997,7 +1040,7 @@ useClickOutside(
     return matches ? matches.length : 0;
   };
 
-    // 1. Función para detectar duplicados
+  // 1. Función para detectar duplicados
   const getDuplicateDescriptions = (descriptions) => {
     const descriptionCounts = {};
     const duplicates = new Set();
@@ -1034,15 +1077,44 @@ useClickOutside(
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-    
-    
+
+
 
     const newExample = replaceVariables(message, variableExamples);
 
-    
+
 
     setExample(newExample);
   }, [message, variableExamples]);
+
+  // useEffect para validación con debounce
+  useEffect(() => {
+    // Limpiar timeout anterior
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    // Solo validar si hay un nombre y no está vacío
+    if (templateName.trim()) {
+      debounceTimeout.current = setTimeout(() => {
+        validateTemplateName(templateName);
+      }, 800); // Esperar 800ms después de que el usuario deje de escribir
+    } else {
+      // Si está vacío, limpiar mensajes de validación de existencia
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
+        templateNameHelperText === "Nombre disponible" ||
+        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+        setTemplateNameHelperText("");
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [templateName, idBotRedes]); // Dependencias: templateName e idBotRedes
 
 
   return (

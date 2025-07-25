@@ -21,7 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FileUploadComponent from './FileUploadComponentV2';
 import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
 import { createTemplateGupshup } from '../api/gupshupApi';
-import { saveTemplateToTalkMe } from '../api/templatesGSApi';
+import { saveTemplateToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
 import { CustomDialog } from '../utils/CustomDialog';
 import { useClickOutside } from '../utils/emojiClick';
 
@@ -100,6 +100,8 @@ const TemplateForm = () => {
   const [uploadStatus, setUploadStatus] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
 
+  const [isValidating, setIsValidating] = useState(false);
+
   const templateNameRef = useRef(null);
   const templateTypeRef = useRef(null);
   const languageCodeRef = useRef(null);
@@ -110,6 +112,7 @@ const TemplateForm = () => {
   const exampleRefs = useRef({});
   const descriptionRefs = useRef({});
   const emojiPickerRef = useRef(null);
+  const debounceTimeout = useRef(null);
 
   const resetForm = () => {
     setTemplateName("");
@@ -359,9 +362,9 @@ const TemplateForm = () => {
     }
   } //
 
-  //
+  /*
 
-  /* let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
  
    appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
    authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
@@ -375,18 +378,6 @@ const TemplateForm = () => {
    apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
    urlWsFTP = 'https://cloud-s2.talkme.pro/WsFTP/api/ftp/echo';
  */
-
-
-  /*
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
-
-  appId = 'f63360ab-87b0-44da-9790-63a0d524f9dd'; // Extrae appId del token
-  authCode = 'sk_2662b472ec0f4eeebd664238d72b61da'; // Extrae authCode del token
-  appName = 'DemosTalkMe56'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  */
 
   const iniciarRequest = async () => {
 
@@ -568,6 +559,43 @@ const TemplateForm = () => {
       setTemplateNameHelperText("");
     }
   };
+
+  // Función para validar el nombre de la plantilla
+const validateTemplateName = async (nombre) => {
+  // Reemplazar _ por espacios
+  const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
+  
+  if (!nombreFormateado.trim() || !idBotRedes) return;
+
+  setIsValidating(true);
+
+  console.log("Datos a validar: ", urlTemplatesGS, nombreFormateado, idBotRedes);
+  
+  try {
+    const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
+    
+    if (existe === true) {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Ya existe una plantilla con este nombre");
+    } else if (existe === false) {
+      // Solo limpiar el error si no hay otros errores
+      if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
+        setTemplateNameError(false);
+        setTemplateNameHelperText("Nombre disponible");
+      }
+    } else {
+      // Error en la validación (existe === null)
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+    }
+  } catch (error) {
+    console.error("Error en validación:", error);
+    setTemplateNameError(true);
+    setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+  } finally {
+    setIsValidating(false);
+  }
+};
 
   //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
@@ -1135,6 +1163,35 @@ useClickOutside(
     const newExample = replaceVariables(message, variableExamples);
     setExample(newExample);
   }, [message, variableExamples]);
+
+  // useEffect para validación con debounce
+  useEffect(() => {
+    // Limpiar timeout anterior
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    // Solo validar si hay un nombre y no está vacío
+    if (templateName.trim()) {
+      debounceTimeout.current = setTimeout(() => {
+        validateTemplateName(templateName);
+      }, 800); // Esperar 800ms después de que el usuario deje de escribir
+    } else {
+      // Si está vacío, limpiar mensajes de validación de existencia
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" || 
+          templateNameHelperText === "Nombre disponible" ||
+          templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+        setTemplateNameHelperText("");
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [templateName, idBotRedes]); // Dependencias: templateName e idBotRedes
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>

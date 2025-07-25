@@ -563,6 +563,30 @@ export const eliminarBroadcastParametros = async (urlTemplatesGS, parametrosIds)
   }
 };
 
+export const validarNombrePlantillas = async (urlTemplatesGS, nombre, idBotRedes) => {
+  const url = `${urlTemplatesGS}plantillas/validar?nombre=${encodeURIComponent(nombre)}&id_bot_redes=${encodeURIComponent(idBotRedes)}`;
+  console.log("url: ", url);
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al validar la plantilla: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.existe; // Retorna true si existe, false si no
+    
+  } catch (error) {
+    console.error("Error validando la plantilla:", error);
+    return null;
+  }
+};
 
 
 //utils
