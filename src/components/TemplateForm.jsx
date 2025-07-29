@@ -1172,6 +1172,7 @@ useClickOutside(
     setExample(newExample);
   }, [message, variableExamples]);
 
+  /*
   useEffect(() => {
     // Limpiar timeout anterior
     if (debounceTimeout.current) {
@@ -1199,6 +1200,7 @@ useClickOutside(
       }
     };
   }, [templateName, idBotRedes]);
+  */
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
