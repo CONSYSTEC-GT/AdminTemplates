@@ -389,7 +389,7 @@ const validateFields = async () => {
   const iniciarRequest = async () => {
 
     // Validar campos antes de enviar
-    const isValid = validateFields();
+    const isValid = await validateFields();
     if (!isValid) {
       Swal.fire({
         title: 'Error',
