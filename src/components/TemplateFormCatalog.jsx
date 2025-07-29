@@ -147,7 +147,7 @@ const TemplateForm = () => {
     setOpenSnackbar(false);
   };
 
-  const validateFields = () => {
+  const validateFields = async () => {
     let isValid = true;
     let firstErrorFieldRef = null;
 
@@ -155,14 +155,25 @@ const TemplateForm = () => {
 
     // Validación de templateName
     if (!templateName || templateName.trim() === "") {
-
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
+      if (templateNameRef.current) templateNameRef.current.focus();
       isValid = false;
-      if (templateNameRef.current && !firstErrorFieldRef) {
-        firstErrorFieldRef = templateNameRef;
+
+    } else {
+
+      await validateTemplateName(templateName);
+
+      // Verificar el resultado después de validar
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
+        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+        setTemplateNameError(true);
+        if (templateNameRef.current) templateNameRef.current.focus();
+        isValid = false;
+
+      } else {
       }
-    }
+      }
 
     // Validación de templateType
     if (!templateType || templateType.trim() === "") {
@@ -384,7 +395,7 @@ const TemplateForm = () => {
   const iniciarRequest = async () => {
 
     // Validar campos antes de enviar
-    const isValid = validateFields();
+    const isValid = await validateFields();
     if (!isValid) {
       Swal.fire({
         title: 'Error',

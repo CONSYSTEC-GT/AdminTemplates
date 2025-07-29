@@ -150,32 +150,39 @@ const TemplateForm = () => {
     setOpenSnackbar(false);
   };
 
-  const validateFields = () => {
+const validateFields = async () => {
     let isValid = true;
 
-    
-
     if (!templateName || templateName.trim() === "") {
-      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
-      isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
-    } else {
-      
-    }
-
-    if (!templateType || templateType.trim() === "") {
-      
-      setTemplateTypeError(true);
-      setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
-      if (templateTypeRef.current) templateTypeRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
+
+      await validateTemplateName(templateName);
+
+      // Verificar el resultado después de validar
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
+        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+        setTemplateNameError(true);
+        if (templateNameRef.current) templateNameRef.current.focus();
+        isValid = false;
+
+      } else {
+      }
+      }
+
+      if (!templateType || templateType.trim() === "") {
+
+        setTemplateTypeError(true);
+        setTemplateTypeHelperText("Este campo es requerido");
+        isValid = false;
+        if (templateTypeRef.current) templateTypeRef.current.focus();
+
+        // No retornar aquí, continuar con la validación de otros campos
+      } else {
       
     }
 
@@ -382,7 +389,7 @@ const TemplateForm = () => {
   const iniciarRequest = async () => {
 
     // Validar campos antes de enviar
-    const isValid = validateFields();
+    const isValid = await validateFields();
     if (!isValid) {
       Swal.fire({
         title: 'Error',
@@ -1191,6 +1198,7 @@ useClickOutside(
         clearTimeout(debounceTimeout.current);
       }
     };
+  }, [templateName, idBotRedes]);
   }, [templateName, idBotRedes]); // Dependencias: templateName e idBotRedes
   */
 
