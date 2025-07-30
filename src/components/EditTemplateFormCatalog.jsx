@@ -468,6 +468,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
+  console.log("PLANTILLA SELECCIONADA: ", idTemplate);
+
   const iniciarRequest = async () => {
     // Validar campos antes de enviar
     const isValid = validateFields();
@@ -515,6 +517,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         const templateId = result.template.id;
 
         // Hacer el segundo request a TalkMe API
+        console.log ("idBotRedes en editar catalogo: ", idBotRedes);
         const result2 = await editTemplateToTalkMe(
           templateId,
           {
@@ -977,6 +980,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
               onChange={handleTemplateNameChange}
               fullWidth
               inputRef={templateNameRef}
+              disabled
             />
           </FormControl>
         </Box>

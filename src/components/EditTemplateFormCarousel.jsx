@@ -571,6 +571,7 @@ useEffect(() => {
       if (result && result.status === "success") {
 
         // Hacer el segundo request a TalkMe API
+        console.log("idBotRedes en carrusel: ", idBotRedes);
         const result2 = await editTemplateToTalkMe(
           idTemplate,
           {
@@ -584,7 +585,8 @@ useEffect(() => {
           variables,
           variableDescriptions,
           cardsToSendArray,
-          urlTemplatesGS
+          urlTemplatesGS,
+          idBotRedes
         );
 
         // Si el segundo request también fue exitoso
