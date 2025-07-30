@@ -1656,6 +1656,7 @@ const handlePantallas = (event) => {
                 onChange={handleTemplateNameChange}
                 fullWidth
                 inputRef={templateNameRef}
+                disabled
               />
             </FormControl>
           </Box>

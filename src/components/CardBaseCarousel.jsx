@@ -286,7 +286,7 @@ const CardBaseCarousel = ({
               slidesPerView={1.1}
               centeredSlides={true}
               pagination={{ clickable: true }}
-              style={{ width: '100%', paddingBottom: '1rem', flex: 1, minHeight: 0, }}
+              style={{ width: '100%', paddingBottom: '2rem', flex: 1, minHeight: 0, }}
             >
               {cards.map((card, index) => (
                 <SwiperSlide key={index}>
