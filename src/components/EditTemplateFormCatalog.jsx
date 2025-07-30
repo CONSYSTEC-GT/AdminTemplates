@@ -577,6 +577,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   // PANTALLAS
   const pantallasTalkMe = [
+    '0 - Notificaciones',
     '1 - Contactos',
     '2 - Recontacto',
     '3 - Historial',
