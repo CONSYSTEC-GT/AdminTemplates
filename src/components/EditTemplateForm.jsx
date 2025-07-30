@@ -745,8 +745,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const result = await response.json();
       
 
-      // Moví esta condición después de obtener el resultado y antes del return
+      
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
+        console.log("variables: ", variables);
+        console.log("variables descripciones: ", variableDescriptions);
         // Primero eliminamos los parámetros existentes
         //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
         await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);

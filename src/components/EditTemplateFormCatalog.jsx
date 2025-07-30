@@ -527,7 +527,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           variables,
           variableDescriptions,
           [],
-          urlTemplatesGS
+          urlTemplatesGS,
+          idBotRedes
         );
 
         // El tercer request se maneja dentro de saveTemplateToTalkMe
