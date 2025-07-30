@@ -470,11 +470,21 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
 
 
   try {
+
+    // Console.log del request
+    console.log('Request AL EDITAR CATALOGO: ', {
+      url: url,
+      method: 'PUT',
+      headers: headers,
+      body: data.toString()
+    });
+
     const response = await fetch(url, {
       method: "PUT",
       headers: headers,
       body: data,
     });
+    console.log('Respuesta completa:', result); // Agrega esto para debug
 
     
     
@@ -495,7 +505,7 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
         ...templateData,
         CREADO_POR: idNombreUsuarioTalkMe,
         STATUS: "ERROR",
-        REJECTION_REASON: errorResponse.message || "Solicitud inválida"
+        REJECTION_REASON: error.message || "Solicitud inválida"
       });
 
       // Guardar log de error
