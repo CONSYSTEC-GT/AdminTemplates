@@ -588,7 +588,12 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
     }
 
     console.log("✅ Plantilla editada exitosamente en Gupshup");
-    return result;
+    return {
+      status: "success",
+      template: {
+        id: idTemplate
+      }
+    };
 
   } catch (error) {
     console.error("❌ Error general en editTemplateCatalogGupshup:", error);
