@@ -507,7 +507,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const result = {
         status: "success",
         template: {
-          id: "d1235eab-405f-4f20-9727-a9e4bc840191" // Puedes poner cualquier ID de prueba aquí
+          id: "84a9f2cc-fc56-45ec-a43b-e77e456487e6" // Puedes poner cualquier ID de prueba aquí
         }
       };*/
 
