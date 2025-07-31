@@ -272,8 +272,10 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   }
 };
 
-export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS) => {
+export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS, idBotRedes) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
+
+  console.log("idTemplate: ", idTemplate);
 
   // URL para actualizar plantilla por ID_INTERNO
   //const url = `https://certificacion.talkme.pro/templatesGS/api/plantillas/${idTemplate}`;
@@ -285,9 +287,9 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
   // Mapeo de categorías
   let ID_PLANTILLA_CATEGORIA;
   if (selectedCategory === "MARKETING") {
-    ID_PLANTILLA_CATEGORIA = 13;
+    ID_PLANTILLA_CATEGORIA = 10;
   } else if (selectedCategory === "UTILITY") {
-    ID_PLANTILLA_CATEGORIA = 14;
+    ID_PLANTILLA_CATEGORIA = 13;
   } else {
     console.error("Categoría no válida:", selectedCategory);
     showSnackbar("❌ Categoría no válida", "error");
@@ -320,7 +322,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
   const data = {
     ID_INTERNO: idTemplate, // ID de la plantilla de GupShup
     ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
-    ID_BOT_REDES: 149,
+    ID_BOT_REDES: idBotRedes,
     NOMBRE: templateName,
     MENSAJE: message,
     TIPO_PLANTILLA: TIPO_PLANTILLA,
@@ -328,7 +330,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
     URL: uploadedUrl,
     PANTALLAS: PANTALLAS,
     ESTADO: 1,
-    AUTORIZADO: 1,
+    AUTORIZADO: 0,
     ELIMINADO: 0,
     SEGUIMIENTO_EDC: 0,
     MODIFICADO_POR: idNombreUsuarioTalkMe,
@@ -371,23 +373,25 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
         // Obtener y limpiar parámetros existentes
         const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
         
-        if (parametros && parametros.length > 0) {
+        if (parametros && parametros.length > 0 && TIPO_PLANTILLA===1) {
           const parametrosIds = parametros.map(param => param.ID_PLANTILLA_PARAMETRO);
           await eliminarBroadcastParametros(urlTemplatesGS, parametrosIds);
         }
 
         await deleteTemplateParams(talkmeId, urlTemplatesGS);
+        console.log("PARAMETROS ELIMINADOS");
 
         // Insertar nuevos parámetros solo si existen
         if (variables && variables.length > 0) {
           await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
+          console.log("PARAMETROS NUEVOS CREADOS");
         }
 
       } catch (error) {
       }
     }
     
-    if (talkmeId) {
+    if (talkmeId && TIPO_PLANTILLA===1) {
       try {
         // 1. Eliminar todas las tarjetas existentes de una sola vez
         const deleteResponse = await fetch(`${urlTemplatesGS}tarjetas/plantilla/${talkmeId}`, {
