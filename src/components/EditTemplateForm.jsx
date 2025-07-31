@@ -1326,7 +1326,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   // Función para contar emojis en un texto
   const countEmojis = (text) => {
     // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
-    const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
+    const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
     const matches = text.match(emojiRegex);
     return matches ? matches.length : 0;
   };
