@@ -154,6 +154,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const descriptionRefs = useRef({});
   const emojiPickerRef = useRef(null);
 
+  const [emojiCount, setEmojiCount] = useState(0);
+
   const [idTemplate, setIdTemplate] = useState("");
 
   // Primer useEffect: Cargar los datos en el formulario al montar el componente
@@ -771,6 +773,96 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
   // VARIABLES DEL BODY MESSAGE
+
+  // Función actualizada con límite de emojis
+    const handleBodyMessageChange = (e) => {
+      let newText = e.target.value; // ✅ Cambiar const por let
+      const maxLength = 550;
+      const emojiCount = countEmojis(newText);
+      const maxEmojis = 10;
+  
+      // Renumerar variables solo si se detectan (ej: al pegar)
+      if (newText.includes("{{")) {
+        newText = renumberVariables(newText); // ✅ Ahora funciona correctamente
+      }
+  
+      // Verificar si se excede el límite de emojis
+      if (emojiCount > maxEmojis) {
+        // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+        if (countEmojis(message) <= maxEmojis) {
+          Swal.fire({
+            title: 'Límite de emojis',
+            text: 'Solo puedes incluir un máximo de 10 emojis',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#00c3ff'
+          });
+        }
+        return; // No actualizar el texto si excede el límite de emojis
+      }
+  
+      if (newText.length > maxLength) {
+        Swal.fire({
+          title: 'Limite de caracteres',
+          text: 'Solo puedes incluir un máximo de 550 caracteres',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+        return;
+      }
+  
+      // Continuar con tu lógica existente si está dentro del límite de caracteres
+      if (newText.length <= maxLength) {
+        // Guardar el nuevo texto
+        setMessage(newText);
+  
+        // Actualizar el contador de emojis (necesitas agregar este estado)
+        setEmojiCount(emojiCount);
+  
+        // Extraer y actualizar variables automáticamente
+        const detectedVariables = extractVariables(newText);
+        if (
+          detectedVariables.length !== variables.length ||
+          !detectedVariables.every(v => variables.includes(v))
+        ) {
+          setVariables(detectedVariables);
+        }
+  
+        // Verificar qué variables se han eliminado del texto
+        const deletedVariables = [];
+        variables.forEach(variable => {
+          if (!newText.includes(variable)) {
+            deletedVariables.push(variable);
+          }
+        });
+  
+        // Si se eliminaron variables, actualiza el estado
+        if (deletedVariables.length > 0) {
+          // Filtrar las variables eliminadas
+          const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
+  
+          // Actualizar el estado de las variables
+          setVariables(remainingVariables);
+  
+          // Actualizar las descripciones y ejemplos
+          const newDescriptions = { ...variableDescriptions };
+          const newExamples = { ...variableExamples };
+          const newErrors = { ...variableErrors };
+  
+          deletedVariables.forEach(v => {
+            delete newDescriptions[v];
+            delete newExamples[v];
+            delete newErrors[v];
+          });
+  
+          setVariableDescriptions(newDescriptions);
+          setVariableExamples(newExamples);
+          setVariableErrors(newErrors);
+        }
+      }
+    };
+    
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
     setMessage((prev) => `${prev} ${newVariable}`);
@@ -868,6 +960,14 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
     
     return result;
+  };
+
+  // Función para contar emojis en un texto
+  const countEmojis = (text) => {
+    // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
+    const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
+    const matches = text.match(emojiRegex);
+    return matches ? matches.length : 0;
   };
 
   const handlePantallas = (event) => {
@@ -1160,11 +1260,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
               multiline
               aria-required="true"
               error={contenidoPlantillaTypeError}
-              rows={4}
+              rows={7}
               label="Escribe"
               placeholder="Ingresa el contenido de tu mensaje aquí..."
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              //onChange={(e) => setMessage(e.target.value)}
+              onChange={handleBodyMessageChange}
               sx={{
                 mb: 3,
                 mt: 4,
@@ -1176,6 +1277,13 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                 }
               }}
               inputRef={messageRef}
+              helperText={`${message.length}/550 caracteres | ${emojiCount}/10 emojis`}
+              FormHelperTextProps={{
+                sx: {
+                  textAlign: 'right',
+                  color: message.length === 550 || emojiCount >= 10 ? 'error.main' : 'text.secondary'
+                }
+              }}
             />
 
             {/* Botones de emojis y acciones en una barra de herramientas mejor diseñada */}

@@ -53,41 +53,41 @@ const EditTemplateFormCarousel = () => {
 
   // Decodifica el token para obtener appId y authCode
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        appId = decoded.app_id; // Extrae appId del token
-        authCode = decoded.auth_code; // Extrae authCode del token
-        appName = decoded.app_name; // Extrae el nombre de la aplicación
-        idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
-        idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
-        empresaTalkMe = decoded.empresa;
-        idBotRedes = decoded.id_bot_redes;
-        idBot = decoded.id_bot;
-        urlTemplatesGS = decoded.urlTemplatesGS;
-        urlWsFTP = decoded.urlWsFTP;
-      } catch (error) {
-        console.error('Error decodificando el token:', error);
-        
-      }
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      appId = decoded.app_id; // Extrae appId del token
+      authCode = decoded.auth_code; // Extrae authCode del token
+      appName = decoded.app_name; // Extrae el nombre de la aplicación
+      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+      empresaTalkMe = decoded.empresa;
+      idBotRedes = decoded.id_bot_redes;
+      idBot = decoded.id_bot;
+      urlTemplatesGS = decoded.urlTemplatesGS;
+      urlWsFTP = decoded.urlWsFTP;
+    } catch (error) {
+      console.error('Error decodificando el token:', error);
+
     }
+  }
 
-    /*
+  /*
 
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  idBotRedes = 721;
-  idBot = 257;
-  urlTemplatesGS = 'http://localhost:3004/api/';
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-  */  
+appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+empresaTalkMe = 2;
+idBotRedes = 721;
+idBot = 257;
+urlTemplatesGS = 'http://localhost:3004/api/';
+apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+*/
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -195,102 +195,104 @@ const EditTemplateFormCarousel = () => {
   const selectedCategoryRef = useRef(null);
   const exampleRefs = useRef({});
   const exampleCardRefs = useRef({});
-  
+
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
   const emojiPickerButtonRef = useRef(null); // Para el botón
   const emojiPickerComponentRef = useRef(null); // Para el componente del picker
 
-   // Cargar los datos en el formulario al montar el componente
-useEffect(() => {
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+  const [emojiCount, setEmojiCount] = useState(0);
 
-      // Parsear containerMeta si existe
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          
-          setMessage(meta.data || "");
-          setExample(meta.sampleText || "");
+  // Cargar los datos en el formulario al montar el componente
+  useEffect(() => {
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType(templateData.templateType || "");
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-          // Detectar el tipo de carrusel basado en la primera tarjeta
-          if (meta.cards && meta.cards.length > 0) {
-            
-            setCarouselType(meta.cards[0].headerType);
-            
-            // Detectar cantidad de botones y su tipo basado en la primera tarjeta
-            if (meta.cards[0].buttons && meta.cards[0].buttons.length > 0) {
-              setCantidadBotones(String(meta.cards[0].buttons.length));
-              
-              
+        // Parsear containerMeta si existe
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
 
-              setTipoBoton(meta.cards[0].buttons[0].type || "QUICK_REPLY");
+            setMessage(meta.data || "");
+            setExample(meta.sampleText || "");
+
+            // Detectar el tipo de carrusel basado en la primera tarjeta
+            if (meta.cards && meta.cards.length > 0) {
+
+              setCarouselType(meta.cards[0].headerType);
+
+              // Detectar cantidad de botones y su tipo basado en la primera tarjeta
+              if (meta.cards[0].buttons && meta.cards[0].buttons.length > 0) {
+                setCantidadBotones(String(meta.cards[0].buttons.length));
+
+
+
+                setTipoBoton(meta.cards[0].buttons[0].type || "QUICK_REPLY");
+              }
+
+              // Configurar las tarjetas con sus datos
+              const destructuredCards = meta.cards.map((card, index) => {
+                return {
+                  id: `card-${index}`, // Genera un ID único para cada tarjeta
+                  messageCard: card.body || "",
+                  variablesCard: [], // Si tienes variables en el body, deberías extraerlas aquí
+                  variableDescriptions: {}, // Mapeo para descripciones de variables
+                  variableExamples: {}, // Mapeo para ejemplos de variables
+                  fileData: card.mediaUrl ? {
+                    url: card.mediaUrl,
+                    id: card.mediaId || `media-${Date.now()}-${index}`,
+                    type: card.headerType === "IMAGE" ? "image" : "video",
+                  } : null,
+                  buttons: card.buttons ? card.buttons.map((button, buttonIndex) => ({
+                    id: `button-${index}-${buttonIndex}`,
+                    title: button.text || "",
+                    type: button.type || "QUICK_REPLY",
+                    url: button.url || "",
+                    phoneNumber: button.phone_number || ""
+                  })) : []
+                };
+              });
+
+              setCards(destructuredCards);
             }
-
-            // Configurar las tarjetas con sus datos
-            const destructuredCards = meta.cards.map((card, index) => {
-              return {
-                id: `card-${index}`, // Genera un ID único para cada tarjeta
-                messageCard: card.body || "",
-                variablesCard: [], // Si tienes variables en el body, deberías extraerlas aquí
-                variableDescriptions: {}, // Mapeo para descripciones de variables
-                variableExamples: {}, // Mapeo para ejemplos de variables
-                fileData: card.mediaUrl ? {
-                  url: card.mediaUrl,
-                  id: card.mediaId || `media-${Date.now()}-${index}`,
-                  type: card.headerType === "IMAGE" ? "image" : "video",
-                } : null,
-                buttons: card.buttons ? card.buttons.map((button, buttonIndex) => ({
-                  id: `button-${index}-${buttonIndex}`,
-                  title: button.text || "",
-                  type: button.type || "QUICK_REPLY",
-                  url: button.url || "",
-                  phoneNumber: button.phone_number || ""
-                })) : []
-              };
-            });
-
-            setCards(destructuredCards);
+          } catch (error) {
+            console.error("Error al parsear containerMeta:", error);
           }
-        } catch (error) {
-          console.error("Error al parsear containerMeta:", error);
         }
       }
-    }
 
-    // Segundo bloque try-catch movido dentro de loadData
-    try {
-      const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-      if (info === null) {
-        
-      } else {
-        const pantallasFromAPI = info.pantallas || "";
-        setPantallas(pantallasFromAPI);
+      // Segundo bloque try-catch movido dentro de loadData
+      try {
+        const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+        if (info === null) {
 
-        const displayValues = procesarPantallasAPI(pantallasFromAPI);
-        setDisplayPantallas(displayValues);
+        } else {
+          const pantallasFromAPI = info.pantallas || "";
+          setPantallas(pantallasFromAPI);
 
-        setMediaURL(info.url || "");
-        setImagePreview(info.url || "");
-        setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+          const displayValues = procesarPantallasAPI(pantallasFromAPI);
+          setDisplayPantallas(displayValues);
+
+          setMediaURL(info.url || "");
+          setImagePreview(info.url || "");
+          setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+        }
+      } catch (error) {
+
       }
-    } catch (error) {
-      
-    }
-  };
+    };
 
-  loadData(); // Llamada a la función dentro del useEffect
-}, [templateData, urlTemplatesGS]);
+    loadData(); // Llamada a la función dentro del useEffect
+  }, [templateData, urlTemplatesGS]);
 
-// Segundo useEffect que se ejecuta cuando idPlantilla cambia
+  // Segundo useEffect que se ejecuta cuando idPlantilla cambia
   useEffect(() => {
     const loadParametros = async () => {
       if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
@@ -298,7 +300,7 @@ useEffect(() => {
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
         if (infoParametros === null || infoParametros.length === 0) {
-          
+
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -317,12 +319,12 @@ useEffect(() => {
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-          
-          
-          
+
+
+
         }
       } catch (error) {
-        
+
       }
     };
 
@@ -365,99 +367,99 @@ useEffect(() => {
   const validateFields = () => {
     let isValid = true;
 
-    
+
 
     if (!templateName || templateName.trim() === "") {
-      
+
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!templateType || templateType.trim() === "") {
-      
+
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      
+
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!vertical || vertical.trim() === "") {
-      
+
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!message || message.trim() === "") {
-      
+
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!example || example.trim() === "") {
-      
+
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (exampleRef.current) exampleRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      
+
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      
+
       const newErrors = {}; // Objeto para almacenar los errores
 
       for (const variable of variables) {
         if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
-          
+
           isValid = false;
           newErrors[variable] = "Este campo es requerido"; // Asignar mensaje de error
 
@@ -466,7 +468,7 @@ useEffect(() => {
             exampleRefs.current[variable].focus();
           }
         } else {
-          
+
           newErrors[variable] = ""; // Sin error
         }
       }
@@ -476,15 +478,15 @@ useEffect(() => {
 
       // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-        
+
       } else {
-        
+
       }
     } else {
-      
+
     }
 
-    
+
     return isValid; // Retornar el valor final de isValid
   };
 
@@ -536,8 +538,8 @@ useEffect(() => {
       const cardsToSend = JSON.stringify([...cards]); // Convertir a JSON string
 
       // COMENTADO EL PRIMER REQUEST
-      
-      
+
+
       const result = await editTemplateCarouselGupshup(
         appId,
         authCode,
@@ -621,12 +623,12 @@ useEffect(() => {
         confirmButtonColor: '#00c3ff'
       });
     }
-};
+  };
 
-    // PANTALLAS
-    const pantallasTalkMe = [
-      '4 - Broadcast'
-    ];
+  // PANTALLAS
+  const pantallasTalkMe = [
+    '4 - Broadcast'
+  ];
 
   // CATEGORIAS
   const categories = [
@@ -772,7 +774,7 @@ useEffect(() => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      
+
     }
   };
 
@@ -780,7 +782,7 @@ useEffect(() => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    
+
   };
 
   //FOOTER PLANTILLA
@@ -831,13 +833,58 @@ useEffect(() => {
   };
 
   // VARIABLES DEL BODY MESSAGE
+  // Función actualizada con límite de emojis
   const handleBodyMessageChange = (e) => {
+    const newValue = event.target.value;
+    setMessage(newValue);
+
+
+    // Validar si el campo está vacío
+    if (newValue.trim() === "") {
+      setcontenidoPlantillaTypeError(true);
+      setcontenidoPlantillaTypeHelperText("Este campo es requerido");
+    } else {
+      setcontenidoPlantillaTypeError(false);
+      setcontenidoPlantillaTypeHelperText("");
+    }
+
+
     const newText = e.target.value;
-    const maxLength = 1024;
+    const maxLength = 549;
+    const emojiCount = countEmojis(newText);
+    const maxEmojis = 10;
+
+    // Verificar si se excede el límite de emojis
+    if (emojiCount > maxEmojis) {
+      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+      if (countEmojis(message) <= maxEmojis) {
+        Swal.fire({
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+      return; // No actualizar el texto si excede el límite de emojis
+    }
+
+    if (newText.length > maxLength) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
 
     if (newText.length <= maxLength) {
       // Guardar el nuevo texto
       setMessage(newText);
+      // Actualizar el contador de emojis (necesitas agregar este estado)
+      setEmojiCount(emojiCount);
 
       // Verificar qué variables se han eliminado del texto
       const deletedVariables = [];
@@ -876,43 +923,72 @@ useEffect(() => {
   const handleBodyMessageCardChange = (e, cardId) => {
     const newText = e.target.value;
     const maxLength = 280;
-  
-    setCards(prevCards => 
+    const newEmojiCount = countEmojis(newText);
+    const maxEmojis = 10;
+
+    // Verificar si se excede el límite de emojis
+    if (newEmojiCount > maxEmojis) {
+      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+      if (countEmojis(message) > maxEmojis) {
+        Swal.fire({
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+      return; // No actualizar el texto si excede el límite de emojis
+    }
+
+    if (newText.length > maxLength) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+    setCards(prevCards =>
       prevCards.map(card => {
         if (card.id !== cardId) return card;
-  
+
         // Variables actuales del mensaje
         const currentVariables = card.variablesCard || [];
-  
+
         // Identificar variables eliminadas
         const deletedVariables = currentVariables.filter(
           variable => !newText.includes(variable)
         );
-  
+
         const remainingVariables = currentVariables.filter(
           v => !deletedVariables.includes(v)
         );
-  
+
         // Actualizar descripciones y ejemplos
         const updatedDescriptions = { ...card.variableDescriptionsCard };
         const updatedExamples = { ...card.variableExamples };
-  
+
         deletedVariables.forEach(v => {
           delete updatedDescriptions[v];
           delete updatedExamples[v];
         });
-  
+
         return {
           ...card,
           messageCard: newText,
           variablesCard: remainingVariables,
           variableDescriptionsCard: updatedDescriptions,
-          variableExamples: updatedExamples
+          variableExamples: updatedExamples,
+          emojiCountCard: newEmojiCount
         };
       })
     );
   };
-  
+
 
   // VARIABLES DEL BODY MESSAGE
   const handleAddVariable = () => {
@@ -944,21 +1020,21 @@ useEffect(() => {
     setCards(prevCards =>
       prevCards.map(card => {
         if (card.id !== cardId) return card;
-  
+
         const newVariable = `{{${card.variablesCard.length + 1}}}`;
         // Usa la referencia específica de esta tarjeta
         const textFieldRef = messageCardRefs.current[cardId];
         const cursorPosition = textFieldRef?.selectionStart || 0;
-  
+
         const textBefore = card.messageCard.substring(0, cursorPosition);
         const textAfter = card.messageCard.substring(cursorPosition);
-  
+
         const newMessageCard = `${textBefore}${newVariable}${textAfter}`;
-  
+
         // OPCIONAL: Actualizar descripción y ejemplos también
         const updatedDescriptions = { ...card.variableDescriptionsCard, [newVariable]: "" };
         const updatedExamples = { ...card.variableExamples, [newVariable]: "" };
-  
+
         return {
           ...card,
           messageCard: newMessageCard,
@@ -989,39 +1065,64 @@ useEffect(() => {
   };
 
   const handleEmojiClickCarousel = (emojiObject, cardId) => {
-    const input = messageCardRefs.current[cardId];
-    const cursor = input?.selectionStart || 0;
+      const input = messageCardRefs.current[cardId];
+      const cursor = input?.selectionStart || 0;
   
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.id !== cardId) return card;
+      setCards(prevCards =>
+        prevCards.map(card => {
+          if (card.id !== cardId) return card;
   
-        const newText =
-          card.messageCard.slice(0, cursor) +
-          emojiObject.emoji +
-          card.messageCard.slice(cursor);
+          const newText =
+            card.messageCard.slice(0, cursor) +
+            emojiObject.emoji +
+            card.messageCard.slice(cursor);
   
-        return { ...card, messageCard: newText };
-      })
-    );
+          // Contar los emojis en el nuevo texto
+          const newEmojiCountCard = countEmojis(newText);
   
-    setShowEmojiPickerCards(false);
+          // Verificar si excedería el límite de 10 emojis
+          if (newEmojiCountCard > 10) {
+            // Mostrar alerta
+            Swal.fire({
+              title: 'Límite de emojis',
+              text: 'Solo puedes incluir un máximo de 10 emojis',
+              icon: 'warning',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#00c3ff'
+            });
+            setShowEmojiPickerCards(false);
   
-    setTimeout(() => {
-      if (input) {
-        const newPos = cursor + emojiObject.emoji.length;
-        input.focus();
-        input.setSelectionRange(newPos, newPos);
-      }
-    }, 100);
-  };
+            // Mantener el foco en el campo de texto
+            setTimeout(() => {
+              if (input) {
+                input.focus();
+                input.setSelectionRange(cursor, cursor);
+              }
+            }, 100);
   
-    // Llamada correcta al hook (sin el tercer parámetro)
-    useClickOutside(
-      emojiPickerRef, 
-      () => setShowEmojiPicker(false)
-    );
+            return card; // No actualizar el texto
+          }
   
+          // Si está dentro del límite, actualizar el mensaje
+          return {
+            ...card,
+            messageCard: newText,
+            emojiCountCard: newEmojiCountCard // Asumiendo que tienes este campo en el objeto card
+          };
+        })
+      );
+  
+      setShowEmojiPickerCards(false);
+  
+      setTimeout(() => {
+        if (input) {
+          const newPos = cursor + emojiObject.emoji.length;
+          input.focus();
+          input.setSelectionRange(newPos, newPos);
+        }
+      }, 100);
+    };
+
 
 
 
@@ -1215,7 +1316,7 @@ useEffect(() => {
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      
+
       return updatedExamples;
     });
   };
@@ -1272,15 +1373,15 @@ useEffect(() => {
   // Función para reemplazar las variables en el mensaje con sus ejemplos
   const replaceVariables = (text, variables) => {
     let result = text;
-    
+
 
     Object.keys(variables).forEach(variable => {
       const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
-      
+
       result = result.replace(regex, variables[variable]);
     });
 
-    
+
     return result;
   };
 
@@ -1291,12 +1392,12 @@ useEffect(() => {
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-    
-    
+
+
 
     const newExample = replaceVariables(message, variableExamples);
 
-    
+
 
     setExample(newExample);
   }, [message, variableExamples]);
@@ -1357,7 +1458,7 @@ useEffect(() => {
     setCards(prevCards =>
       prevCards.map(card => {
         const newButtons = [];
-  
+
         for (let i = 0; i < cantidad; i++) {
           newButtons.push({
             id: generateId(),
@@ -1367,7 +1468,7 @@ useEffect(() => {
             ...(tipo === 'PHONE_NUMBER' && { phoneNumber: '' })
           });
         }
-  
+
         return {
           ...card,
           buttons: newButtons
@@ -1387,9 +1488,9 @@ useEffect(() => {
     setTipoBoton(nuevoTipo);
     regenerarBotones(cantidadBotones, nuevoTipo);
   };
-  
-  
-    
+
+
+
 
   // Validación para URLs
   const updateButtonWithValidation = (id, field, value, setButtons, setValidationErrors) => {
@@ -1444,8 +1545,8 @@ useEffect(() => {
         mediaUrl = card.fileData.url;
       }
 
-      
-      
+
+
 
       // Crear el formato requerido por Gupshup
       return {
@@ -1484,23 +1585,23 @@ useEffect(() => {
     ));
   };
 
-// Agregar nueva tarjeta
-const addAccordion = () => {
-  // Verificar si ya hay 10 acordeones
-  if (cards.length >= 10) {
-    alert("No puedes tener más de 10 acordeones"); // Opcional: mostrar mensaje al usuario
-    return; // Salir de la función sin agregar más
-  }
-  
-  const cantidad = parseInt(cantidadBotones, 10);
-  const nuevaCard = {
-    ...initialCardState,
-    id: uuidv4(),
-    buttons: generarBotones(cantidad, tipoBoton)
+  // Agregar nueva tarjeta
+  const addAccordion = () => {
+    // Verificar si ya hay 10 acordeones
+    if (cards.length >= 10) {
+      alert("No puedes tener más de 10 acordeones"); // Opcional: mostrar mensaje al usuario
+      return; // Salir de la función sin agregar más
+    }
+
+    const cantidad = parseInt(cantidadBotones, 10);
+    const nuevaCard = {
+      ...initialCardState,
+      id: uuidv4(),
+      buttons: generarBotones(cantidad, tipoBoton)
+    };
+    setCards([...cards, nuevaCard]);
   };
-  setCards([...cards, nuevaCard]);
-};
-  
+
 
   // Eliminar tarjeta
   const deleteAccordion = (id, e) => {
@@ -1528,7 +1629,7 @@ const addAccordion = () => {
     }
     return botones;
   };
-  
+
 
 
 
@@ -1559,55 +1660,63 @@ const addAccordion = () => {
 
   // Estado principal que contiene todas las tarjetas
   const [cards, setCards] = useState([initialCardState]);
-  
+
   const currentCardId = cards[0].id;
 
 
 
   // Función para manejar la subida de archivos para una card específica
-const handleFileUpload = (cardId, uploadResponse) => {
-  
+  const handleFileUpload = (cardId, uploadResponse) => {
 
-  if (uploadResponse) {
-    // Estructura esperada del uploadResponse después de las modificaciones
-    const fileData = {
-      url: uploadResponse.url,
-      mediaId: uploadResponse.mediaId || null
-    };
 
-    
+    if (uploadResponse) {
+      // Estructura esperada del uploadResponse después de las modificaciones
+      const fileData = {
+        url: uploadResponse.url,
+        mediaId: uploadResponse.mediaId || null
+      };
 
-    setCards(prevCards => prevCards.map(card => {
-      if (card.id === cardId) {
-        return {
-          ...card,
-          fileData: fileData // Guardar los datos del archivo en la tarjeta
-        };
-      }
-      return card;
-    }));
-  } else {
-    console.error("No se recibió respuesta de subida válida");
-  }
-};
 
-const handlePantallas = (event) => {
-  const { target: { value } } = event;
 
-  // Procesar los valores seleccionados
-  const selectedOptions = typeof value === 'string' ? value.split(',') : value;
+      setCards(prevCards => prevCards.map(card => {
+        if (card.id === cardId) {
+          return {
+            ...card,
+            fileData: fileData // Guardar los datos del archivo en la tarjeta
+          };
+        }
+        return card;
+      }));
+    } else {
+      console.error("No se recibió respuesta de subida válida");
+    }
+  };
 
-  // Extraer solo los números
-  const numericValues = selectedOptions.map(option => {
-    return option.split(' - ')[0].trim();
-  });
-  
-  // Guardar como string con comas para la API
-  setPantallas(numericValues.join(','));
+  // Función para contar emojis en un texto
+  const countEmojis = (text) => {
+    // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
+    const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
+    const matches = text.match(emojiRegex);
+    return matches ? matches.length : 0;
+  };
 
-  // Guardar el texto completo para mostrar (displayPantallas)
-  setDisplayPantallas(selectedOptions);
-};
+  const handlePantallas = (event) => {
+    const { target: { value } } = event;
+
+    // Procesar los valores seleccionados
+    const selectedOptions = typeof value === 'string' ? value.split(',') : value;
+
+    // Extraer solo los números
+    const numericValues = selectedOptions.map(option => {
+      return option.split(' - ')[0].trim();
+    });
+
+    // Guardar como string con comas para la API
+    setPantallas(numericValues.join(','));
+
+    // Guardar el texto completo para mostrar (displayPantallas)
+    setDisplayPantallas(selectedOptions);
+  };
 
   const procesarPantallasAPI = (pantallasString) => {
     if (!pantallasString) return [];
@@ -1828,7 +1937,7 @@ const handlePantallas = (event) => {
 
             {/* Campo de texto con soporte para emojis y variables */}
             <Box sx={{ position: "relative" }}>
-            <TextField
+              <TextField
                 fullWidth
                 multiline
                 aria-required="true"
@@ -1852,7 +1961,7 @@ const handlePantallas = (event) => {
                 inputProps={{
                   maxLength: 280, // Esto limita físicamente la entrada
                 }}
-                helperText={`${message.length}/280 caracteres`} // Muestra el contador
+                helperText={`${message.length}/550 caracteres | ${emojiCount}/10 emojis`}
                 FormHelperTextProps={{
                   sx: {
                     textAlign: 'right', // Alinea el contador a la derecha
@@ -2145,7 +2254,7 @@ const handlePantallas = (event) => {
                                       onChange={(e) => handleBodyMessageCardChange(e, card.id)}
                                       inputRef={(el) => (messageCardRefs.current[card.id] = el)}
                                       inputProps={{ maxLength: 280 }}
-                                      helperText={`${card.messageCard.length}/280 caracteres`}
+                                      helperText={`${card.messageCard.length}/280 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
                                       FormHelperTextProps={{
                                         sx: {
                                           textAlign: 'right',
