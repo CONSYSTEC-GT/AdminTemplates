@@ -719,6 +719,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       MEDIA: MEDIA,
       URL: uploadedUrl,
       PANTALLAS: pantallas,
+      ESTADO: 0,
+      AUTORIZADO: 0,
       MODIFICADO_EL: new Date(),
       MODIFICADO_POR: idNombreUsuarioTalkMe,
     };
