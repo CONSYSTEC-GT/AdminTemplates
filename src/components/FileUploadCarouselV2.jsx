@@ -153,29 +153,43 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
   };
 
   const realUpload = async (file) => {
+  try {
+    const base64Content = await convertToBase64(file);
+
+    const payload = {
+      idEmpresa: empresaTalkMe,
+      idBot: idBot,
+      idBotRedes: idBotRedes,
+      idUsuario: idUsuarioTalkMe,
+      tipoCarga: 3,
+      nombreArchivo: file.name,
+      contenidoArchivo: base64Content.split(',')[1],
+    };
+
+    let apiToken;
+
+    // Primer request - Obtener token de GupShup
     try {
-      const base64Content = await convertToBase64(file);
+      apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
+    } catch (error) {
+      console.error('Error al obtener token de GupShup:', error);
+      
+      // SweetAlert para error de servicio GupShup
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de Autenticación',
+        text: 'No se pudo obtener el token de autenticación del servicio GupShup. Por favor, intenta nuevamente.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      
+      throw new Error('GUPSHUP_SERVICE_ERROR: Error al obtener token de autenticación');
+    }
 
-      const payload = {
-        idEmpresa: empresaTalkMe,
-        idBot: idBot,
-        idBotRedes: idBotRedes,
-        idUsuario: idUsuarioTalkMe,
-        tipoCarga: 3,
-        nombreArchivo: file.name,
-        contenidoArchivo: base64Content.split(',')[1],
-      };
-
-      let apiToken;
-
-      try {
-        apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
-      } catch (error) {
-        throw new Error('Error al obtener token de autenticación');
-      }
-
-
-      const response = await axios.post(
+    // Segundo request - Subir archivo a servicio propio WSFTP
+    let response;
+    try {
+      response = await axios.post(
         urlWsFTP,
         payload,
         {
@@ -185,35 +199,81 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
           },
         }
       );
-
-
-      if (response.status !== 200 || !response.data) {
-        throw new Error('Error en la respuesta del servicio');
-      }
-
-      const mediaId = response.data.mediaId || response.data.id || `media-${Date.now()}`;
-
-      // Llamar al callback de éxito
-      if (onUploadSuccess) {
-        onUploadSuccess({
-          mediaId: mediaId,
-          url: response.data.url,
-          type: file.type.includes('image') ? 'image' : 'video'
-        });
-      }
-
-      // SweetAlert removido - el componente ya muestra el estado visual
-
-      return { mediaId, url: response.data.url };
-
     } catch (error) {
-
-
-      // SweetAlert removido - el componente ya muestra el estado de error
-
-      throw error;
+      console.error('Error en servicio WSFTP:', error);
+      
+      // SweetAlert para error de servicio WSFTP
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de Carga',
+        text: 'No se pudo cargar el archivo en nuestro servicio de archivos. Por favor, verifica tu conexión e intenta nuevamente.',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#00c3ff'
+      });
+      
+      throw new Error('WSFTP_SERVICE_ERROR: Error en el servicio de carga de archivos');
     }
-  };
+
+    // Validar respuesta del servicio WSFTP
+    if (response.status !== 200 || !response.data) {
+      console.error('Respuesta inválida del servicio WSFTP:', response);
+      
+      Swal.fire({
+        icon: 'warning',
+        title: 'Respuesta Inválida',
+        text: 'El servicio de carga respondió de forma inesperada. Por favor, intenta nuevamente.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      
+      throw new Error('WSFTP_INVALID_RESPONSE: Error en la respuesta del servicio');
+    }
+
+    const mediaId = response.data.mediaId || response.data.id || `media-${Date.now()}`;
+
+    // Llamar al callback de éxito
+    if (onUploadSuccess) {
+      onUploadSuccess({
+        mediaId: mediaId,
+        url: response.data.url,
+        type: file.type.includes('image') ? 'image' : 'video'
+      });
+    }
+
+    // SweetAlert de éxito (opcional)
+    Swal.fire({
+      icon: 'success',
+      title: 'Archivo Cargado',
+      text: 'El archivo se ha cargado exitosamente.',
+      timer: 2000,
+      showConfirmButton: false,
+      toast: true,
+      position: 'top-end',
+      confirmButtonColor: '#00c3ff'
+    });
+
+    return { mediaId, url: response.data.url };
+
+  } catch (error) {
+    console.error('Error general en realUpload:', error);
+    
+    // Si no es un error específico que ya manejamos, mostrar error genérico
+    if (!error.message.includes('GUPSHUP_SERVICE_ERROR') && 
+        !error.message.includes('WSFTP_SERVICE_ERROR') && 
+        !error.message.includes('WSFTP_INVALID_RESPONSE')) {
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error Inesperado',
+        text: 'Ocurrió un error inesperado durante la carga del archivo. Por favor, intenta nuevamente.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+    }
+
+    throw error;
+  }
+};
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
