@@ -218,21 +218,18 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
   };
 
   const realUpload = async (file) => {
+  let gupshupSuccess = false;
+  let mediaId = null;
 
+  try {
+    // === PRIMERA PARTE: SUBIDA A GUPSHUP ===
     try {
-      
-
-      // Subir archivo a Gupshup
-
       const gupshupFormData = new FormData();
       gupshupFormData.append('file', file);
       gupshupFormData.append('file_type', file.type);
       
-
       const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
-
       
-
       const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
         headers: {
           Authorization: authCode,
@@ -247,46 +244,51 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         },
         data: gupshupFormData,
       });
-
       
-
       if (gupshupResponse.status !== 200 || !gupshupResponse.data) {
-        console.error('Error en la respuesta de Gupshup:', {
-          status: gupshupResponse.status,
-          statusText: gupshupResponse.statusText,
-          errorDetails: gupshupResponse.data,
-        });
         throw new Error(`Error en la respuesta de Gupshup: ${gupshupResponse.status}`);
       }
 
       const gupshupData = gupshupResponse.data;
       
-
       if (!gupshupData.handleId) {
-        console.error('Error: Respuesta de Gupshup incompleta o no válida');
         throw new Error('Respuesta de Gupshup incompleta o no válida');
       }
 
-      const mediaId = gupshupData.handleId.message;
+      mediaId = gupshupData.handleId.message;
+      gupshupSuccess = true;
       
+    } catch (gupshupError) {
+      console.error('Error específico de Gupshup:', gupshupError);
+      
+      // Mensaje específico para error de Gupshup
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error en Gupshup',
+        html: `
+          <p>No se pudo subir el archivo al servicio de Gupshup.</p>
+          <p><strong>Razón:</strong> ${gupshupError.message || 'Error desconocido en Gupshup'}</p>
+          ${gupshupError.response?.data ? `<p><small>${JSON.stringify(gupshupError.response.data)}</small></p>` : ''}
+        `,
+        confirmButtonText: 'Entendido'
+      });
+      
+      // Si falla Gupshup, no continúes con el segundo servicio
+      return;
+    }
 
-      //### SERVICIO WSFTP PROPIO DE CONSYSTEC
-
+    // === SEGUNDA PARTE: SUBIDA AL SERVICIO PROPIO WSFTP ===
+    try {
       let apiToken;
-
+      
       try {
-        apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe); // Solo recibes el string del token
-        
-        // Aquí puedes guardarlo en el estado, localStorage, o usarlo directamente
-      } catch (error) {
-        console.error("Fallo al obtener token:", error);
+        apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
+      } catch (tokenError) {
+        throw new Error(`Fallo al obtener token: ${tokenError.message}`);
       }
 
-      // Subir archivo al servicio propio
-      
       const base64Content = await convertToBase64(file);
       
-
       const payload = {
         idEmpresa: empresaTalkMe,
         idBot: idBot,
@@ -296,9 +298,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         nombreArchivo: file.name,
         contenidoArchivo: base64Content.split(',')[1],
       };
-
       
-
       const ownServiceResponse = await axios.post(
         urlWsFTP,
         payload,
@@ -309,71 +309,58 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           },
         }
       );
-
       
-
       if (ownServiceResponse.status !== 200 || !ownServiceResponse.data) {
-        console.error('Error en la respuesta del servicio propio:', {
-          status: ownServiceResponse.status,
-          statusText: ownServiceResponse.statusText,
-          errorDetails: ownServiceResponse.data,
-        });
-
-        // Mostrar SweetAlert de error
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error en la subida',
-          text: 'Hubo un problema con la respuesta del servidor',
-          footer: `Código de estado: ${ownServiceResponse.status}`,
-        });
-
-        throw new Error('Error en la respuesta del servicio propio');
+        throw new Error(`Error en la respuesta del servicio propio: ${ownServiceResponse.status}`);
       }
 
       const ownServiceData = ownServiceResponse.data;
       
-
-      // Notificar al componente padre con el mediaId y la URL
+      // Si ambos servicios fueron exitosos
       if (onUploadSuccess) {
-        
         onUploadSuccess({ mediaId, url: ownServiceData.url });
       }
-
       
-
-      // Mostrar SweetAlert de éxito
+      // Mostrar SweetAlert de éxito solo si ambos servicios funcionaron
       await Swal.fire({
         icon: 'success',
         title: '¡Archivo subido!',
-        text: 'El archivo se ha subido correctamente',
+        text: 'El archivo se ha subido correctamente a ambos servicios',
         timer: 3000,
         showConfirmButton: false
       });
-    } catch (error) {
-      console.error('Error en el proceso de subida:', error);
-
-      // Imprimir el request completo en caso de error
-      if (error.config) {
-        console.error('Request completo que causó el error:', {
-          url: error.config.url,
-          method: error.config.method,
-          headers: error.config.headers,
-          data: error.config.data,
-        });
-      }
+      
+    } catch (ownServiceError) {
+      console.error('Error específico del servicio propio WSFTP:', ownServiceError);
+      
+      // Mensaje específico para error del servicio propio
       await Swal.fire({
         icon: 'error',
-        title: 'Error en la subida',
+        title: 'Error en Servicio Propio',
         html: `
-      <p>No se pudo subir el archivo.</p>
-      <p><strong>Razón:</strong> ${error.message || 'Error desconocido'}</p>
-      ${error.response?.data ? `<p><small>${JSON.stringify(error.response.data)}</small></p>` : ''}
-    `,
+          <p>El archivo se subió correctamente a Gupshup, pero falló en nuestro servicio WSFTP.</p>
+          <p><strong>Razón:</strong> ${ownServiceError.message || 'Error desconocido en servicio propio'}</p>
+          ${ownServiceError.response?.data ? `<p><small>${JSON.stringify(ownServiceError.response.data)}</small></p>` : ''}
+        `,
         confirmButtonText: 'Entendido'
       });
-
     }
-  };
+    
+  } catch (generalError) {
+    // Este catch maneja errores generales no capturados por los anteriores
+    console.error('Error general en el proceso de subida:', generalError);
+    
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error General',
+      html: `
+        <p>Ocurrió un error inesperado durante el proceso de subida.</p>
+        <p><strong>Razón:</strong> ${generalError.message || 'Error desconocido'}</p>
+      `,
+      confirmButtonText: 'Entendido'
+    });
+  }
+};
 
 
 
