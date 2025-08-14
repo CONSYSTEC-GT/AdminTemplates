@@ -37,7 +37,7 @@ if (token) {
     idUsuarioTalkMe = decoded.id_usuario;
     idNombreUsuarioTalkMe = decoded.nombre_usuario;
     empresaTalkMe = decoded.empresa;
-    idBotRedes = decoded.id_bot_redes;
+    //idBotRedes = decoded.id_bot_redes;
     idBot = decoded.id_bot;
     urlTemplatesGS = decoded.urlTemplatesGS;
     urlWsFTP = decoded.urlWsFTP;
