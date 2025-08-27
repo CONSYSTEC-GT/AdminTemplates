@@ -346,7 +346,7 @@ const validateFields = async () => {
 
   // Recupera el token del localStorage
   //const token = localStorage.getItem('authToken');
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
 
   // Decodifica el token para obtener appId y authCode
   //

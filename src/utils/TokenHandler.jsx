@@ -11,14 +11,14 @@ const TokenHandler = () => {
 
     if (tokenFromUrl) {
       //localStorage.setItem('authToken', tokenFromUrl);
-      sessionStorage.setItem('authToken', tokenFromUrl);
+      localStorage.setItem('authToken', tokenFromUrl);
 
       // Si el usuario ya estaba en una página específica, lo regresamos ahí
       const previousPage = location.state?.from?.pathname || '/dashboard';
       navigate(previousPage, { replace: true });
     } else {
       //const storedToken = localStorage.getItem('authToken');
-      const storedToken = sessionStorage.getItem('authToken');
+      const storedToken = localStorage.getItem('authToken');
 
       if (!storedToken) {
         navigate('/login-required', { replace: true });

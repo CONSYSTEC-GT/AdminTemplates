@@ -34,13 +34,13 @@ function App() {
             if (decoded.exp < currentTime) {
               console.error('Token expirado');
               //localStorage.removeItem('authToken');
-              sessionStorage.removeItem('authToken');
+              localStorage.removeItem('authToken');
               setIsLoading(false);
               navigate('/login-required');
               return;
             }
             
-            sessionStorage.setItem('authToken', token);
+            localStorage.setItem('authToken', token);
             //localStorage.setItem('authToken', token);
             
             // Calcular minutos restantes y guardar en localStorage
@@ -48,9 +48,9 @@ function App() {
             const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
             
             // Guardamos en localStorage solo si no existe un valor previo
-            if (!sessionStorage.getItem('initialRemainingMinutes')) {
-              sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
-              console.log('Minutos iniciales guardados en sessionStorage:', remainingMinutesOnly);
+            if (!localStorage.getItem('initialRemainingMinutes')) {
+              localStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
+              console.log('Minutos iniciales guardados en localStorage:', remainingMinutesOnly);
             }
             
             const { app_id, auth_code, app_name } = decoded;
@@ -58,7 +58,7 @@ function App() {
             
           } catch (error) {
             console.error('Token inválido', error);
-            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
             //localStorage.removeItem('authToken');
             navigate('/login-required');
           }

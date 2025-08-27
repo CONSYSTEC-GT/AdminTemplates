@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Para producción, mantener la lógica original de validación de token
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
 
   if (!token) {
     return <Navigate to="/login-required" state={{ from: location }} replace />;
@@ -27,13 +27,13 @@ const ProtectedRoute = ({ children }) => {
     const currentTime = Date.now() / 1000;
 
     if (decoded.exp < currentTime) {
-      sessionStorage.removeItem('authToken');
+      localStorage.removeItem('authToken');
       return <Navigate to="/login-required" state={{ from: location }} replace />;
     }
 
     return children;
   } catch (error) {
-    sessionStorage.removeItem('authToken');
+    localStorage.removeItem('authToken');
     return <Navigate to="/login-required" state={{ from: location }} replace />;
   }
 };
