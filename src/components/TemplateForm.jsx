@@ -345,7 +345,8 @@ const validateFields = async () => {
   };
 
   // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
+  //const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
   // Decodifica el token para obtener appId y authCode
   //
@@ -363,6 +364,10 @@ const validateFields = async () => {
       urlTemplatesGS = decoded.urlTemplatesGS;
       apiToken = decoded.apiToken;
       urlWsFTP = decoded.urlWsFTP;
+
+      console.log("appId: ", appId);
+      console.log("authCode: ", authCode);
+      console.log("urlTemplatesGS: ", urlTemplatesGS);
 
     } catch (error) {
       console.error('Error decodificando el token:', error);

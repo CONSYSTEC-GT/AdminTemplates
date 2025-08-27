@@ -38,7 +38,8 @@ function App() {
               return;
             }
             
-            localStorage.setItem('authToken', token);
+            //localStorage.setItem('authToken', token);
+            sessionStorage.setItem('authToken', token);
             const { app_id, auth_code, app_name } = decoded;
             window.history.replaceState({}, document.title, window.location.pathname);
             

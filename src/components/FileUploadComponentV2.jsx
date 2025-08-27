@@ -5,8 +5,9 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
+import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
-/*
+//
 let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
 appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
@@ -20,12 +21,9 @@ idBot = 257;
 urlTemplatesGS = 'http://localhost:3004/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
+//
 
-// Decodifica el token para obtener appId y authCode
-
-
-// Recupera el token del localStorage
+/* Decodifica el token para obtener appId y authCode
 const token = localStorage.getItem('authToken');
 
 let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
@@ -37,7 +35,7 @@ if (token) {
     idUsuarioTalkMe = decoded.id_usuario;
     idNombreUsuarioTalkMe = decoded.nombre_usuario;
     empresaTalkMe = decoded.empresa;
-    //idBotRedes = decoded.id_bot_redes;
+    idBotRedes = decoded.id_bot_redes;
     idBot = decoded.id_bot;
     urlTemplatesGS = decoded.urlTemplatesGS;
     urlWsFTP = decoded.urlWsFTP;
@@ -47,7 +45,7 @@ if (token) {
     console.error('Error decodificando el token:', error);
   }
 }
-
+*/
 console.log("urlTemplatesGS: ", urlTemplatesGS);
 console.log("urlWsFTP: ", urlWsFTP);
 
@@ -250,7 +248,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     return errors;
   };
 
-const handleFileChange = async (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -270,26 +268,26 @@ const handleFileChange = async (event) => {
     try {
       // Primero subir el archivo
       await realUpload(file);
-      
+
       // Solo si la subida fue exitosa, crear la vista previa
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
         setUploadState('success');
-        
+
         // Notificar al componente padre con la vista previa
         if (onImagePreview) {
           onImagePreview(reader.result);
         }
       };
       reader.readAsDataURL(file);
-      
+
     } catch (error) {
       setUploadState('error');
       setErrorMessage(error.message || 'Error al subir el archivo');
       // No creamos la vista previa en caso de error
     }
-};
+  };
 
   const handleHeaderChange = (e) => {
     const newHeader = e.target.value;
@@ -312,20 +310,61 @@ const handleFileChange = async (event) => {
     let gupshupSuccess = false;
     let mediaId = null;
 
+    // Función helper para crear estructura de log base
+    const crearLogBase = (nombreEvento, urlPeticion) => ({
+      ID_CATEGORIA: null,
+      ID_CONVERSACION: null,
+      CLAVE_REGISTRO: null,
+      IP: "127.0.0.1", // Podrías obtener la IP real del cliente si es necesario
+      NOMBRE_EVENTO: nombreEvento,
+      TIPO_LOG: 0,
+      URL_PETICION: urlPeticion,
+      PETICION: "",
+      RESPUESTA: "",
+      INICIO_PETICION: new Date().toISOString(),
+      FIN_PETICION: new Date().toISOString(),
+      LOCAL_PAYMENT_HASH: null,
+      NOTIFICACION_PAYMENT_HASH: null,
+      CREADO_POR: idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
+    });
+
     try {
       // === PRIMERA PARTE: SUBIDA A GUPSHUP ===
+      let logGupshup = null;
       try {
+        const gupshupStartTime = new Date();
+        const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
+
+        // Inicializar log para Gupshup
+        logGupshup = crearLogBase("SUBIDA_ARCHIVO_GUPSHUP", gupshupUrl);
+        logGupshup.INICIO_PETICION = gupshupStartTime.toISOString();
+
         const gupshupFormData = new FormData();
         gupshupFormData.append('file', file);
         gupshupFormData.append('file_type', file.type);
 
-        const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
-
-        const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
+        // Preparar datos de petición para el log
+        const peticionGupshup = {
+          metodo: 'POST',
           headers: {
             Authorization: authCode,
+            'Content-Type': 'multipart/form-data'
           },
-        });
+          payload: {
+            file_name: file.name,
+            file_type: file.type,
+            file_size: file.size,
+            app_id: appId
+          },
+          metadata: {
+            idEmpresa: empresaTalkMe,
+            idBot: idBot,
+            idBotRedes: idBotRedes,
+            idUsuario: idUsuarioTalkMe,
+          }
+        };
+
+        logGupshup.PETICION = JSON.stringify(peticionGupshup);
 
         console.log('Request completo a Gupshup:', {
           url: gupshupUrl,
@@ -336,6 +375,31 @@ const handleFileChange = async (event) => {
           data: gupshupFormData,
         });
 
+        const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
+          headers: {
+            Authorization: authCode,
+          },
+        });
+
+        // Actualizar log con respuesta exitosa
+        const gupshupEndTime = new Date();
+        logGupshup.FIN_PETICION = gupshupEndTime.toISOString();
+
+        const respuestaGupshup = {
+          status: gupshupResponse.status,
+          statusText: gupshupResponse.statusText,
+          headers: {
+            'content-type': gupshupResponse.headers['content-type'],
+            'content-length': gupshupResponse.headers['content-length']
+          },
+          data: gupshupResponse.data,
+          duracion_ms: gupshupEndTime.getTime() - gupshupStartTime.getTime(),
+          exitoso: true
+        };
+
+        logGupshup.RESPUESTA = JSON.stringify(respuestaGupshup);
+        logGupshup.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_GUPSHUP_EXITOSO";
+
         // Validar respuesta de Gupshup
         if (!gupshupResponse.data || !gupshupResponse.data.handleId) {
           throw new Error('Respuesta de Gupshup incompleta o no válida');
@@ -344,10 +408,50 @@ const handleFileChange = async (event) => {
         mediaId = gupshupResponse.data.handleId.message;
         gupshupSuccess = true;
 
+        // Guardar log exitoso de Gupshup
+        try {
+          await guardarLogArchivos(logGupshup, urlTemplatesGS);
+          console.log('✅ Log de Gupshup guardado correctamente');
+        } catch (logError) {
+          console.error('❌ Error al guardar log de Gupshup (no afecta el proceso):', logError);
+        }
+
         // Mostrar alerta de éxito para Gupshup
         await showResponseAlert(gupshupResponse.status, gupshupResponse.data, 'subida de archivo a Gupshup');
 
       } catch (gupshupError) {
+
+        // Actualizar log con error
+        if (logGupshup) {
+          const gupshupEndTime = new Date();
+          logGupshup.FIN_PETICION = gupshupEndTime.toISOString();
+          logGupshup.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_GUPSHUP_FALLIDO";
+
+          const respuestaErrorGupshup = {
+            error: true,
+            message: gupshupError.message,
+            stack: gupshupError.stack,
+            duracion_ms: gupshupEndTime.getTime() - new Date(logGupshup.INICIO_PETICION).getTime()
+          };
+
+          if (gupshupError.response) {
+            respuestaErrorGupshup.status = gupshupError.response.status;
+            respuestaErrorGupshup.statusText = gupshupError.response.statusText;
+            respuestaErrorGupshup.headers = gupshupError.response.headers;
+            respuestaErrorGupshup.data = gupshupError.response.data;
+          }
+
+          logGupshup.RESPUESTA = JSON.stringify(respuestaErrorGupshup);
+
+          // Guardar log de error de Gupshup
+          try {
+            await guardarLogArchivos(logGupshup, urlTemplatesGS);
+            console.log('✅ Log de error de Gupshup guardado correctamente');
+          } catch (logError) {
+            console.error('❌ Error al guardar log de error de Gupshup:', logError);
+          }
+        }
+
         console.error('Error específico de Gupshup:', gupshupError);
 
         // Determinar el código de estado del error
@@ -362,9 +466,17 @@ const handleFileChange = async (event) => {
       }
 
       // === SEGUNDA PARTE: SUBIDA AL SERVICIO PROPIO WSFTP ===
+      let logWsftp = null;
       try {
+        const wsftpStartTime = new Date();
+
+        // Inicializar log para WSFTP
+        logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP", urlWsFTP);
+        logWsftp.INICIO_PETICION = wsftpStartTime.toISOString();
+
         let apiToken;
 
+        // Obtener token
         try {
           apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
         } catch (tokenError) {
@@ -383,6 +495,32 @@ const handleFileChange = async (event) => {
           contenidoArchivo: base64Content.split(',')[1],
         };
 
+        // Preparar datos de petición para el log (sin contenido base64 completo)
+        const peticionWsftp = {
+          metodo: 'POST',
+          headers: {
+            'x-api-token': '***OCULTO***', // No exponer el token real
+            'Content-Type': 'application/json'
+          },
+          payload: {
+            idEmpresa: empresaTalkMe,
+            idBot: idBot,
+            idBotRedes: idBotRedes,
+            idUsuario: idUsuarioTalkMe,
+            tipoCarga: 3,
+            nombreArchivo: file.name,
+            contenidoArchivo: '***BASE64_CONTENT***', // No guardar contenido completo
+            tamanoOriginal: file.size,
+            tipoArchivo: file.type
+          },
+          metadata: {
+            gupshupMediaId: mediaId,
+            procesoCompleto: true
+          }
+        };
+
+        logWsftp.PETICION = JSON.stringify(peticionWsftp);
+
         const ownServiceResponse = await axios.post(
           urlWsFTP,
           payload,
@@ -394,12 +532,40 @@ const handleFileChange = async (event) => {
           }
         );
 
+        // Actualizar log con respuesta exitosa
+        const wsftpEndTime = new Date();
+        logWsftp.FIN_PETICION = wsftpEndTime.toISOString();
+
         // Validar respuesta del servicio propio
         if (!ownServiceResponse.data) {
           throw new Error('Respuesta del servicio propio incompleta o no válida');
         }
 
         const ownServiceData = ownServiceResponse.data;
+
+        const respuestaWsftp = {
+          status: ownServiceResponse.status,
+          statusText: ownServiceResponse.statusText,
+          headers: {
+            'content-type': ownServiceResponse.headers['content-type'],
+            'content-length': ownServiceResponse.headers['content-length']
+          },
+          data: ownServiceData,
+          duracion_ms: wsftpEndTime.getTime() - wsftpStartTime.getTime(),
+          exitoso: true,
+          urlArchivo: ownServiceData.url
+        };
+
+        logWsftp.RESPUESTA = JSON.stringify(respuestaWsftp);
+        logWsftp.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_WSFTP_EXITOSO";
+
+        // Guardar log exitoso de WSFTP
+        try {
+          await guardarLogArchivos(logWsftp, urlTemplatesGS);
+          console.log('✅ Log de WSFTP guardado correctamente');
+        } catch (logError) {
+          console.error('❌ Error al guardar log de WSFTP (no afecta el proceso):', logError);
+        }
 
         // Si ambos servicios fueron exitosos
         if (onUploadSuccess) {
@@ -419,7 +585,62 @@ const handleFileChange = async (event) => {
           timerProgressBar: true
         });
 
+        // Crear log de proceso completo exitoso
+        const logProcesoCompleto = crearLogBase("PROCESO_SUBIDA_ARCHIVOS_COMPLETO", "PROCESO_MULTIPLE");
+        logProcesoCompleto.PETICION = JSON.stringify({
+          gupshupMediaId: mediaId,
+          wsftpUrl: ownServiceData.url,
+          archivoInfo: {
+            nombre: file.name,
+            tipo: file.type,
+            tamano: file.size
+          }
+        });
+        logProcesoCompleto.RESPUESTA = JSON.stringify({
+          exitoso: true,
+          serviciosCompletados: ['GUPSHUP', 'WSFTP'],
+          resultado: 'PROCESO_EXITOSO_COMPLETO'
+        });
+
+        try {
+          await guardarLogArchivos(logProcesoCompleto, urlTemplatesGS);
+          console.log('✅ Log de proceso completo guardado correctamente');
+        } catch (logError) {
+          console.error('❌ Error al guardar log de proceso completo:', logError);
+        }
+
       } catch (ownServiceError) {
+        // Actualizar log con error de WSFTP
+        if (logWsftp) {
+          const wsftpEndTime = new Date();
+          logWsftp.FIN_PETICION = wsftpEndTime.toISOString();
+          logWsftp.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_WSFTP_FALLIDO";
+
+          const respuestaErrorWsftp = {
+            error: true,
+            message: ownServiceError.message,
+            stack: ownServiceError.stack,
+            duracion_ms: wsftpEndTime.getTime() - new Date(logWsftp.INICIO_PETICION).getTime()
+          };
+
+          if (ownServiceError.response) {
+            respuestaErrorWsftp.status = ownServiceError.response.status;
+            respuestaErrorWsftp.statusText = ownServiceError.response.statusText;
+            respuestaErrorWsftp.headers = ownServiceError.response.headers;
+            respuestaErrorWsftp.data = ownServiceError.response.data;
+          }
+
+          logWsftp.RESPUESTA = JSON.stringify(respuestaErrorWsftp);
+
+          // Guardar log de error de WSFTP
+          try {
+            await guardarLogArchivos(logWsftp, urlTemplatesGS);
+            console.log('✅ Log de error de WSFTP guardado correctamente');
+          } catch (logError) {
+            console.error('❌ Error al guardar log de error de WSFTP:', logError);
+          }
+        }
+
         console.error('Error específico del servicio propio WSFTP:', ownServiceError);
 
         // Determinar el código de estado del error
@@ -434,13 +655,38 @@ const handleFileChange = async (event) => {
           icon: 'warning',
           title: 'Proceso Parcialmente Completado',
           html: `
-          <p>✅ El archivo se subió correctamente a <strong>Gupshup</strong></p>
-          <p>❌ Pero falló la subida al <strong>Servicio Propio (WsFTP)</strong></p>
-          <p><small>Media ID de Gupshup: ${mediaId}</small></p>
-        `,
+        <p>✅ El archivo se subió correctamente a <strong>Gupshup</strong></p>
+        <p>❌ Pero falló la subida al <strong>Servicio Propio (WsFTP)</strong></p>
+        <p><small>Media ID de Gupshup: ${mediaId}</small></p>
+      `,
           confirmButtonText: 'Entendido',
           confirmButtonColor: '#f39c12'
         });
+
+        // Crear log de proceso parcialmente exitoso
+        const logProcesoParcial = crearLogBase("PROCESO_SUBIDA_ARCHIVOS_PARCIAL", "PROCESO_MULTIPLE");
+        logProcesoParcial.PETICION = JSON.stringify({
+          gupshupMediaId: mediaId,
+          wsftpError: ownServiceError.message,
+          archivoInfo: {
+            nombre: file.name,
+            tipo: file.type,
+            tamano: file.size
+          }
+        });
+        logProcesoParcial.RESPUESTA = JSON.stringify({
+          exitoso: false,
+          serviciosCompletados: ['GUPSHUP'],
+          serviciosFallidos: ['WSFTP'],
+          resultado: 'PROCESO_PARCIAL_GUPSHUP_OK'
+        });
+
+        try {
+          await guardarLogArchivos(logProcesoParcial, urlTemplatesGS);
+          console.log('✅ Log de proceso parcial guardado correctamente');
+        } catch (logError) {
+          console.error('❌ Error al guardar log de proceso parcial:', logError);
+        }
       }
 
     } catch (generalError) {
@@ -450,9 +696,38 @@ const handleFileChange = async (event) => {
       // Para errores generales, usar código 500 por defecto
       const status = generalError.response?.status || 500;
       const errorData = generalError.response?.data || { message: generalError.message };
-      throw new Error('Fallo en la subida al servicio propio');
 
       await showResponseAlert(status, errorData, 'proceso general de subida de archivos');
+
+      // Crear log de error general
+      const logErrorGeneral = crearLogBase("PROCESO_SUBIDA_ARCHIVOS_ERROR_GENERAL", "PROCESO_MULTIPLE");
+      logErrorGeneral.PETICION = JSON.stringify({
+        archivoInfo: {
+          nombre: file.name,
+          tipo: file.type,
+          tamano: file.size
+        },
+        configuracion: {
+          appId: appId,
+          empresaTalkMe: empresaTalkMe,
+          idBot: idBot,
+          idBotRedes: idBotRedes,
+          idUsuarioTalkMe: idUsuarioTalkMe
+        }
+      });
+      logErrorGeneral.RESPUESTA = JSON.stringify({
+        error: true,
+        message: generalError.message,
+        stack: generalError.stack,
+        resultado: 'ERROR_GENERAL_PROCESO'
+      });
+
+      try {
+        await guardarLogArchivos(logErrorGeneral, urlTemplatesGS);
+        console.log('✅ Log de error general guardado correctamente');
+      } catch (logError) {
+        console.error('❌ Error al guardar log de error general:', logError);
+      }
     }
   };
 
