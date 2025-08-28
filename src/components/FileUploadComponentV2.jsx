@@ -130,7 +130,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
       config = {
         icon: 'error',
-        title: 'Error del servidor',
+        title: `Error en la solicitud ${context}`,
         html: `
         <p>${serverErrorMessages[status] || `Error del servidor (${status})`}</p>
         <p><strong>Recomendación:</strong> Intenta nuevamente en unos minutos.</p>
