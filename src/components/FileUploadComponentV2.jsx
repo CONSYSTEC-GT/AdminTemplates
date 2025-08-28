@@ -20,7 +20,7 @@ idBotRedes = 721;
 idBot = 257;
 urlTemplatesGS = 'http://localhost:3004/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+//urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 //
 
 /* Decodifica el token para obtener appId y authCode
@@ -310,12 +310,11 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     let gupshupSuccess = false;
     let mediaId = null;
 
-    // Función helper para crear estructura de log base
     const crearLogBase = (nombreEvento, urlPeticion) => ({
       ID_CATEGORIA: null,
       ID_CONVERSACION: null,
       CLAVE_REGISTRO: null,
-      IP: "127.0.0.1", // Podrías obtener la IP real del cliente si es necesario
+      IP: "127.0.0.1",
       NOMBRE_EVENTO: nombreEvento,
       TIPO_LOG: 0,
       URL_PETICION: urlPeticion,
@@ -328,10 +327,9 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
       CREADO_POR: idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
     });
 
+    // === PRIMERA PARTE: SUBIDA A GUPSHUP ===
+    let logGupshup = null;
     try {
-      // === PRIMERA PARTE: SUBIDA A GUPSHUP ===
-      let logGupshup = null;
-      try {
         const gupshupStartTime = new Date();
         const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
 
@@ -343,7 +341,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         gupshupFormData.append('file', file);
         gupshupFormData.append('file_type', file.type);
 
-        // Preparar datos de petición para el log
         const peticionGupshup = {
           metodo: 'POST',
           headers: {
@@ -416,11 +413,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           console.error('❌ Error al guardar log de Gupshup (no afecta el proceso):', logError);
         }
 
-        // Mostrar alerta de éxito para Gupshup
-        await showResponseAlert(gupshupResponse.status, gupshupResponse.data, 'subida de archivo a Gupshup');
-
-      } catch (gupshupError) {
-
+    } catch (gupshupError) {
         // Actualizar log con error
         if (logGupshup) {
           const gupshupEndTime = new Date();
@@ -454,20 +447,22 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         console.error('Error específico de Gupshup:', gupshupError);
 
-        // Determinar el código de estado del error
         const status = gupshupError.response?.status || 500;
         const errorData = gupshupError.response?.data || { message: gupshupError.message };
 
-        // Mostrar alerta específica según el código de estado
         await showResponseAlert(status, errorData, 'subida de archivo a Gupshup');
 
-        // Si falla Gupshup, no continúes con el segundo servicio
-        throw new Error('Fallo en la subida a Gupshup');
-      }
+        setUploadState('error');
+        setErrorMessage('Error al subir el archivo a Gupshup');
+        
+        // ✅ LANZAR ERROR PARA QUE EL COMPONENTE LO CAPTURE
+        throw new Error('Error al subir el archivo a Gupshup');
+    }
 
-      // === SEGUNDA PARTE: SUBIDA AL SERVICIO PROPIO WSFTP ===
-      let logWsftp = null;
-      try {
+    // === SEGUNDA PARTE: SUBIDA AL SERVICIO PROPIO WSFTP ===
+    // Solo se ejecuta si Gupshup fue exitoso
+    let logWsftp = null;
+    try {
         const wsftpStartTime = new Date();
 
         // Inicializar log para WSFTP
@@ -476,7 +471,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         let apiToken;
 
-        // Obtener token
         try {
           apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
         } catch (tokenError) {
@@ -495,11 +489,11 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           contenidoArchivo: base64Content.split(',')[1],
         };
 
-        // Preparar datos de petición para el log (sin contenido base64 completo)
+        // Preparar datos de petición para el log
         const peticionWsftp = {
           metodo: 'POST',
           headers: {
-            'x-api-token': '***OCULTO***', // No exponer el token real
+            'x-api-token': apiToken,
             'Content-Type': 'application/json'
           },
           payload: {
@@ -509,7 +503,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
             idUsuario: idUsuarioTalkMe,
             tipoCarga: 3,
             nombreArchivo: file.name,
-            contenidoArchivo: '***BASE64_CONTENT***', // No guardar contenido completo
+            contenidoArchivo: '***BASE64_CONTENT***',
             tamanoOriginal: file.size,
             tipoArchivo: file.type
           },
@@ -567,49 +561,25 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           console.error('❌ Error al guardar log de WSFTP (no afecta el proceso):', logError);
         }
 
+        // ✅ AMBOS SERVICIOS EXITOSOS - ACTUALIZAR ESTADO AQUÍ
+        setUploadState('success');
+        
         // Si ambos servicios fueron exitosos
-        if (onUploadSuccess) {
+        if (gupshupSuccess && onUploadSuccess) {
           onUploadSuccess({ mediaId, url: ownServiceData.url });
         }
-
-        // Mostrar alerta de éxito para el servicio propio
-        await showResponseAlert(ownServiceResponse.status, ownServiceData, 'subida de archivo al Servicio Propio (WsFTP)');
 
         // Alerta final de éxito para ambos servicios
         await Swal.fire({
           icon: 'success',
-          title: '¡Proceso Completo!',
-          text: 'El archivo se ha subido correctamente a ambos servicios',
+          title: '¡Archivo cargado!',
+          text: 'El archivo se ha subido correctamente',
           confirmButtonText: 'Excelente',
           timer: 3000,
           timerProgressBar: true
         });
 
-        // Crear log de proceso completo exitoso
-        const logProcesoCompleto = crearLogBase("PROCESO_SUBIDA_ARCHIVOS_COMPLETO", "PROCESO_MULTIPLE");
-        logProcesoCompleto.PETICION = JSON.stringify({
-          gupshupMediaId: mediaId,
-          wsftpUrl: ownServiceData.url,
-          archivoInfo: {
-            nombre: file.name,
-            tipo: file.type,
-            tamano: file.size
-          }
-        });
-        logProcesoCompleto.RESPUESTA = JSON.stringify({
-          exitoso: true,
-          serviciosCompletados: ['GUPSHUP', 'WSFTP'],
-          resultado: 'PROCESO_EXITOSO_COMPLETO'
-        });
-
-        try {
-          await guardarLogArchivos(logProcesoCompleto, urlTemplatesGS);
-          console.log('✅ Log de proceso completo guardado correctamente');
-        } catch (logError) {
-          console.error('❌ Error al guardar log de proceso completo:', logError);
-        }
-
-      } catch (ownServiceError) {
+    } catch (ownServiceError) {
         // Actualizar log con error de WSFTP
         if (logWsftp) {
           const wsftpEndTime = new Date();
@@ -643,93 +613,17 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         console.error('Error específico del servicio propio WSFTP:', ownServiceError);
 
-        // Determinar el código de estado del error
         const status = ownServiceError.response?.status || 500;
         const errorData = ownServiceError.response?.data || { message: ownServiceError.message };
 
-        // Mostrar alerta específica según el código de estado
         await showResponseAlert(status, errorData, 'subida de archivo al Servicio Propio (WsFTP)');
-
-        // Alerta adicional indicando que Gupshup sí funcionó
-        await Swal.fire({
-          icon: 'warning',
-          title: 'Proceso Parcialmente Completado',
-          html: `
-        <p>✅ El archivo se subió correctamente a <strong>Gupshup</strong></p>
-        <p>❌ Pero falló la subida al <strong>Servicio Propio (WsFTP)</strong></p>
-        <p><small>Media ID de Gupshup: ${mediaId}</small></p>
-      `,
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#f39c12'
-        });
-
-        // Crear log de proceso parcialmente exitoso
-        const logProcesoParcial = crearLogBase("PROCESO_SUBIDA_ARCHIVOS_PARCIAL", "PROCESO_MULTIPLE");
-        logProcesoParcial.PETICION = JSON.stringify({
-          gupshupMediaId: mediaId,
-          wsftpError: ownServiceError.message,
-          archivoInfo: {
-            nombre: file.name,
-            tipo: file.type,
-            tamano: file.size
-          }
-        });
-        logProcesoParcial.RESPUESTA = JSON.stringify({
-          exitoso: false,
-          serviciosCompletados: ['GUPSHUP'],
-          serviciosFallidos: ['WSFTP'],
-          resultado: 'PROCESO_PARCIAL_GUPSHUP_OK'
-        });
-
-        try {
-          await guardarLogArchivos(logProcesoParcial, urlTemplatesGS);
-          console.log('✅ Log de proceso parcial guardado correctamente');
-        } catch (logError) {
-          console.error('❌ Error al guardar log de proceso parcial:', logError);
-        }
-      }
-
-    } catch (generalError) {
-      // Este catch maneja errores generales no capturados por los anteriores
-      console.error('Error general en el proceso de subida:', generalError);
-
-      // Para errores generales, usar código 500 por defecto
-      const status = generalError.response?.status || 500;
-      const errorData = generalError.response?.data || { message: generalError.message };
-
-      await showResponseAlert(status, errorData, 'proceso general de subida de archivos');
-
-      // Crear log de error general
-      const logErrorGeneral = crearLogBase("PROCESO_SUBIDA_ARCHIVOS_ERROR_GENERAL", "PROCESO_MULTIPLE");
-      logErrorGeneral.PETICION = JSON.stringify({
-        archivoInfo: {
-          nombre: file.name,
-          tipo: file.type,
-          tamano: file.size
-        },
-        configuracion: {
-          appId: appId,
-          empresaTalkMe: empresaTalkMe,
-          idBot: idBot,
-          idBotRedes: idBotRedes,
-          idUsuarioTalkMe: idUsuarioTalkMe
-        }
-      });
-      logErrorGeneral.RESPUESTA = JSON.stringify({
-        error: true,
-        message: generalError.message,
-        stack: generalError.stack,
-        resultado: 'ERROR_GENERAL_PROCESO'
-      });
-
-      try {
-        await guardarLogArchivos(logErrorGeneral, urlTemplatesGS);
-        console.log('✅ Log de error general guardado correctamente');
-      } catch (logError) {
-        console.error('❌ Error al guardar log de error general:', logError);
-      }
+        
+        // ✅ ACTUALIZAR ESTADO Y LANZAR ERROR
+        setUploadState('error');
+        setErrorMessage('Error al subir el archivo al Servicio Propio (WsFTP)');
+        throw new Error('Error al subir el archivo al Servicio Propio (WsFTP)');
     }
-  };
+};
 
 
 
@@ -758,9 +652,14 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     if (selectedFile) {
       setUploadState('uploading');
       setErrorMessage('');
+      
       realUpload(selectedFile)
-        .then(() => setUploadState('success'))
+        .then(() => {
+          // Ya no necesitas setUploadState('success') aquí
+          // porque realUpload ya lo maneja internamente
+        })
         .catch((error) => {
+          // Este catch SÍ se ejecutará ahora porque realUpload lanza errores
           setUploadState('error');
           setErrorMessage(error.message || 'Error al subir el archivo');
         });

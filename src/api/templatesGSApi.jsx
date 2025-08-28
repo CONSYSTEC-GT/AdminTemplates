@@ -508,10 +508,9 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
 export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
   
-
   try {
     const response = await fetch(url, {
-      method: 'DELETE', // Cambiado a DELETE ya que es un endpoint DELETE
+      method: 'DELETE',
       headers: {
         "Content-Type": "application/json",
       },
@@ -522,11 +521,11 @@ export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) 
     }
 
     const data = await response.json();
-
+    console.log("Parámetros eliminados exitosamente:", data);
     return data;
   } catch (error) {
     console.error("Error eliminando parámetros de la plantilla", error);
-    return null;
+    throw error; // Lanzar el error en lugar de retornar null
   }
 }
 

@@ -66,7 +66,7 @@ idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre
 empresaTalkMe = 2;
 idBotRedes = 721;
 idBot = 257;
-urlTemplatesGS = 'http://dev.talkme.pro/templatesGS/api/';
+urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 */
@@ -456,15 +456,15 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
     try {
-      // Hacer el primer request
+      /* Hacer el primer request
       const result = await sendRequest();
 
-      /*const result = {
+      */const result = {
         status: "success",
         template: {
-          id: "9014865b-201a-48bc-8352-3a5aea09ce06" // Puedes poner cualquier ID de prueba aquí
+          id: "81d42e16-fc70-4e2d-8cff-67d8986e0dac" // Puedes poner cualquier ID de prueba aquí
         }
-      };*/
+      };//
 
       // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
@@ -752,6 +752,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         // Primero eliminamos los parámetros existentes
         //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
         await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
         // Aquí deberías agregar la lógica para insertar los nuevos parámetros
         // await insertarNuevosParametros(...);
