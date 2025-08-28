@@ -30,7 +30,7 @@ let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBo
 if (token) {
   try {
     const decoded = jwtDecode(token);
-    //appId = decoded.app_id; // Extrae appId del token
+    appId = decoded.app_id; // Extrae appId del token
     authCode = decoded.auth_code; // Extrae authCode del token
     idUsuarioTalkMe = decoded.id_usuario;
     idNombreUsuarioTalkMe = decoded.nombre_usuario;
