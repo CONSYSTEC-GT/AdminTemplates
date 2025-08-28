@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
-//
+/*
 let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
 appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
@@ -20,17 +20,17 @@ idBotRedes = 721;
 idBot = 257;
 urlTemplatesGS = 'http://localhost:3004/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-//urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-//
+urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
+*/
 
-/* Decodifica el token para obtener appId y authCode
+// Decodifica el token para obtener appId y authCode
 const token = localStorage.getItem('authToken');
 
 let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
 if (token) {
   try {
     const decoded = jwtDecode(token);
-    appId = decoded.app_id; // Extrae appId del token
+    //appId = decoded.app_id; // Extrae appId del token
     authCode = decoded.auth_code; // Extrae authCode del token
     idUsuarioTalkMe = decoded.id_usuario;
     idNombreUsuarioTalkMe = decoded.nombre_usuario;
@@ -39,13 +39,13 @@ if (token) {
     idBot = decoded.id_bot;
     urlTemplatesGS = decoded.urlTemplatesGS;
     urlWsFTP = decoded.urlWsFTP;
-    //apiToken = decoded.apiToken; 
+    apiToken = decoded.apiToken; 
     //
   } catch (error) {
     console.error('Error decodificando el token:', error);
   }
 }
-*/
+//
 console.log("urlTemplatesGS: ", urlTemplatesGS);
 console.log("urlWsFTP: ", urlWsFTP);
 
