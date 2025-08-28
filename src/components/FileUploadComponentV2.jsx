@@ -576,7 +576,8 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           text: 'El archivo se ha subido correctamente',
           confirmButtonText: 'Excelente',
           timer: 3000,
-          timerProgressBar: true
+          timerProgressBar: true,
+          confirmButtonColor: '#00c3ff'
         });
 
     } catch (ownServiceError) {

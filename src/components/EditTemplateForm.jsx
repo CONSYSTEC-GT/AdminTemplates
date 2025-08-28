@@ -456,15 +456,15 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
     try {
-      /* Hacer el primer request
+      // Hacer el primer request
       const result = await sendRequest();
 
-      */const result = {
+      /*const result = {
         status: "success",
         template: {
           id: "81d42e16-fc70-4e2d-8cff-67d8986e0dac" // Puedes poner cualquier ID de prueba aquí
         }
-      };//
+      };*/
 
       // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
@@ -743,28 +743,33 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       }
 
       const result = await response.json();
-      
 
-      
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
         console.log("variables: ", variables);
         console.log("variables descripciones: ", variableDescriptions);
         // Primero eliminamos los parámetros existentes
-        //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
-        await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
 
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
-        // Aquí deberías agregar la lógica para insertar los nuevos parámetros
-        // await insertarNuevosParametros(...);
+        try {
+
+          await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
+
+        } catch (error) {
+
+          console.error("Error gestionando parámetros:", error);
+
+          return { status: "error", message: "No se pudieron actualizar los parámetros de la plantilla." };
+
+        }
       }
 
       return { status: "success", data: result };
 
     } catch (error) {
       console.error("Error en el segundo request:", error);
-      showSnackbar("❌ Error en el segundo request", "error");
       return null;
     }
   };
