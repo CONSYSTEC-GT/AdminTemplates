@@ -5,8 +5,9 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
+import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
-/*
+//
 let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
 appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
@@ -20,9 +21,9 @@ idBot = 257;
 urlTemplatesGS = 'http://localhost:3004/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
+//
 
-// Decodifica el token para obtener appId y authCode
+/* Decodifica el token para obtener appId y authCode
 
 
 // Recupera el token del localStorage
@@ -47,6 +48,8 @@ if (token) {
   }
 }
 
+*/
+
 const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
   const [uploadState, setUploadState] = useState('idle'); // 'idle', 'uploading', 'success', 'error'
@@ -55,6 +58,97 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
+
+  const showResponseAlert = (status, data = null, context = 'operación') => {
+    let config = {};
+
+    if (status >= 100 && status <= 199) {
+      // Respuestas informativas (100-199)
+      config = {
+        icon: 'info',
+        title: 'Procesando...',
+        text: `La ${context} se está procesando. Por favor espera un momento.`,
+        confirmButtonText: 'Entendido',
+        timer: 3000,
+        timerProgressBar: true
+      };
+    } else if (status >= 200 && status <= 299) {
+      // Respuestas satisfactorias (200-299)
+      config = {
+        icon: 'success',
+        title: '¡Éxito!',
+        text: `La ${context} se completó correctamente.`,
+        confirmButtonText: 'Perfecto',
+        timer: 2000,
+        timerProgressBar: true
+      };
+    } else if (status >= 300 && status <= 399) {
+      // Redirecciones (300-399)
+      config = {
+        icon: 'warning',
+        title: 'Redirección',
+        text: `La ${context} requiere redirección. Serás redirigido automáticamente.`,
+        confirmButtonText: 'Continuar',
+        showCancelButton: false
+      };
+    } else if (status >= 400 && status <= 499) {
+      // Errores del cliente (400-499)
+      const clientErrorMessages = {
+        400: "La información enviada no es válida. Revisa los datos e inténtalo de nuevo.",
+        401: "Ocurrió un error inesperado. Vuelve a iniciar sesión e inténtalo nuevamente.",
+        403: "No tienes permisos para realizar esta acción. Vuelve a iniciar sesión e inténtalo nuevamente.",
+        404: "El recurso solicitado no fue encontrado. Intenta nuevamente.",
+        408: "La solicitud tardó demasiado. Vuelve a intentarlo.",
+        409: "Hay un conflicto con los datos enviados. Intenta nuevamente.",
+        422: "Los datos no pueden ser procesados. Revisa la información e intenta nuevamente.",
+        429: "Has hecho demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+      };
+
+      config = {
+        icon: 'error',
+        title: `Error en la solicitud ${context}`,
+        html: `
+          <p>${clientErrorMessages[status] || `Error del cliente (${status})`}</p>
+          <p><strong>Sugerencia:</strong> Consulta a soporte técnico.</p>
+          ${data?.message ? `<p><small><strong>Detalle:</strong> ${data.message}</small></p>` : ''}
+        `,
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      };
+    } else if (status >= 500 && status <= 599) {
+      // Errores del servidor (500-599)
+      const serverErrorMessages = {
+        500: `Error interno del servidor. Intenta nuevamente ${context}.`,
+        502: `El servidor no está disponible temporalmente. Intenta nuevamente ${context}.`,
+        503: `El servicio no está disponible en este momento. Intenta nuevamente ${context}.`,
+        504: `El servidor tardó demasiado en responder. Intenta nuevamente ${context}.`,
+        507: `El servidor no tiene espacio suficiente para procesar la solicitud. Intenta nuevamente ${context}.`
+      };
+
+      config = {
+        icon: 'error',
+        title: `Error en la solicitud ${context}`,
+        html: `
+          <p>${serverErrorMessages[status] || `Error del servidor (${status})`}</p>
+          <p><strong>Recomendación:</strong> Intenta nuevamente en unos minutos.</p>
+          <p><small>Si el problema persiste, contacta al soporte técnico.</small></p>
+        `,
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      };
+    } else {
+      // Códigos de estado desconocidos
+      config = {
+        icon: 'question',
+        title: `Respuesta inesperada ${context}.`,
+        text: `Se recibió un código de estado desconocido (${status}). Por favor contacta al soporte.`,
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#6c757d'
+      };
+    }
+
+    return Swal.fire(config);
+  };
 
   // Configuración según el tipo
   const getFileConfig = () => {
@@ -153,127 +247,237 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
   };
 
   const realUpload = async (file) => {
-  try {
-    const base64Content = await convertToBase64(file);
+    let gupshupSuccess = false;
+    let mediaId = null;
+    let logWsftp = null;
 
-    const payload = {
-      idEmpresa: empresaTalkMe,
-      idBot: idBot,
-      idBotRedes: idBotRedes,
-      idUsuario: idUsuarioTalkMe,
-      tipoCarga: 3,
-      nombreArchivo: file.name,
-      contenidoArchivo: base64Content.split(',')[1],
-    };
-
-    let apiToken;
-
-    // Primer request - Obtener token de GupShup
-    try {
-      apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
-    } catch (error) {
-      console.error('Error al obtener token de GupShup:', error);
-      
-      // SweetAlert para error de servicio GupShup
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de Autenticación',
-        text: 'No se pudo obtener el token de autenticación del servicio GupShup. Por favor, intenta nuevamente.',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      
-      throw new Error('GUPSHUP_SERVICE_ERROR: Error al obtener token de autenticación');
-    }
-
-    // Segundo request - Subir archivo a servicio propio WSFTP
-    let response;
-    try {
-      response = await axios.post(
-        urlWsFTP,
-        payload,
-        {
-          headers: {
-            'x-api-token': apiToken,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    } catch (error) {
-      console.error('Error en servicio WSFTP:', error);
-      
-      // SweetAlert para error de servicio WSFTP
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de Carga',
-        text: 'No se pudo cargar el archivo en nuestro servicio de archivos. Por favor, verifica tu conexión e intenta nuevamente.',
-        confirmButtonText: 'Reintentar',
-        confirmButtonColor: '#00c3ff'
-      });
-      
-      throw new Error('WSFTP_SERVICE_ERROR: Error en el servicio de carga de archivos');
-    }
-
-    // Validar respuesta del servicio WSFTP
-    if (response.status !== 200 || !response.data) {
-      console.error('Respuesta inválida del servicio WSFTP:', response);
-      
-      Swal.fire({
-        icon: 'warning',
-        title: 'Respuesta Inválida',
-        text: 'El servicio de carga respondió de forma inesperada. Por favor, intenta nuevamente.',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      
-      throw new Error('WSFTP_INVALID_RESPONSE: Error en la respuesta del servicio');
-    }
-
-    const mediaId = response.data.mediaId || response.data.id || `media-${Date.now()}`;
-
-    // Llamar al callback de éxito
-    if (onUploadSuccess) {
-      onUploadSuccess({
-        mediaId: mediaId,
-        url: response.data.url,
-        type: file.type.includes('image') ? 'image' : 'video'
-      });
-    }
-
-    // SweetAlert de éxito (opcional)
-    Swal.fire({
-      icon: 'success',
-      title: 'Archivo Cargado',
-      text: 'El archivo se ha cargado exitosamente.',
-      timer: 2000,
-      showConfirmButton: false,
-      toast: true,
-      position: 'top-end',
-      confirmButtonColor: '#00c3ff'
+    const crearLogBase = (nombreEvento, urlPeticion) => ({
+      ID_CATEGORIA: null,
+      ID_CONVERSACION: null,
+      CLAVE_REGISTRO: null,
+      IP: "127.0.0.1",
+      NOMBRE_EVENTO: nombreEvento,
+      TIPO_LOG: 0,
+      URL_PETICION: urlPeticion,
+      PETICION: "",
+      RESPUESTA: "",
+      INICIO_PETICION: new Date().toISOString(),
+      FIN_PETICION: new Date().toISOString(),
+      LOCAL_PAYMENT_HASH: null,
+      NOTIFICACION_PAYMENT_HASH: null,
+      CREADO_POR: idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
     });
 
-    return { mediaId, url: response.data.url };
+    try {
+      const wsftpStartTime = new Date();
+      const base64Content = await convertToBase64(file);
 
-  } catch (error) {
-    console.error('Error general en realUpload:', error);
-    
-    // Si no es un error específico que ya manejamos, mostrar error genérico
-    if (!error.message.includes('GUPSHUP_SERVICE_ERROR') && 
-        !error.message.includes('WSFTP_SERVICE_ERROR') && 
-        !error.message.includes('WSFTP_INVALID_RESPONSE')) {
-      
+      // Inicializar log para WSFTP
+      logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP_CAROUSEL", urlWsFTP);
+      logWsftp.INICIO_PETICION = wsftpStartTime.toISOString();
+
+      const payload = {
+        idEmpresa: empresaTalkMe,
+        idBot: idBot,
+        idBotRedes: idBotRedes,
+        idUsuario: idUsuarioTalkMe,
+        tipoCarga: 3,
+        nombreArchivo: file.name,
+        contenidoArchivo: base64Content.split(',')[1],
+      };
+
+      let apiToken;
+
+      // Primer request - Obtener token de GupShup
+      try {
+        apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
+      } catch (error) {
+        console.error('Error al obtener token de GupShup:', error);
+
+        // SweetAlert para error de servicio GupShup
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de Autenticación',
+          text: 'No se pudo obtener el token de autenticación del servicio GupShup. Por favor, intenta nuevamente.',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+
+        throw new Error('GUPSHUP_SERVICE_ERROR: Error al obtener token de autenticación');
+      }
+
+      // Preparar datos de petición para el log
+      const peticionWsftp = {
+        metodo: 'POST',
+        headers: {
+          'x-api-token': apiToken,
+          'Content-Type': 'application/json'
+        },
+        payload: {
+          idEmpresa: empresaTalkMe,
+          idBot: idBot,
+          idBotRedes: idBotRedes,
+          idUsuario: idUsuarioTalkMe,
+          tipoCarga: 3,
+          nombreArchivo: file.name,
+          contenidoArchivo: '***BASE64_CONTENT***',
+          tamanoOriginal: file.size,
+          tipoArchivo: file.type
+        },
+        metadata: {
+          gupshupMediaId: mediaId,
+          procesoCompleto: true
+        }
+      };
+
+      logWsftp.PETICION = JSON.stringify(peticionWsftp);
+
+      // Segundo request - Subir archivo a servicio propio WSFTP
+      let response;
+      try {
+        response = await axios.post(
+          urlWsFTP,
+          payload,
+          {
+            headers: {
+              'x-api-token': apiToken,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        // ✅ RESPUESTA EXITOSA - ACTUALIZAR LOG
+        const wsftpEndTime = new Date();
+        logWsftp.FIN_PETICION = wsftpEndTime.toISOString();
+        logWsftp.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_WSFTP__CAROUSEL_EXITOSO";
+
+        const respuestaWsftp = {
+          status: response.status,
+          statusText: response.statusText,
+          headers: {
+            'content-type': response.headers['content-type'],
+            'content-length': response.headers['content-length']
+          },
+          data: response.data,
+          duracion_ms: wsftpEndTime.getTime() - wsftpStartTime.getTime(),
+          exitoso: true,
+          urlArchivo: response.data.url
+        };
+
+        logWsftp.RESPUESTA = JSON.stringify(respuestaWsftp);
+
+        // Guardar log exitoso de WSFTP
+        try {
+          await guardarLogArchivos(logWsftp, urlTemplatesGS);
+          console.log('✅ Log de WSFTP guardado correctamente');
+        } catch (logError) {
+          console.error('❌ Error al guardar log de WSFTP (no afecta el proceso):', logError);
+        }
+
+      } catch (error) {
+        console.error('Error en servicio WSFTP:', error);
+
+        // ❌ ACTUALIZAR LOG CON ERROR
+        const wsftpEndTime = new Date();
+        logWsftp.FIN_PETICION = wsftpEndTime.toISOString();
+        logWsftp.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_WSFTP_CAROUSEL_FALLIDO";
+
+        const respuestaErrorWsftp = {
+          error: true,
+          message: error.message,
+          stack: error.stack,
+          duracion_ms: wsftpEndTime.getTime() - wsftpStartTime.getTime()
+        };
+
+        if (error.response) {
+          respuestaErrorWsftp.status = error.response.status;
+          respuestaErrorWsftp.statusText = error.response.statusText;
+          respuestaErrorWsftp.headers = error.response.headers;
+          respuestaErrorWsftp.data = error.response.data;
+        }
+
+        logWsftp.RESPUESTA = JSON.stringify(respuestaErrorWsftp);
+
+        // Guardar log de error de WSFTP
+        try {
+          await guardarLogArchivos(logWsftp, urlTemplatesGS);
+          console.log('✅ Log de error de WSFTP guardado correctamente');
+        } catch (logError) {
+          console.error('❌ Error al guardar log de error de WSFTP:', logError);
+        }
+
+        // SweetAlert para error de servicio WSFTP
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de Carga',
+          text: 'No se pudo cargar el archivo en nuestro servicio de archivos. Por favor, verifica tu conexión e intenta nuevamente.',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: '#00c3ff'
+        });
+
+        throw new Error('WSFTP_SERVICE_ERROR: Error en el servicio de carga de archivos');
+      }
+
+      // Validar respuesta del servicio WSFTP
+      if (response.status !== 200 || !response.data) {
+        console.error('Respuesta inválida del servicio WSFTP:', response);
+
+        Swal.fire({
+          icon: 'warning',
+          title: 'Respuesta Inválida',
+          text: 'El servicio de carga respondió de forma inesperada. Por favor, intenta nuevamente.',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+
+        throw new Error('WSFTP_INVALID_RESPONSE: Error en la respuesta del servicio');
+      }
+
+      const mediaIdFinal = response.data.mediaId || response.data.id || `media-${Date.now()}`;
+
+      // Llamar al callback de éxito
+      if (onUploadSuccess) {
+        onUploadSuccess({
+          mediaId: mediaIdFinal,
+          url: response.data.url,
+          type: file.type.includes('image') ? 'image' : 'video'
+        });
+      }
+
+      // SweetAlert de éxito (opcional)
       Swal.fire({
-        icon: 'error',
-        title: 'Error Inesperado',
-        text: 'Ocurrió un error inesperado durante la carga del archivo. Por favor, intenta nuevamente.',
-        confirmButtonText: 'Entendido',
+        icon: 'success',
+        title: 'Archivo Cargado',
+        text: 'El archivo se ha cargado exitosamente.',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
         confirmButtonColor: '#00c3ff'
       });
-    }
 
-    throw error;
-  }
-};
+      return { mediaId: mediaIdFinal, url: response.data.url };
+
+    } catch (error) {
+      console.error('Error general en realUpload:', error);
+
+      // Si no es un error específico que ya manejamos, mostrar error genérico
+      if (!error.message.includes('GUPSHUP_SERVICE_ERROR') &&
+        !error.message.includes('WSFTP_SERVICE_ERROR') &&
+        !error.message.includes('WSFTP_INVALID_RESPONSE')) {
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error Inesperado',
+          text: 'Ocurrió un error inesperado durante la carga del archivo. Por favor, intenta nuevamente.',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+
+      throw error;
+    }
+  };
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
@@ -288,7 +492,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
     if (onImagePreview) {
       onImagePreview(null);
     }
-    
+
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
