@@ -97,14 +97,14 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
     } else if (status >= 400 && status <= 499) {
       // Errores del cliente (400-499)
       const clientErrorMessages = {
-        400: 'Los datos enviados no son válidos. Por favor revisa la información.',
-        401: `Existe un error en la configuración del cliente.`,
-        403: 'No tienes permisos para acceder a este recurso.',
-        404: 'El recurso solicitado no fue encontrado.',
-        408: 'La solicitud tardó demasiado tiempo. Por favor intenta nuevamente.',
-        409: 'Hay un conflicto con el estado actual del recurso.',
-        422: 'Los datos proporcionados no pueden ser procesados.',
-        429: 'Has realizado demasiadas solicitudes. Intenta más tarde.'
+        400: "La información enviada no es válida. Revisa los datos e inténtalo de nuevo.",
+        401: "Ocurrió un error inesperado. Vuelve a iniciar sesión e inténtalo nuevamente.",
+        403: "No tienes permisos para realizar esta acción. Vuelve a iniciar sesión e inténtalo nuevamente.",
+        404: "El recurso solicitado no fue encontrado. Intenta nuevamente.",
+        408: "La solicitud tardó demasiado. Vuelve a intentarlo.",
+        409: "Hay un conflicto con los datos enviados. Intenta nuevamente.",
+        422: "Los datos no pueden ser procesados. Revisa la información e intenta nuevamente.",
+        429: "Has hecho demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
       };
 
       config = {
