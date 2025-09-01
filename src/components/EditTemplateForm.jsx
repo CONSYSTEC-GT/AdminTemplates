@@ -598,7 +598,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
           urlTemplatesGS,
           CREADO_POR: idNombreUsuarioTalkMe,
-          STATUS: "ERROR",
+          STATUS: "ERROR EDIT",
           REJECTION_REASON: responseData.message || "Solicitud inválida"
         });
 
@@ -624,7 +624,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
         urlTemplatesGS,
         CREADO_POR: idNombreUsuarioTalkMe,
-        STATUS: "SUCCESS",
+        STATUS: "SUCCESS EDIT",
         REJECTION_REASON: null
       });
 
