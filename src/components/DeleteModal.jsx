@@ -3,6 +3,7 @@ import { Alert, Modal, Box, Typography, Button, Snackbar } from '@mui/material';
 import { Delete as DeleteIcon, Check as CheckIcon } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
+import { saveTemplateLog } from '../api/templatesGSLog';
 
 const modalStyle = {
   position: 'absolute',
@@ -112,29 +113,109 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
 
 
   const handleDelete = async () => {
-    if (!template) return;
+  if (!template) return;
 
-    try {
-      const response = await fetch(
-        `https://partner.gupshup.io/partner/app/${appId}/template/${template.elementName}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: authCode,
-          },
-        }
-      );
-
-      if (response.ok) {
-        return { status: "success", template: { id: template.id } }; // Devuelve el estado y el ID de la plantilla
-      } else {
-        return { status: "error" }; // Devuelve un estado de error
+  try {
+    const response = await fetch(
+      `https://partner.gupshup.io/partner/app/${appId}/template/${template.elementName}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: authCode,
+        },
       }
-    } catch (error) {
-      
-      return { status: "error" }; // Devuelve un estado de error
+    );
+
+    if (response.ok) {
+      // Registrar eliminación exitosa
+      await saveTemplateLog({
+        TEMPLATE_NAME: template.elementName,
+        APP_ID: appId,
+        CATEGORY: template.category || null,
+        LANGUAGE_CODE: template.languageCode || null,
+        TEMPLATE_TYPE: template.templateType || null,
+        VERTICAL: template.vertical || null,
+        CONTENT: template.content || null,
+        HEADER: template.header || null,
+        FOOTER: template.footer || null,
+        MEDIA_ID: template.mediaId || null,
+        BUTTONS: template.buttons ? JSON.stringify(template.buttons) : null,
+        EXAMPLE: template.example || null,
+        EXAMPLE_HEADER: template.exampleHeader || null,
+        ENABLE_SAMPLE: null,
+        ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
+        GUPSHUP_TEMPLATE_ID: template.id,
+        urlTemplatesGS,
+        STATUS: "DELETED", // Estado específico para eliminación
+        REJECTION_REASON: null,
+        CREADO_POR: idNombreUsuarioTalkMe, // Asegúrate de tener esta variable disponible
+      });
+
+      return { status: "success", template: { id: template.id } };
+    } else {
+      // Obtener detalles del error
+      const errorText = await response.text();
+      let errorResponse;
+      try {
+        errorResponse = JSON.parse(errorText);
+      } catch (e) {
+        errorResponse = { message: "Error no JSON", raw: errorText };
+      }
+
+      // Registrar error en eliminación
+      await saveTemplateLog({
+        TEMPLATE_NAME: template.elementName,
+        APP_ID: appId,
+        CATEGORY: template.category || null,
+        LANGUAGE_CODE: template.languageCode || null,
+        TEMPLATE_TYPE: template.templateType || null,
+        VERTICAL: template.vertical || null,
+        CONTENT: template.content || null,
+        HEADER: template.header || null,
+        FOOTER: template.footer || null,
+        MEDIA_ID: template.mediaId || null,
+        BUTTONS: template.buttons ? JSON.stringify(template.buttons) : null,
+        EXAMPLE: template.example || null,
+        EXAMPLE_HEADER: template.exampleHeader || null,
+        ENABLE_SAMPLE: null,
+        ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
+        GUPSHUP_TEMPLATE_ID: template.id,
+        urlTemplatesGS,
+        STATUS: "DELETE_ERROR", // Estado específico para error en eliminación
+        REJECTION_REASON: errorResponse.message || "Error al eliminar plantilla",
+        CREADO_POR: idNombreUsuarioTalkMe,
+      });
+
+      return { status: "error", message: errorResponse.message };
     }
-  };
+  } catch (error) {
+    // Registrar error de conexión/excepción
+    await saveTemplateLog({
+      TEMPLATE_NAME: template.elementName,
+      APP_ID: appId,
+      CATEGORY: template.category || null,
+      LANGUAGE_CODE: template.languageCode || null,
+      TEMPLATE_TYPE: template.templateType || null,
+      VERTICAL: template.vertical || null,
+      CONTENT: template.content || null,
+      HEADER: template.header || null,
+      FOOTER: template.footer || null,
+      MEDIA_ID: template.mediaId || null,
+      BUTTONS: template.buttons ? JSON.stringify(template.buttons) : null,
+      EXAMPLE: template.example || null,
+      EXAMPLE_HEADER: template.exampleHeader || null,
+      ENABLE_SAMPLE: null,
+      ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
+      GUPSHUP_TEMPLATE_ID: template.id,
+      urlTemplatesGS,
+      STATUS: "DELETE_ERROR",
+      REJECTION_REASON: error.message || "Error inesperado al eliminar",
+      CREADO_POR: idNombreUsuarioTalkMe,
+    });
+
+    return { status: "error" };
+  }
+};
 
   const handleDelete2 = async (templateId, idNombreUsuarioTalkMe) => {
     const url = `${urlTemplatesGS}plantillas/${templateId}`;
