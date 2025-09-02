@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2'
 
 // ICONOS
 import AddIcon from '@mui/icons-material/Add';
