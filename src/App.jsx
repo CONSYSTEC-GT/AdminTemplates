@@ -33,6 +33,7 @@ function App() {
             
             if (decoded.exp < currentTime) {
               console.error('Token expirado');
+              //localStorage.removeItem('authToken');
               localStorage.removeItem('authToken');
               setIsLoading(false);
               navigate('/login-required');
@@ -40,6 +41,7 @@ function App() {
             }
             
             localStorage.setItem('authToken', token);
+            //localStorage.setItem('authToken', token);
             
             // Calcular minutos restantes y guardar en localStorage
             const remainingTimeInSeconds = decoded.exp - currentTime;
@@ -57,6 +59,7 @@ function App() {
           } catch (error) {
             console.error('Token inválido', error);
             localStorage.removeItem('authToken');
+            //localStorage.removeItem('authToken');
             navigate('/login-required');
           }
         }

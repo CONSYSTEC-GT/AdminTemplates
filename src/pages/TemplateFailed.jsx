@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2'
 
 // ICONOS
 import AddIcon from '@mui/icons-material/Add';
@@ -273,6 +274,27 @@ const TemplateAproved = () => {
     });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   const CardComponents = {
     CAROUSEL: CardBaseCarousel,
     DEFAULT: CardBase,
@@ -361,17 +383,28 @@ const TemplateAproved = () => {
                 const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
                 return (
-                  <CardComponent
+                  <motion.div
                     key={template.id}
-                    template={template}
-                    handleEdit={handleEdit}
-                    handleDeleteClick={handleDeleteClick}
-                    showReasonAlert={showReasonAlert}
-                    parseTemplateContent={parseTemplateContent}
-                    getStatusColor={getStatusColor}
-                    getStatusDotColor={getStatusDotColor}
-                    getStatusTextColor={getStatusTextColor}
-                  />
+                    variants={cardVariants}
+                    whileHover={{
+                      scale: 1.05,
+                      y: -10,
+                      transition: { duration: 0.2 }
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <CardComponent
+                      key={template.id}
+                      template={template}
+                      handleEdit={handleEdit}
+                      handleDeleteClick={handleDeleteClick}
+                      showReasonAlert={showReasonAlert}
+                      parseTemplateContent={parseTemplateContent}
+                      getStatusColor={getStatusColor}
+                      getStatusDotColor={getStatusDotColor}
+                      getStatusTextColor={getStatusTextColor}
+                    />
+                  </motion.div>
                 );
               })}
           </Box>

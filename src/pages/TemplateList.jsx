@@ -340,6 +340,27 @@ export default function BasicCard() {
     });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   const CardComponents = {
     CAROUSEL: CardBaseCarousel,
     DEFAULT: CardBase,
@@ -500,22 +521,32 @@ export default function BasicCard() {
             ))
             :
             // Mostrar los datos reales cuando termine de cargar
-            templates.map((template) => {
+            templates.map((template, index) => {
               // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
               const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
               return (
-                <CardComponent
+                <motion.div
                   key={template.id}
-                  template={template}
-                  handleEdit={handleEdit}
-                  handleDeleteClick={handleDeleteClick}
-                  showReasonAlert={showReasonAlert}
-                  parseTemplateContent={parseTemplateContent}
-                  getStatusColor={getStatusColor}
-                  getStatusDotColor={getStatusDotColor}
-                  getStatusTextColor={getStatusTextColor}
-                />
+                  variants={cardVariants}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -10,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <CardComponent
+                    template={template}
+                    handleEdit={handleEdit}
+                    handleDeleteClick={handleDeleteClick}
+                    showReasonAlert={showReasonAlert}
+                    parseTemplateContent={parseTemplateContent}
+                    getStatusColor={getStatusColor}
+                    getStatusDotColor={getStatusDotColor}
+                    getStatusTextColor={getStatusTextColor}
+                  />
+                </motion.div>
               );
             })}
         </Box>

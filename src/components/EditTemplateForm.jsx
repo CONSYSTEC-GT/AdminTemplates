@@ -66,7 +66,7 @@ idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre
 empresaTalkMe = 2;
 idBotRedes = 721;
 idBot = 257;
-urlTemplatesGS = 'http://dev.talkme.pro/templatesGS/api/';
+urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 */
@@ -462,7 +462,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       /*const result = {
         status: "success",
         template: {
-          id: "9014865b-201a-48bc-8352-3a5aea09ce06" // Puedes poner cualquier ID de prueba aquí
+          id: "81d42e16-fc70-4e2d-8cff-67d8986e0dac" // Puedes poner cualquier ID de prueba aquí
         }
       };*/
 
@@ -598,7 +598,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
           urlTemplatesGS,
           CREADO_POR: idNombreUsuarioTalkMe,
-          STATUS: "ERROR",
+          STATUS: "ERROR EDIT",
           REJECTION_REASON: responseData.message || "Solicitud inválida"
         });
 
@@ -624,7 +624,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
         urlTemplatesGS,
         CREADO_POR: idNombreUsuarioTalkMe,
-        STATUS: "SUCCESS",
+        STATUS: "SUCCESS EDIT",
         REJECTION_REASON: null
       });
 
@@ -745,25 +745,33 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       }
 
       const result = await response.json();
-      
 
-      
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
         console.log("variables: ", variables);
         console.log("variables descripciones: ", variableDescriptions);
         // Primero eliminamos los parámetros existentes
-        //const urlDelete = `${urlTemplatesGS}parametros/plantilla/`;
-        await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
-        await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
-        // Aquí deberías agregar la lógica para insertar los nuevos parámetros
-        // await insertarNuevosParametros(...);
+
+        try {
+
+          await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
+
+        } catch (error) {
+
+          console.error("Error gestionando parámetros:", error);
+
+          return { status: "error", message: "No se pudieron actualizar los parámetros de la plantilla." };
+
+        }
       }
 
       return { status: "success", data: result };
 
     } catch (error) {
       console.error("Error en el segundo request:", error);
-      showSnackbar("❌ Error en el segundo request", "error");
       return null;
     }
   };

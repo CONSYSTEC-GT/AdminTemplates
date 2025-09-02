@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2'
 
 // ICONOS
 import AddIcon from '@mui/icons-material/Add';
@@ -55,6 +56,18 @@ const TemplateAproved = () => {
       console.error('Error decodificando el token:', error);
     }
   }
+
+  /*
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
+
+  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
+  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
+  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
+  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
+  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+  empresaTalkMe = 2;
+
+  */
 
   // Función para obtener las plantillas
   const fetchTemplates = async (appId, authCode) => {
@@ -268,6 +281,27 @@ const TemplateAproved = () => {
     setOpenReasonDialog(true);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   const showReasonAlert = (reason) => {
     Swal.fire({
       title: '<strong>Razón de rechazo</strong>',
@@ -371,6 +405,16 @@ const TemplateAproved = () => {
                 const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
                 return (
+                  <motion.div
+                                      key={template.id}
+                                      variants={cardVariants}
+                                      whileHover={{
+                                        scale: 1.05,
+                                        y: -10,
+                                        transition: { duration: 0.2 }
+                                      }}
+                                      whileTap={{ scale: 0.98 }}
+                                    >
                   <CardComponent
                     key={template.id}
                     template={template}
@@ -382,6 +426,7 @@ const TemplateAproved = () => {
                     getStatusDotColor={getStatusDotColor}
                     getStatusTextColor={getStatusTextColor}
                   />
+                  </motion.div>
                 );
               })}
           </Box>
