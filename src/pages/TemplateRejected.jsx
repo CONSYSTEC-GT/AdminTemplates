@@ -268,6 +268,27 @@ const TemplateAproved = () => {
     setOpenReasonDialog(true);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   const showReasonAlert = (reason) => {
     Swal.fire({
       title: '<strong>Razón de rechazo</strong>',
@@ -371,6 +392,16 @@ const TemplateAproved = () => {
                 const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
 
                 return (
+                  <motion.div
+                                      key={template.id}
+                                      variants={cardVariants}
+                                      whileHover={{
+                                        scale: 1.05,
+                                        y: -10,
+                                        transition: { duration: 0.2 }
+                                      }}
+                                      whileTap={{ scale: 0.98 }}
+                                    >
                   <CardComponent
                     key={template.id}
                     template={template}
@@ -382,6 +413,7 @@ const TemplateAproved = () => {
                     getStatusDotColor={getStatusDotColor}
                     getStatusTextColor={getStatusTextColor}
                   />
+                  </motion.div>
                 );
               })}
           </Box>
