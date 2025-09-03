@@ -24,6 +24,7 @@ import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
 import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
+import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
 
 const EditTemplateForm = () => {
@@ -520,159 +521,158 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
   const sendRequest = async () => {
-    
-    if (loading) return; // evita múltiples clics
-    setLoading(true);
-    
-    if (!validateFields()) {
-      return { status: "error", message: "Validación fallida" };
-    }
+  if (loading) return; // evita múltiples clics
+  setLoading(true);
+  
+  if (!validateFields()) {
+    return { status: "error", message: "Validación fallida" };
+  }
 
-    const templateId = idTemplate;
-    const url = `https://partner.gupshup.io/partner/app/${appId}/templates/${templateId}`;
-    const headers = {
-      Authorization: authCode,
-      "Content-Type": "application/x-www-form-urlencoded",
+  const templateId = idTemplate;
+  const url = `https://partner.gupshup.io/partner/app/${appId}/templates/${templateId}`;
+  const headers = {
+    Authorization: authCode,
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+
+  const data = new URLSearchParams();
+  data.append("elementName", templateName);
+  data.append("category", selectedCategory.toUpperCase());
+  data.append("languageCode", languageCode);
+  data.append("templateType", templateType.toUpperCase());
+  data.append("vertical", vertical);
+  data.append("content", message);
+
+  if (header) data.append("header", header);
+  if (footer) data.append("footer", footer);
+  if (mediaId) data.append("exampleMedia", mediaId);
+
+  // Construir el objeto buttons
+  const formattedButtons = buttons.map((button) => {
+    const buttonData = {
+      type: button.type,
+      text: button.title,
     };
 
-    const data = new URLSearchParams();
-    data.append("elementName", templateName);
-    data.append("category", selectedCategory.toUpperCase());
-    data.append("languageCode", languageCode);
-    data.append("templateType", templateType.toUpperCase());
-    data.append("vertical", vertical);
-    data.append("content", message);
+    if (button.type === "URL") {
+      buttonData.url = button.url;
+    } else if (button.type === "PHONE_NUMBER") {
+      buttonData.phone_number = button.phoneNumber;
+    }
 
-    if (header) data.append("header", header);
-    if (footer) data.append("footer", footer);
-    if (mediaId) data.append("exampleMedia", mediaId);
+    return buttonData;
+  });
 
-    // Construir el objeto buttons
-    const formattedButtons = buttons.map((button) => {
-      const buttonData = {
-        type: button.type,
-        text: button.title,
-      };
+  data.append("buttons", JSON.stringify(formattedButtons));
+  data.append("example", example);
+  data.append("exampleHeader", exampleHeader);
+  data.append("enableSample", true);
+  data.append("allowTemplateCategoryChange", false);
 
-      if (button.type === "URL") {
-        buttonData.url = button.url;
-      } else if (button.type === "PHONE_NUMBER") {
-        buttonData.phone_number = button.phoneNumber;
-      }
+  // Preparar datos del request para el log
+  const requestData = {
+    elementName: templateName,
+    category: selectedCategory.toUpperCase(),
+    languageCode: languageCode,
+    templateType: templateType.toUpperCase(),
+    vertical: vertical,
+    content: message,
+    header: header || null,
+    footer: footer || null,
+    exampleMedia: mediaId || null,
+    buttons: formattedButtons,
+    example: example,
+    exampleHeader: exampleHeader,
+    enableSample: true,
+    allowTemplateCategoryChange: false
+  };
 
-      return buttonData;
+  const startTime = new Date().toISOString();
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: headers,
+      body: data,
     });
 
-    data.append("buttons", JSON.stringify(formattedButtons));
-    data.append("example", example);
-    data.append("exampleHeader", exampleHeader);
-    data.append("enableSample", true);
-    data.append("allowTemplateCategoryChange", false);
+    const responseData = await response.json();
+    const endTime = new Date().toISOString();
 
-    
+    if (!response.ok) {
+      console.error("Error response:", responseData);
 
-    try {
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: headers,
-        body: data,
-      });
-
-      const responseData = await response.json(); // Mover esta línea aquí para usarla en ambos casos
-
-      if (!response.ok) {
-        console.error("Error response:", responseData);
-
-        // Guardar log de error
-        await saveTemplateLog({
-          TEMPLATE_NAME: templateName,
-          APP_ID: appId,
-          CATEGORY: selectedCategory,
-          LANGUAGE_CODE: languageCode,
-          TEMPLATE_TYPE: templateType,
-          VERTICAL: vertical,
-          CONTENT: message,
-          HEADER: header || null,
-          FOOTER: footer || null,
-          MEDIA_ID: mediaId || null,
-          BUTTONS: JSON.stringify(buttons),
-          EXAMPLE: example,
-          EXAMPLE_HEADER: exampleHeader,
-          ENABLE_SAMPLE: true,
-          ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-          urlTemplatesGS,
+      // Guardar log de error
+      try {
+        await guardarLogArchivos({
+          NOMBRE_EVENTO: "TEMPLATE_EDIT_ERROR",
+          TIPO_LOG: 2, // Error
+          URL_PETICION: url,
+          PETICION: requestData,
+          RESPUESTA: responseData,
+          INICIO_PETICION: startTime,
+          FIN_PETICION: endTime,
           CREADO_POR: idNombreUsuarioTalkMe,
-          STATUS: "ERROR EDIT",
-          REJECTION_REASON: responseData.message || "Solicitud inválida"
-        });
-
-        return { status: "error", message: responseData.message || "Solicitud inválida" };
+          CLAVE_REGISTRO: templateId
+        }, urlTemplatesGS);
+      } catch (logError) {
+        console.error("Error al guardar log de error:", logError);
       }
 
-      // Guardar log de éxito
-      await saveTemplateLog({
-        TEMPLATE_NAME: templateName,
-        APP_ID: appId,
-        CATEGORY: selectedCategory,
-        LANGUAGE_CODE: languageCode,
-        TEMPLATE_TYPE: templateType,
-        VERTICAL: vertical,
-        CONTENT: message,
-        HEADER: header || null,
-        FOOTER: footer || null,
-        MEDIA_ID: mediaId || null,
-        BUTTONS: JSON.stringify(buttons),
-        EXAMPLE: example,
-        EXAMPLE_HEADER: exampleHeader,
-        ENABLE_SAMPLE: true,
-        ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-        urlTemplatesGS,
-        CREADO_POR: idNombreUsuarioTalkMe,
-        STATUS: "SUCCESS EDIT",
-        REJECTION_REASON: null
-      });
-
-      
-      
-      
-
-      return {
-        status: "success",
-        template: {
-          id: templateId
-        },
-        ...responseData
-      };
-
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-
-      // Guardar log de error de excepción
-      await saveTemplateLog({
-        TEMPLATE_NAME: templateName,
-        APP_ID: appId,
-        CATEGORY: selectedCategory,
-        LANGUAGE_CODE: languageCode,
-        TEMPLATE_TYPE: templateType,
-        VERTICAL: vertical,
-        CONTENT: message,
-        HEADER: header || null,
-        FOOTER: footer || null,
-        MEDIA_ID: mediaId || null,
-        BUTTONS: JSON.stringify(buttons),
-        EXAMPLE: example,
-        EXAMPLE_HEADER: exampleHeader,
-        ENABLE_SAMPLE: true,
-        ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-        urlTemplatesGS,
-        CREADO_POR: idNombreUsuarioTalkMe,
-        STATUS: "ERROR",
-        REJECTION_REASON: error.message || "Error en la solicitud"
-      });
-
-      return { status: "error", message: "Error en la solicitud" };
+      return { status: "error", message: responseData.message || "Solicitud inválida" };
     }
-  };
+
+    // Guardar log de éxito
+    try {
+      await guardarLogArchivos({
+        NOMBRE_EVENTO: "TEMPLATE_EDIT_SUCCESS",
+        TIPO_LOG: 1, // Success
+        URL_PETICION: url,
+        PETICION: requestData,
+        RESPUESTA: responseData,
+        INICIO_PETICION: startTime,
+        FIN_PETICION: endTime,
+        CREADO_POR: idNombreUsuarioTalkMe,
+        CLAVE_REGISTRO: templateId
+      }, urlTemplatesGS);
+    } catch (logError) {
+      console.error("Error al guardar log de éxito:", logError);
+    }
+
+    return {
+      status: "success",
+      template: {
+        id: templateId
+      },
+      ...responseData
+    };
+
+  } catch (error) {
+    console.error("Error en la solicitud:", error);
+    const endTime = new Date().toISOString();
+
+    // Guardar log de error de excepción
+    try {
+      await guardarLogArchivos({
+        NOMBRE_EVENTO: "TEMPLATE_EDIT_EXCEPTION",
+        TIPO_LOG: 3, // Exception
+        URL_PETICION: url,
+        PETICION: requestData,
+        RESPUESTA: { error: error.message },
+        INICIO_PETICION: startTime,
+        FIN_PETICION: endTime,
+        CREADO_POR: idNombreUsuarioTalkMe,
+        CLAVE_REGISTRO: templateId
+      }, urlTemplatesGS);
+    } catch (logError) {
+      console.error("Error al guardar log de excepción:", logError);
+    }
+
+    return { status: "error", message: "Error en la solicitud" };
+  } finally {
+    setLoading(false);
+  }
+};
 
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
   const sendRequest2 = async (templateId) => {
