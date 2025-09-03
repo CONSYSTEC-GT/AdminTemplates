@@ -74,6 +74,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [loading, setLoading] = useState(false);
   const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -519,7 +520,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
   const sendRequest = async () => {
-    // Validar campos antes de enviar la solicitud
+    
+    if (loading) return; // evita múltiples clics
+    setLoading(true);
+    
     if (!validateFields()) {
       return { status: "error", message: "Validación fallida" };
     }
@@ -1968,9 +1972,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             size="large"
             color="primary"
             onClick={iniciarRequest}
+            disabled={loading}
             sx={{ mt: 3, mb: 3 }}
           >
-            Enviar solicitud
+             {loading ? "Enviando..." : "Enviar solicitud"}
           </Button>
         </Box>
 
