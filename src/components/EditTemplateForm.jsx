@@ -443,7 +443,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const iniciarRequest = async () => {
 
-    // Validar campos antes de enviar
+    if (loading) return; 
+    setLoading(true);
+
     const isValid = validateFields();
     if (!isValid) {
       Swal.fire({
@@ -496,6 +498,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             confirmButtonText: 'Cerrar',
             confirmButtonColor: '#00c3ff'
           });
+          setLoading(false);
         }
       } else {
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
@@ -506,6 +509,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
       }
     } catch (error) {
       console.error("Ocurrió un error:", error);
@@ -516,13 +520,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
     }
   };
 
 
   const sendRequest = async () => {
-  if (loading) return; // evita múltiples clics
-  setLoading(true);
   
   if (!validateFields()) {
     return { status: "error", message: "Validación fallida" };
@@ -669,9 +672,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
 
     return { status: "error", message: "Error en la solicitud" };
-  } finally {
-    setLoading(false);
-  }
+  } 
+    
+  
 };
 
   // FUNCION PARA ENVIAR EL REQUEST A TALKME
