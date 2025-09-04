@@ -29,6 +29,7 @@ import { useClickOutside } from '../utils/emojiClick';
 const TemplateForm = () => {
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [loading, setLoading] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("text");
@@ -392,6 +393,8 @@ const validateFields = async () => {
  */
 
   const iniciarRequest = async () => {
+    if (loading) return;
+    setLoading(true);
 
     // Validar campos antes de enviar
     const isValid = await validateFields();
@@ -403,6 +406,7 @@ const validateFields = async () => {
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
       return; // Detener si hay errores
     }
 
@@ -482,6 +486,7 @@ const validateFields = async () => {
           confirmButtonText: 'Aceptar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
 
         // El tercer request se maneja dentro de saveTemplateToTalkMe
       } else {
@@ -493,6 +498,7 @@ const validateFields = async () => {
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         console.error("Resultado del primer request:", result);
       }
@@ -506,6 +512,7 @@ const validateFields = async () => {
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
     }
   };
 
@@ -1787,8 +1794,9 @@ useClickOutside(
             color="primary"
             onClick={iniciarRequest}
             sx={{ mt: 3, mb: 3 }}
+            disabled={loading}
           >
-            Enviar solicitud
+            {loading ? "Enviando..." : "Enviar solicitud"}
           </Button>
         </Box>
 

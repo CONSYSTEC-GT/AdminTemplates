@@ -30,6 +30,7 @@ import { CustomDialog } from '../utils/CustomDialog';
 const TemplateForm = () => {
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [loading, setLoading] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("CATALOG");
@@ -393,6 +394,8 @@ const TemplateForm = () => {
 */
 
   const iniciarRequest = async () => {
+    if (loading) return;
+    setLoading(true);
 
     // Validar campos antes de enviar
     const isValid = await validateFields();
@@ -404,6 +407,7 @@ const TemplateForm = () => {
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
       return; // Detener si hay errores
     }
 
@@ -459,6 +463,7 @@ const TemplateForm = () => {
           confirmButtonText: 'Aceptar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
 
         // El tercer request se maneja dentro de saveTemplateToTalkMe
       } else {
@@ -470,6 +475,7 @@ const TemplateForm = () => {
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         console.error("Resultado del primer request:", result);
       }
@@ -482,6 +488,7 @@ const TemplateForm = () => {
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
     }
   };
 
@@ -1526,9 +1533,10 @@ const TemplateForm = () => {
             size="large"
             color="primary"
             onClick={iniciarRequest}
+            disabled={loading}
             sx={{ mt: 3, mb: 3 }}
           >
-            Enviar solicitud
+            {loading ? "Enviando..." : "Enviar solicitud"}
           </Button>
         </Box>
 
