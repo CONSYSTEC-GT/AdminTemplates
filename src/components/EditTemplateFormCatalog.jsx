@@ -79,6 +79,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const templateData = location.state?.template || {}; // Datos del template
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [loading, setLoading] = useState(false);
   const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -473,7 +474,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   console.log("PLANTILLA SELECCIONADA: ", idTemplate);
 
   const iniciarRequest = async () => {
-    // Validar campos antes de enviar
+    if (loading) return;
+    setLoading(true);
+    
     const isValid = validateFields();
     if (!isValid) {
       Swal.fire({
@@ -483,6 +486,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
       return; // Detener si hay errores
     }
 
@@ -545,6 +549,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             confirmButtonText: 'Cerrar',
             confirmButtonColor: '#00c3ff'
           });
+          setLoading(false);
 
           navigate('/Dashboard');
         }
@@ -556,6 +561,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
       }
     } catch (error) {
       console.log("Ocurrió un error:", error);
@@ -566,6 +572,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
     }
 };
 
@@ -1447,9 +1454,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             size="large"
             color="primary"
             onClick={iniciarRequest}
+            disabled={loading}
             sx={{ mt: 3, mb: 3 }}
           >
-            Enviar solicitud
+            {loading ? "Enviando..." : "Enviar solicitud"}
           </Button>
         </Box>
 
