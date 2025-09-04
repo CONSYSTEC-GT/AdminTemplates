@@ -23,7 +23,7 @@ const ModifyTemplatePage = () => {
         Modificar Template
       </Typography>
 
-      //Boton Regresar<Tooltip title="Volver al Dashboard">
+      <Tooltip title="Volver al Dashboard">
         <Button
           variant="contained"
           color="primary"
