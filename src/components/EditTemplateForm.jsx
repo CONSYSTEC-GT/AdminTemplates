@@ -1525,10 +1525,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
           <FormControl fullWidth>
             <Select labelId="template-type-label" id="template-type" value={templateType} onChange={handleTemplateTypeChange} label="Select" ref={templateTypeRef}>
-              <MenuItem value="text">TEXTO</MenuItem>
-              <MenuItem value="image">IMAGEN</MenuItem>
-              <MenuItem value="video">VIDEO</MenuItem>
-              <MenuItem value="document">DOCUMENTO</MenuItem>
+              <MenuItem value="TEXT">TEXTO</MenuItem>
+              <MenuItem value="IMAGE">IMAGEN</MenuItem>
+              <MenuItem value="VIDEO">VIDEO</MenuItem>
+              <MenuItem value="DOCUMENT">DOCUMENTO</MenuItem>
             </Select>
             <FormHelperText>
               Escoge el tipo de plantilla que se va a crear
