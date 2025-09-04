@@ -79,7 +79,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [templateType, setTemplateType] = useState("text");
+  const [templateType, setTemplateType] = useState("TEXT");
   const [pantallas, setPantallas] = useState([]);
   const [displayPantallas, setDisplayPantallas] = useState([]);
   const [pantallasError, setPantallasError] = useState(false);
@@ -163,7 +163,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       if (templateData) {
         setTemplateName(templateData.elementName || "");
         setSelectedCategory(templateData.category || "");
-        setTemplateType((templateData.templateType || "").toLowerCase());
+        setTemplateType((templateData.templateType || ""));
         setLanguageCode(templateData.languageCode || "");
         setVertical(templateData.vertical || "");
         setIdTemplate(templateData.id);
