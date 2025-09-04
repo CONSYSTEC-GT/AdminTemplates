@@ -614,7 +614,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         // Guardar log de error
         try {
           await guardarLogArchivos({
-            NOMBRE_EVENTO: "TEMPLATE_EDIT_ERROR",
+            NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_ERROR",
             TIPO_LOG: 2, // Error
             URL_PETICION: url,
             PETICION: completeRequestLog, // Usar el JSON completo
@@ -634,7 +634,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       // Guardar log de éxito
       try {
         await guardarLogArchivos({
-          NOMBRE_EVENTO: "TEMPLATE_EDIT_SUCCESS",
+          NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_EXITOSO",
           TIPO_LOG: 1, // Success
           URL_PETICION: url,
           PETICION: completeRequestLog, // Usar el JSON completo
@@ -663,7 +663,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       // Guardar log de error de excepción
       try {
         await guardarLogArchivos({
-          NOMBRE_EVENTO: "TEMPLATE_EDIT_EXCEPTION",
+          NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_EXCEPTION",
           TIPO_LOG: 3, // Exception
           URL_PETICION: url,
           PETICION: completeRequestLog, // Usar el JSON completo
