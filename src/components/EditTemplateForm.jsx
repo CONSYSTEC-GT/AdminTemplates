@@ -2087,7 +2087,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
               <Typography variant="body1" color="text.primary" sx={{ fontFamily: "Helvetica Neue, Arial, sans-serif", whiteSpace: "pre-line" }}>
-                {message}
+                {example}
               </Typography>
 
               <Typography
