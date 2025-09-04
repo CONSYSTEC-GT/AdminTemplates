@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
-//
+/*
 let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
 appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
@@ -21,9 +21,9 @@ idBot = 257;
 urlTemplatesGS = 'http://localhost:3004/api/';
 apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
 urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-//
+*/
 
-/* Decodifica el token para obtener appId y authCode
+// Decodifica el token para obtener appId y authCode
 
 
 // Recupera el token del localStorage
@@ -48,7 +48,7 @@ if (token) {
   }
 }
 
-*/
+//
 
 const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
