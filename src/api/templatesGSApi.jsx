@@ -205,13 +205,6 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     CREADO_POR: idNombreUsuarioTalkMe,
   };
 
-  // Imprimir el segundo request
-  
-    url: url,
-    headers: headers,
-    body: data,
-  });
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -336,13 +329,6 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
     MODIFICADO_POR: idNombreUsuarioTalkMe,
     FECHA_MODIFICACION: new Date().toISOString()
   };
-
-  // Log para seguimiento
-  
-    url: url,
-    headers: headers,
-    body: data,
-  });
 
   try {
     const response = await fetch(url, {

@@ -107,12 +107,6 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       return;
     }
 
-    
-      nombre: file.name,
-      tipo: file.type,
-      tamaño: `${(file.size / 1024 / 1024).toFixed(2)} MB`
-    });
-
     setError('');
     setSelectedFile(file);
 
@@ -156,18 +150,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
         headers: {
           Authorization: authCode,
         },
-      });
-
-      
-        url: gupshupUrl,
-        method: 'POST',
-        headers: {
-          Authorization: authCode,
-        },
-        data: gupshupFormData,
-      });
-
-      
+      });   
 
       if (gupshupResponse.status !== 200 || !gupshupResponse.data) {
         console.error('Error en la respuesta de Gupshup:', {
@@ -222,17 +205,6 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
       
       setUploadStatus('Subiendo archivo al servicio propio...');
-
-      
-        url: urlWsFTP,
-        method: 'POST',
-        headers: {
-          'x-api-token': apiToken,
-          'Content-Type': 'application/json',
-          'origin': 'https://certificacion.talkme.pro/',
-        },
-        data: payload,
-      });
 
       const ownServiceResponse = await axios.post(
         urlWsFTP,
