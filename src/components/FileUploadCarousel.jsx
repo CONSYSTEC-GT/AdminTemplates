@@ -26,11 +26,6 @@ const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, 
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
       urlWsFTP = decoded.urlWsFTP;
-      //apiToken = decoded.apiToken;
-      
-      
-      
-      //
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
