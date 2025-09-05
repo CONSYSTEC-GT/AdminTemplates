@@ -79,7 +79,7 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
 const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTalkMe, urlTemplatesGS) => {
   
   const url = urlTemplatesGS + 'tarjetas/';
-  console.log ("URL EN SAVE CARDS", url);
+  
   const headers = {
     "Content-Type": "application/json",
   };
@@ -206,7 +206,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   };
 
   // Imprimir el segundo request
-  console.log("Segundo request enviado:", {
+  
     url: url,
     headers: headers,
     body: data,
@@ -275,7 +275,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
 export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS, idBotRedes) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
 
-  console.log("idTemplate: ", idTemplate);
+  
 
   // URL para actualizar plantilla por ID_INTERNO
   //const url = `https://certificacion.talkme.pro/templatesGS/api/plantillas/${idTemplate}`;
@@ -338,7 +338,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
   };
 
   // Log para seguimiento
-  console.log("Request de edición enviado:", {
+  
     url: url,
     headers: headers,
     body: data,
@@ -379,12 +379,12 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
         }
 
         await deleteTemplateParams(talkmeId, urlTemplatesGS);
-        console.log("PARAMETROS ELIMINADOS");
+        
 
         // Insertar nuevos parámetros solo si existen
         if (variables && variables.length > 0) {
           await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
-          console.log("PARAMETROS NUEVOS CREADOS");
+          
         }
 
       } catch (error) {
@@ -479,7 +479,7 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
 
 export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
-  console.log(url);
+  
   
 
   try{
@@ -490,7 +490,7 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
       },
     });
 
-    console.log(response);
+    
 
     if (!response.ok){
       throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
@@ -521,7 +521,7 @@ export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) 
     }
 
     const data = await response.json();
-    console.log("Parámetros eliminados exitosamente:", data);
+    
     return data;
   } catch (error) {
     console.error("Error eliminando parámetros de la plantilla", error);
@@ -568,7 +568,7 @@ export const eliminarBroadcastParametros = async (urlTemplatesGS, parametrosIds)
 
 export const validarNombrePlantillas = async (urlTemplatesGS, nombre, idBotRedes) => {
   const url = `${urlTemplatesGS}plantillas/validar?nombre=${encodeURIComponent(nombre)}&id_bot_redes=${encodeURIComponent(idBotRedes)}`;
-  console.log("url: ", url);
+  
 
   try {
     const response = await fetch(url, {

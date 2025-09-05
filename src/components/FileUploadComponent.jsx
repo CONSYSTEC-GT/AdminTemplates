@@ -107,7 +107,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       return;
     }
 
-    console.log('Detalles del archivo:', {
+    
       nombre: file.name,
       tipo: file.type,
       tamaño: `${(file.size / 1024 / 1024).toFixed(2)} MB`
@@ -158,7 +158,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
         },
       });
 
-      console.log('Request completo a Gupshup:', {
+      
         url: gupshupUrl,
         method: 'POST',
         headers: {
@@ -223,7 +223,7 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       
       setUploadStatus('Subiendo archivo al servicio propio...');
 
-      console.log('Request completo al servicio propio:', {
+      
         url: urlWsFTP,
         method: 'POST',
         headers: {

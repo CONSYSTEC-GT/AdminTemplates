@@ -71,8 +71,6 @@ const CardBaseCarousel = ({
   };
 
   const handleDeleteClickLocal = () => {
-    console.log('selectedTemplate:', selectedTemplate);
-    console.log('handleDeleteClick function:', handleDeleteClick);
     handleDeleteClick(selectedTemplate);
     handleClose();
   };
@@ -329,7 +327,6 @@ const CardBaseCarousel = ({
                       }}
                     >
                       {card.buttons.map((button, btnIdx) => {
-                        console.log('button.type:', button.type);
                         let styles = {
                           borderRadius: 20,
                           px: 2,

@@ -471,7 +471,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  console.log("PLANTILLA SELECCIONADA: ", idTemplate);
+  
 
   const iniciarRequest = async () => {
     if (loading) return;
@@ -523,7 +523,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         const templateId = result.template.id;
 
         // Hacer el segundo request a TalkMe API
-        console.log ("idBotRedes en editar catalogo: ", idBotRedes);
+        
         const result2 = await editTemplateToTalkMe(
           templateId,
           {
@@ -564,7 +564,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       setLoading(false);
       }
     } catch (error) {
-      console.log("Ocurrió un error:", error);
+      
       Swal.fire({
         title: 'Error',
         text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,

@@ -64,8 +64,6 @@ const TemplateCard = ({
   };
 
   const handleDeleteClickLocal = () => {
-    console.log('selectedTemplate:', selectedTemplate);
-    console.log('handleDeleteClick function:', handleDeleteClick);
     handleDeleteClick(selectedTemplate);
     handleClose();
   };
@@ -273,7 +271,7 @@ const TemplateCard = ({
               }}
             >
               {getButtonsFromTemplate(template).map((button, index) => {
-                console.log(button)
+                
                 let styles = {
                   borderRadius: 20,
                   px: 2,

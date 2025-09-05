@@ -736,12 +736,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       MODIFICADO_POR: idNombreUsuarioTalkMe,
     };
 
-    console.log("Segundo request enviado:", {
-      url: url,
-      headers: headers,
-      body: data,
-    });
-
     try {
       const response = await fetch(url, {
         method: "PUT",
@@ -758,8 +752,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const result = await response.json();
 
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-        console.log("variables: ", variables);
-        console.log("variables descripciones: ", variableDescriptions);
+        
+        
         // Primero eliminamos los parámetros existentes
 
         try {

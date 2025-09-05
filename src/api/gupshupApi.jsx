@@ -507,8 +507,8 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
   const startTime = new Date().toISOString();
 
   try {
-    // Console.log del request
-    console.log('Request AL EDITAR CATALOGO: ', {
+    // 
+    
       url: url,
       method: 'PUT',
       headers: headers,
@@ -551,12 +551,12 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
         console.error("Error al guardar log de error:", logError);
       }
 
-      console.log("❌ Plantilla de catálogo no se pudo editar en Gupshup");
+      
       throw new Error(errorResponse.message || "Error al editar la plantilla");
     }
 
     const result = await response.json();
-    console.log('Respuesta completa:', result);
+    
 
     // Guardar log de éxito
     try {
@@ -575,7 +575,7 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
       console.error("Error al guardar log de éxito:", logError);
     }
 
-    console.log("✅ Plantilla de catálogo editada exitosamente en Gupshup");
+    
     return {
       status: "success",
       template: {
@@ -872,12 +872,12 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
         console.error("Error al guardar log de error:", logError);
       }
 
-      console.log("❌ Plantilla carousel no se pudo editar en Gupshup");
+      
       throw new Error(errorResponse.message || "Error al editar la plantilla");
     }
 
     const result = await response.json();
-    console.log('Respuesta completa:', result);
+    
 
     // Guardar log de éxito
     try {
@@ -896,7 +896,7 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
       console.error("Error al guardar log de éxito:", logError);
     }
 
-    console.log("✅ Plantilla carousel editada exitosamente en Gupshup");
+    
     return {
       status: "success",
       template: {

@@ -564,7 +564,6 @@ const TemplateForm = () => {
 
     setIsValidating(true);
 
-    console.log("Datos a validar: ", urlTemplatesGS, nombreFormateado, idBotRedes);
 
     try {
       const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);

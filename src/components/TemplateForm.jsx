@@ -366,10 +366,6 @@ const validateFields = async () => {
       apiToken = decoded.apiToken;
       urlWsFTP = decoded.urlWsFTP;
 
-      console.log("appId: ", appId);
-      console.log("authCode: ", authCode);
-      console.log("urlTemplatesGS: ", urlTemplatesGS);
-
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -589,7 +585,6 @@ const validateTemplateName = async (nombre) => {
 
   setIsValidating(true);
 
-  console.log("Datos a validar: ", urlTemplatesGS, nombreFormateado, idBotRedes);
   
   try {
     const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);

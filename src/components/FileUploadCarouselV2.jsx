@@ -369,7 +369,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
         // Guardar log exitoso de WSFTP
         try {
           await guardarLogArchivos(logWsftp, urlTemplatesGS);
-          console.log('✅ Log de WSFTP guardado correctamente');
+          
         } catch (logError) {
           console.error('❌ Error al guardar log de WSFTP (no afecta el proceso):', logError);
         }
@@ -401,7 +401,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
         // Guardar log de error de WSFTP
         try {
           await guardarLogArchivos(logWsftp, urlTemplatesGS);
-          console.log('✅ Log de error de WSFTP guardado correctamente');
+          
         } catch (logError) {
           console.error('❌ Error al guardar log de error de WSFTP:', logError);
         }

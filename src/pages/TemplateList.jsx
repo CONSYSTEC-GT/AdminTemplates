@@ -257,7 +257,6 @@ export default function BasicCard() {
 
   // Función para manejar el clic en eliminar
   const handleDeleteClick = (template) => {
-    console.log('Template recibido en handleDeleteClick:', template);
     setSelectedTemplate(template); // ← ¡AGREGA ESTA LÍNEA!
     setDeleteModalOpen(true);
   };
