@@ -507,13 +507,6 @@ export const editTemplateCatalogGupshup = async (appId, authCode, templateData, 
   const startTime = new Date().toISOString();
 
   try {
-    // 
-    
-      url: url,
-      method: 'PUT',
-      headers: headers,
-      body: data.toString()
-    });
 
     const response = await fetch(url, {
       method: "PUT",
