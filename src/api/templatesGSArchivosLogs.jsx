@@ -1,7 +1,7 @@
 export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
 
     const url = urlTemplatesGS + 'logs_ws'
-    console.log("url en Archivos Logs: ", url);
+    
     // Función para registrar logs de subida de archivos
     try {
         // Usar los datos proporcionados en logArchivosData o valores por defecto
@@ -27,8 +27,8 @@ export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
             CREADO_POR: logArchivosData.CREADO_POR || "USUARIO_DESCONOCIDO"
         };
 
-        console.log("🔄 Enviando datos al endpoint:", `${urlTemplatesGS}logs_ws/`);
-        console.log("📦 Datos a enviar:", payload);
+        
+        
 
         // Realizar la petición con fetch
         const response = await fetch(`${urlTemplatesGS}logs_ws/`, {
@@ -47,7 +47,7 @@ export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
 
         const data = await response.json();
 
-        console.log("✅ Log guardado exitosamente:", data);
+        
         return data;
     } catch (error) {
         console.error('❌ Error al registrar log:', error.message);

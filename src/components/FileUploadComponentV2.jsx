@@ -45,11 +45,6 @@ if (token) {
     console.error('Error decodificando el token:', error);
   }
 }
-//
-console.log("urlTemplatesGS: ", urlTemplatesGS);
-console.log("urlWsFTP: ", urlWsFTP);
-
-//
 
 const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onHeaderChange }) => {
 
@@ -363,15 +358,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         logGupshup.PETICION = JSON.stringify(peticionGupshup);
 
-        console.log('Request completo a Gupshup:', {
-          url: gupshupUrl,
-          method: 'POST',
-          headers: {
-            Authorization: authCode,
-          },
-          data: gupshupFormData,
-        });
-
         const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
           headers: {
             Authorization: authCode,
@@ -408,9 +394,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         // Guardar log exitoso de Gupshup
         try {
           await guardarLogArchivos(logGupshup, urlTemplatesGS);
-          console.log('✅ Log de Gupshup guardado correctamente');
         } catch (logError) {
-          console.error('❌ Error al guardar log de Gupshup (no afecta el proceso):', logError);
         }
 
     } catch (gupshupError) {
@@ -439,9 +423,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           // Guardar log de error de Gupshup
           try {
             await guardarLogArchivos(logGupshup, urlTemplatesGS);
-            console.log('✅ Log de error de Gupshup guardado correctamente');
           } catch (logError) {
-            console.error('❌ Error al guardar log de error de Gupshup:', logError);
           }
         }
 
@@ -556,9 +538,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         // Guardar log exitoso de WSFTP
         try {
           await guardarLogArchivos(logWsftp, urlTemplatesGS);
-          console.log('✅ Log de WSFTP guardado correctamente');
         } catch (logError) {
-          console.error('❌ Error al guardar log de WSFTP (no afecta el proceso):', logError);
         }
 
         // ✅ AMBOS SERVICIOS EXITOSOS - ACTUALIZAR ESTADO AQUÍ
@@ -606,9 +586,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
           // Guardar log de error de WSFTP
           try {
             await guardarLogArchivos(logWsftp, urlTemplatesGS);
-            console.log('✅ Log de error de WSFTP guardado correctamente');
           } catch (logError) {
-            console.error('❌ Error al guardar log de error de WSFTP:', logError);
           }
         }
 

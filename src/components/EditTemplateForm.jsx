@@ -24,6 +24,7 @@ import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
 import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
+import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
 
 const EditTemplateForm = () => {
@@ -51,7 +52,7 @@ const EditTemplateForm = () => {
       urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
-      
+
     }
   }
   /*
@@ -74,10 +75,11 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [loading, setLoading] = useState(false);
   const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [templateType, setTemplateType] = useState("text");
+  const [templateType, setTemplateType] = useState("TEXT");
   const [pantallas, setPantallas] = useState([]);
   const [displayPantallas, setDisplayPantallas] = useState([]);
   const [pantallasError, setPantallasError] = useState(false);
@@ -161,7 +163,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       if (templateData) {
         setTemplateName(templateData.elementName || "");
         setSelectedCategory(templateData.category || "");
-        setTemplateType((templateData.templateType || "").toLowerCase());
+        setTemplateType((templateData.templateType || ""));
         setLanguageCode(templateData.languageCode || "");
         setVertical(templateData.vertical || "");
         setIdTemplate(templateData.id);
@@ -196,7 +198,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
         if (info === null) {
-          
+
         } else {
           const pantallasFromAPI = info.pantallas || "";
           setPantallas(pantallasFromAPI);
@@ -209,7 +211,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
         }
       } catch (error) {
-        
+
       }
     };
 
@@ -224,7 +226,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
         if (infoParametros === null || infoParametros.length === 0) {
-          
+
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -243,12 +245,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-          
-          
-          
+
+
+
         }
       } catch (error) {
-        
+
       }
     };
 
@@ -272,101 +274,101 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const validateFields = () => {
     let isValid = true;
 
-    
+
 
     if (!templateName || templateName.trim() === "") {
-      
+
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!templateType || templateType.trim() === "") {
-      
+
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (displayPantallas.length === 0) {
-      
+
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-      
+
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      
+
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!vertical || vertical.trim() === "") {
-      
+
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!message || message.trim() === "") {
-      
+
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      
+
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      
+
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          
+
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -375,7 +377,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -387,7 +389,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        
+
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -401,7 +403,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        
+
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -411,7 +413,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -427,54 +429,48 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
       // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-        
+
       } else {
-        
+
       }
     } else {
-      
+
     }
 
-    
+
     return isValid; // Retornar el valor final de isValid
   };
 
   const iniciarRequest = async () => {
+    if (loading) return;
+    setLoading(true);
 
-    // Validar campos antes de enviar
     const isValid = validateFields();
     if (!isValid) {
       Swal.fire({
         title: 'Error',
-        text: 'Campo incompletos.',
+        text: 'Campos incompletos.',
         icon: 'error',
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
-      return; // Detener si hay errores
+      setLoading(false);
+      return;
     }
 
-
     try {
-      // Hacer el primer request
+      
       const result = await sendRequest();
 
-      /*const result = {
-        status: "success",
-        template: {
-          id: "81d42e16-fc70-4e2d-8cff-67d8986e0dac" // Puedes poner cualquier ID de prueba aquí
-        }
-      };*/
-
-      // Verificar si el primer request fue exitoso
+      
       if (result && result.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
+        
         const templateId = result.template.id;
 
-        // Hacer el segundo request, pasando el `id` como parámetro
+        
         const result2 = await sendRequest2(templateId);
 
-        // Si el segundo request también fue exitoso
+        
         if (result2 && result2.status === "success") {
           Swal.fire({
             title: 'Éxito',
@@ -489,37 +485,42 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           console.error("El segundo request no fue exitoso.");
           Swal.fire({
             title: 'Error al actualizar',
-            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
             icon: 'error',
             confirmButtonText: 'Cerrar',
             confirmButtonColor: '#00c3ff'
           });
+          setLoading(false);
         }
       } else {
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         Swal.fire({
-          title: 'Campos incompletos',
-          text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+          title: 'Error en el primer request',
+          text: `Ocurrió un problema al crear la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
           icon: 'warning',
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
       }
     } catch (error) {
       console.error("Ocurrió un error:", error);
       Swal.fire({
         title: 'Error',
-        text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
         icon: 'error',
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
+      setLoading(false);
     }
   };
 
 
   const sendRequest = async () => {
-    // Validar campos antes de enviar la solicitud
+    if (loading) return; // evita múltiples clics
+    setLoading(true);
+
     if (!validateFields()) {
       return { status: "error", message: "Validación fallida" };
     }
@@ -565,7 +566,37 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     data.append("enableSample", true);
     data.append("allowTemplateCategoryChange", false);
 
-    
+    // Preparar datos del request para el log (formato original)
+    const requestData = {
+      elementName: templateName,
+      category: selectedCategory.toUpperCase(),
+      languageCode: languageCode,
+      templateType: templateType.toUpperCase(),
+      vertical: vertical,
+      content: message,
+      header: header || null,
+      footer: footer || null,
+      exampleMedia: mediaId || null,
+      buttons: formattedButtons,
+      example: example,
+      exampleHeader: exampleHeader,
+      enableSample: true,
+      allowTemplateCategoryChange: false
+    };
+
+    // Crear el JSON completo del request incluyendo método, headers y payload
+    const completeRequestLog = {
+      metodo: "PUT",
+      headers: headers,
+      payload: requestData,
+      url: url,
+      metadata: {
+        templateId: templateId,
+        procesoCompleto: true
+      }
+    };
+
+    const startTime = new Date().toISOString();
 
     try {
       const response = await fetch(url, {
@@ -574,63 +605,48 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         body: data,
       });
 
-      const responseData = await response.json(); // Mover esta línea aquí para usarla en ambos casos
+      const responseData = await response.json();
+      const endTime = new Date().toISOString();
 
       if (!response.ok) {
         console.error("Error response:", responseData);
 
         // Guardar log de error
-        await saveTemplateLog({
-          TEMPLATE_NAME: templateName,
-          APP_ID: appId,
-          CATEGORY: selectedCategory,
-          LANGUAGE_CODE: languageCode,
-          TEMPLATE_TYPE: templateType,
-          VERTICAL: vertical,
-          CONTENT: message,
-          HEADER: header || null,
-          FOOTER: footer || null,
-          MEDIA_ID: mediaId || null,
-          BUTTONS: JSON.stringify(buttons),
-          EXAMPLE: example,
-          EXAMPLE_HEADER: exampleHeader,
-          ENABLE_SAMPLE: true,
-          ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-          urlTemplatesGS,
-          CREADO_POR: idNombreUsuarioTalkMe,
-          STATUS: "ERROR EDIT",
-          REJECTION_REASON: responseData.message || "Solicitud inválida"
-        });
+        try {
+          await guardarLogArchivos({
+            NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_ERROR",
+            TIPO_LOG: 2, // Error
+            URL_PETICION: url,
+            PETICION: completeRequestLog, // Usar el JSON completo
+            RESPUESTA: responseData,
+            INICIO_PETICION: startTime,
+            FIN_PETICION: endTime,
+            CREADO_POR: idNombreUsuarioTalkMe,
+            CLAVE_REGISTRO: templateId
+          }, urlTemplatesGS);
+        } catch (logError) {
+          console.error("Error al guardar log de error:", logError);
+        }
 
         return { status: "error", message: responseData.message || "Solicitud inválida" };
       }
 
       // Guardar log de éxito
-      await saveTemplateLog({
-        TEMPLATE_NAME: templateName,
-        APP_ID: appId,
-        CATEGORY: selectedCategory,
-        LANGUAGE_CODE: languageCode,
-        TEMPLATE_TYPE: templateType,
-        VERTICAL: vertical,
-        CONTENT: message,
-        HEADER: header || null,
-        FOOTER: footer || null,
-        MEDIA_ID: mediaId || null,
-        BUTTONS: JSON.stringify(buttons),
-        EXAMPLE: example,
-        EXAMPLE_HEADER: exampleHeader,
-        ENABLE_SAMPLE: true,
-        ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-        urlTemplatesGS,
-        CREADO_POR: idNombreUsuarioTalkMe,
-        STATUS: "SUCCESS EDIT",
-        REJECTION_REASON: null
-      });
-
-      
-      
-      
+      try {
+        await guardarLogArchivos({
+          NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_EXITOSO",
+          TIPO_LOG: 1, // Success
+          URL_PETICION: url,
+          PETICION: completeRequestLog, // Usar el JSON completo
+          RESPUESTA: responseData,
+          INICIO_PETICION: startTime,
+          FIN_PETICION: endTime,
+          CREADO_POR: idNombreUsuarioTalkMe,
+          CLAVE_REGISTRO: templateId
+        }, urlTemplatesGS);
+      } catch (logError) {
+        console.error("Error al guardar log de éxito:", logError);
+      }
 
       return {
         status: "success",
@@ -642,31 +658,28 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
     } catch (error) {
       console.error("Error en la solicitud:", error);
+      const endTime = new Date().toISOString();
 
       // Guardar log de error de excepción
-      await saveTemplateLog({
-        TEMPLATE_NAME: templateName,
-        APP_ID: appId,
-        CATEGORY: selectedCategory,
-        LANGUAGE_CODE: languageCode,
-        TEMPLATE_TYPE: templateType,
-        VERTICAL: vertical,
-        CONTENT: message,
-        HEADER: header || null,
-        FOOTER: footer || null,
-        MEDIA_ID: mediaId || null,
-        BUTTONS: JSON.stringify(buttons),
-        EXAMPLE: example,
-        EXAMPLE_HEADER: exampleHeader,
-        ENABLE_SAMPLE: true,
-        ALLOW_TEMPLATE_CATEGORY_CHANGE: false,
-        urlTemplatesGS,
-        CREADO_POR: idNombreUsuarioTalkMe,
-        STATUS: "ERROR",
-        REJECTION_REASON: error.message || "Error en la solicitud"
-      });
+      try {
+        await guardarLogArchivos({
+          NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_EXCEPTION",
+          TIPO_LOG: 3, // Exception
+          URL_PETICION: url,
+          PETICION: completeRequestLog, // Usar el JSON completo
+          RESPUESTA: { error: error.message },
+          INICIO_PETICION: startTime,
+          FIN_PETICION: endTime,
+          CREADO_POR: idNombreUsuarioTalkMe,
+          CLAVE_REGISTRO: templateId
+        }, urlTemplatesGS);
+      } catch (logError) {
+        console.error("Error al guardar log de excepción:", logError);
+      }
 
       return { status: "error", message: "Error en la solicitud" };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -702,9 +715,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       carousel: "image"
     };
 
-    
+
     const MEDIA = mediaMap[templateType] || null;
-    
+
 
     const mensajeProcesado = reordenarVariables(message);
     const nombreProcesado = templateName.replace(/_/g, " ");
@@ -725,12 +738,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       MODIFICADO_POR: idNombreUsuarioTalkMe,
     };
 
-    console.log("Segundo request enviado:", {
-      url: url,
-      headers: headers,
-      body: data,
-    });
-
     try {
       const response = await fetch(url, {
         method: "PUT",
@@ -747,8 +754,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const result = await response.json();
 
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-        console.log("variables: ", variables);
-        console.log("variables descripciones: ", variableDescriptions);
+        
+        
         // Primero eliminamos los parámetros existentes
 
         try {
@@ -805,7 +812,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-    
+
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -956,7 +963,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      
+
     }
   };
 
@@ -1087,7 +1094,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   // Llamada correcta al hook (sin el tercer parámetro)
   useClickOutside(
-    emojiPickerRef, 
+    emojiPickerRef,
     () => setShowEmojiPicker(false)
   );
 
@@ -1285,7 +1292,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      
+
       return updatedExamples;
     });
   };
@@ -1305,7 +1312,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       // Remover las llaves de la clave para crear el regex correcto
       const cleanVariable = variable.replace(/[{}]/g, '');
       const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-      
+
       result = result.replace(regex, variables[variable]);
     });
 
@@ -1514,10 +1521,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
           <FormControl fullWidth>
             <Select labelId="template-type-label" id="template-type" value={templateType} onChange={handleTemplateTypeChange} label="Select" ref={templateTypeRef}>
-              <MenuItem value="text">TEXTO</MenuItem>
-              <MenuItem value="image">IMAGEN</MenuItem>
-              <MenuItem value="video">VIDEO</MenuItem>
-              <MenuItem value="document">DOCUMENTO</MenuItem>
+              <MenuItem value="TEXT">TEXTO</MenuItem>
+              <MenuItem value="IMAGE">IMAGEN</MenuItem>
+              <MenuItem value="VIDEO">VIDEO</MenuItem>
+              <MenuItem value="DOCUMENT">DOCUMENTO</MenuItem>
             </Select>
             <FormHelperText>
               Escoge el tipo de plantilla que se va a crear
@@ -1596,9 +1603,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
               onUploadSuccess={(uploadData) => {
                 setMediaId(uploadData.mediaId);
                 setUploadedUrl(uploadData.url);
-                
-                
-                
+
+
+
               }}
               onImagePreview={(preview) => setImagePreview(preview)}
               onHeaderChange={(newHeader) => setHeader(newHeader)}
@@ -1970,9 +1977,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             size="large"
             color="primary"
             onClick={iniciarRequest}
+            disabled={loading}
             sx={{ mt: 3, mb: 3 }}
           >
-            Enviar solicitud
+            {loading ? "Enviando..." : "Enviar solicitud"}
           </Button>
         </Box>
 
@@ -2075,7 +2083,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
               <Typography variant="body1" color="text.primary" sx={{ fontFamily: "Helvetica Neue, Arial, sans-serif", whiteSpace: "pre-line" }}>
-                {message}
+                {example}
               </Typography>
 
               <Typography

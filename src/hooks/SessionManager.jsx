@@ -116,8 +116,6 @@ const SessionManager = () => {
             }
         }, logoutTime);
         
-        console.log(`Sesión extendida - Nueva sesión iniciada a las ${new Date(now).toLocaleTimeString()}`);
-        console.log(`Advertencia en ${warningTime/1000/60} min, Logout por inactividad en ${logoutTime/1000/60} min`);
     }, [getInactivityMinutes, showSessionWarning, logout, clearAllTimeouts]);
 
     // Función para manejar actividad del usuario
@@ -170,7 +168,6 @@ const SessionManager = () => {
                         }
                     }, remainingInactivityTime);
                     
-                    console.log(`Sesión restaurada - Advertencia en ${remainingWarningTime/1000/60} min`);
                 } else {
                     // Ya debería mostrar advertencia
                     showSessionWarning();
@@ -206,10 +203,8 @@ const SessionManager = () => {
             // Guardamos en localStorage solo si no existe un valor previo
             if (!localStorage.getItem('initialRemainingMinutes')) {
                 localStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
-                console.log('Minutos iniciales guardados en localStorage:', remainingMinutesOnly);
             }
 
-            console.log('Minutos restantes del token:', remainingMinutesOnly);
             
             // Inicializar sesión dinámica
             initializeSession();

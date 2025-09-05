@@ -5,8 +5,8 @@ export const saveTemplateLog = async (logData) => {
 
     const url = urlTemplatesGS + 'logs';
     
-    console.log("🔄 Enviando datos al endpoint:", url);
-    console.log("📦 Datos a enviar:", dataToSend);
+    
+    
 
     const headers = {
       "Content-Type": "application/json",
@@ -26,7 +26,7 @@ export const saveTemplateLog = async (logData) => {
     }
 
     const result = await response.json();
-    console.log("✅ Log guardado exitosamente:", result);
+    
     
     return { success: true, data: result };
   } catch (error) {

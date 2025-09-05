@@ -48,6 +48,7 @@ import { useClickOutsideCards } from '../utils/emojiClick';
 const TemplateFormCarousel = () => {
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
+  const [loading, setLoading] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("CAROUSEL");
@@ -452,25 +453,18 @@ const TemplateFormCarousel = () => {
   urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 */
   const iniciarRequest = async () => {
+    if (loading) return;
+    setLoading(true);
     try {
 
-      // Hacer debug de las cards antes de formatear
-
-      // Primero verifica que cards esté definido
       if (!cards || cards.length === 0) {
         console.error("No hay tarjetas disponibles");
         return;
       }
 
-      // Ahora sí puedes hacer log de formattedCards
-      //
-      // Asegúrate de que todas las cards tengan los datos necesarios
-
-      // format de cards
       const formattedCards = formatCardsForGupshup(cards);
       const cardsToSendArray = [...cards];
       const cardsToSend = JSON.stringify([...cards]);
-
 
       const isValid = formattedCards.every(card =>
         card.mediaUrl && card.body
@@ -486,15 +480,10 @@ const TemplateFormCarousel = () => {
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
         return;
       }
-      //
 
-      /******************************
-       * COMENTADO EL PRIMER REQUEST *
-       ******************************/
-
-      // Validar campos antes de enviar
       const isValidP = await validateFields();
       if (!isValidP) {
         Swal.fire({
@@ -504,6 +493,7 @@ const TemplateFormCarousel = () => {
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
         return; // Detener si hay errores
       }
 
@@ -545,12 +535,10 @@ const TemplateFormCarousel = () => {
 
         */
 
-      // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
+
         const templateId = result.template.id;
 
-        // Hacer el segundo request a TalkMe API
         const result2 = await saveTemplateToTalkMe(
           templateId,
           {
@@ -569,8 +557,8 @@ const TemplateFormCarousel = () => {
           urlTemplatesGS
         );
 
-        // Limpia todos los campos si todo fue bien
         resetForm();
+
         Swal.fire({
           title: '¡Éxito!',
           text: 'La plantilla fue creada correctamente.',
@@ -578,6 +566,7 @@ const TemplateFormCarousel = () => {
           confirmButtonText: 'Aceptar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
 
       } else {
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
@@ -589,6 +578,7 @@ const TemplateFormCarousel = () => {
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
+        setLoading(false);
 
       }
     } catch (error) {
@@ -657,7 +647,6 @@ const TemplateFormCarousel = () => {
 
     setIsValidating(true);
 
-    console.log("Datos a validar: ", urlTemplatesGS, nombreFormateado, idBotRedes);
 
     try {
       const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
@@ -2774,8 +2763,9 @@ const TemplateFormCarousel = () => {
               color="primary"
               onClick={iniciarRequest}
               sx={{ mt: 3, mb: 3 }}
+              disabled={loading}
             >
-              Enviar solicitud
+              {loading ? "Enviando..." : "Enviar solicitud"}
             </Button>
           </Box>
 

@@ -50,7 +50,7 @@ function App() {
             // Guardamos en localStorage solo si no existe un valor previo
             if (!localStorage.getItem('initialRemainingMinutes')) {
               localStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
-              console.log('Minutos iniciales guardados en localStorage:', remainingMinutesOnly);
+              
             }
             
             const { app_id, auth_code, app_name } = decoded;
