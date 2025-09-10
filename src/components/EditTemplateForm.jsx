@@ -709,10 +709,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
 
     const mediaMap = {
-      image: "image",
-      video: "video",
-      document: "document",
-      carousel: "image"
+      IMAGE: "image",
+      VIDEO: "video",
+      DOCUMENT: "document",
+      CAROUSEL: "image"
     };
 
 
@@ -730,7 +730,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       MENSAJE: mensajeProcesado,
       TIPO_PLANTILLA: TIPO_PLANTILLA,
       MEDIA: MEDIA,
-      URL: uploadedUrl,
+      URL: uploadedUrl || mediaURL,
       PANTALLAS: pantallas,
       MODIFICADO_EL: new Date(),
       MODIFICADO_POR: idNombreUsuarioTalkMe,
