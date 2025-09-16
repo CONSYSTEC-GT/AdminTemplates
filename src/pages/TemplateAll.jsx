@@ -161,11 +161,11 @@ useEffect(() => {
   let filtered = [...templates];
 
   if (tipoPlantillaFiltro !== 'ALL') {
-    filtered = filtered.filter(template => template.templateType === tipoPlantillaFiltro);
+    filtered = filtered.filter(template => template.gupshup.templateType === tipoPlantillaFiltro);
   }
 
   if (categoriaFiltro && categoriaFiltro !== 'ALL') {
-    filtered = filtered.filter(template => template.category === categoriaFiltro);
+    filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
   }
 
   if (busquedaFiltro.trim() !== '') {
@@ -478,7 +478,7 @@ useEffect(() => {
               // Mostrar los datos reales cuando termine de cargar
               filteredTemplates.map((template) => {
                 // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
-                const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
+                const CardComponent = CardComponents[template.gupshup.templateType] || CardComponents.DEFAULT;
 
                 return (
                   <motion.div
