@@ -22,6 +22,7 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 // MODAL PARA ELIMINAR
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
+import { fetchMergedTemplates } from '../api/templatesServices';
 
 import TemplateCardSkeleton from '../utils/SkeletonTemplates';
 import CardBase from '../components/CardBase';
@@ -48,19 +49,20 @@ const TemplateAll = () => {
 
 
   // Decodifica el token para obtener appId y authCode
-  let appId, authCode;
+  let appId, authCode, urlTemplatesGS;
   if (token) {
     try {
       const decoded = jwtDecode(token);
       appId = decoded.app_id; // Extrae appId del token
       authCode = decoded.auth_code; // Extrae authCode del token
+      urlTemplatesGS = decoded.urlTemplatesGS;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
   }
 
   /*
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, urlTemplatesGS;
 
   appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
   authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
@@ -68,10 +70,11 @@ const TemplateAll = () => {
   idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
   idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
   empresaTalkMe = 2;
+  urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
 
   */
 
-  // Función para obtener las plantillas
+  /* Función para obtener las plantillas
   const fetchTemplates = async (appId, authCode) => {
     try {
       const response = await fetch(`https://partner.gupshup.io/partner/app/${appId}/templates`, {
@@ -124,6 +127,55 @@ const TemplateAll = () => {
 
     setFilteredTemplates(filtered);
   }, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
+
+  */
+
+
+  // Función para obtener las plantillas usando fetchMergedTemplates
+const obtenerTemplatesMerge = async () => {
+  try {
+    const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
+    console.log('Templates obtenidos:', templates);
+    return templates; // Retorna todas las plantillas (sin el slice)
+  } catch (error) {
+    console.error('Error al obtener templates:', error);
+    return []; // Retorna un array vacío en caso de error
+  }
+};
+
+// useEffect para cargar datos
+useEffect(() => {
+  if (appId && authCode && urlTemplatesGS) {
+    setLoading(true);
+    obtenerTemplatesMerge()
+      .then(data => {
+        setTemplates(data);
+        setLoading(false);
+      });
+  } else {
+    console.error('No se encontró appId, authCode o urlTemplatesGS en el token');
+  }
+}, [appId, authCode, urlTemplatesGS]); // Agregamos urlTemplatesGS a las dependencias
+
+useEffect(() => {
+  let filtered = [...templates];
+
+  if (tipoPlantillaFiltro !== 'ALL') {
+    filtered = filtered.filter(template => template.templateType === tipoPlantillaFiltro);
+  }
+
+  if (categoriaFiltro && categoriaFiltro !== 'ALL') {
+    filtered = filtered.filter(template => template.category === categoriaFiltro);
+  }
+
+  if (busquedaFiltro.trim() !== '') {
+    filtered = filtered.filter(template =>
+      template.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
+    );
+  }
+
+  setFilteredTemplates(filtered);
+}, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
 
   const handleFiltrarTipoPlantilla = (event) => {
     setTipoPlantillaFiltro(event.target.value);

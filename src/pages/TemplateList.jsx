@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Swal from 'sweetalert2'
 
 import LoginRequired from './LoginRequired';
+import { fetchMergedTemplates } from '../api/templatesServices';
 
 //componentes
 import { alpha, Card, CardContent, Typography, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Button, ListItemIcon, ListItemText, Grid, Box, Menu, MenuItem, Stack, TextField, Paper, styled } from '@mui/material';
@@ -117,7 +118,7 @@ export default function BasicCard() {
   
  /*
 
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, urlTemplatesGS;
 
   appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
   authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
@@ -125,10 +126,11 @@ export default function BasicCard() {
   idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
   idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
   empresaTalkMe = 2;
+  urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
   */
 
 
-  // Función para obtener las plantillas
+/*
   const fetchTemplates = async (appId, authCode) => {
     try {
       const response = await fetch(`https://partner.gupshup.io/partner/app/${appId}/templates`, {
@@ -139,19 +141,18 @@ export default function BasicCard() {
       });
       const data = await response.json();
       if (data.status === 'success') {
-        return data.templates.slice(0, 4); // Retorna los datos en lugar de establecer el estado
+        return data.templates.slice(0, 4);
       }
-      return []; // Retorna un array vacío si no hay éxito
+      return [];
     } catch (error) {
       console.error('Error fetching templates:', error);
-      return []; // Retorna un array vacío en caso de error
+      return [];
     }
   };
 
-  // useEffect para cargar datos
   useEffect(() => {
     if (appId && authCode) {
-      setLoading(true); // Asegúrate de que loading esté en true al inicio
+      setLoading(true);
       fetchTemplates(appId, authCode)
         .then(data => {
           setTemplates(data);
@@ -161,6 +162,32 @@ export default function BasicCard() {
       console.error('No se encontró appId o authCode en el token');
     }
   }, [appId, authCode]);
+
+  */
+
+  const obtenerTemplatesMerge = async () => {
+    try {
+      const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
+      console.log('Templates obtenidos:', templates);
+      return templates.slice(0, 4);
+    } catch (error) {
+      console.error('Error al obtener templates:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (appId && authCode && urlTemplatesGS) {
+      setLoading(true);
+      obtenerTemplatesMerge()
+        .then(data => {
+          setTemplates(data);
+          setLoading(false);
+        });
+    } else {
+      console.error('No se encontró appId o authCode en el token');
+    }
+  }, [appId, authCode]);
+  //
 
 
   const getStatusColor = (status) => {
@@ -521,8 +548,10 @@ export default function BasicCard() {
             :
             // Mostrar los datos reales cuando termine de cargar
             templates.map((template, index) => {
+              console.log("templates map: ", templates)
               // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
-              const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
+              const CardComponent = CardComponents[template.gupshup.templateType] || CardComponents.DEFAULT;
+              console.log("templates type: ", template.gupshup.templateType)
 
               return (
                 <motion.div

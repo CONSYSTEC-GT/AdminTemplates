@@ -69,14 +69,16 @@ const TemplateCard = ({
   };
 
   const getButtonsFromTemplate = (template) => {
-  try {
-    const containerMeta = JSON.parse(template.containerMeta);
-    return containerMeta.buttons || [];
-  } catch (error) {
-    console.error('Error parsing containerMeta:', error);
-    return [];
-  }
-};
+    try {
+      const containerMeta = JSON.parse(template.gupshup.containerMeta);
+      return containerMeta.buttons || [];
+    } catch (error) {
+      console.error('Error parsing containerMeta:', error);
+      return [];
+    }
+  };
+
+  console.log("template talkme url:", template.talkme.url);
 
   return (
     <Card
@@ -108,24 +110,24 @@ const TemplateCard = ({
               WebkitBoxOrient: 'vertical'
             }}
           >
-            {template.elementName}
+            {template.gupshup.elementName}
           </Typography>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
             {/* Status badge */}
             <Box
-              component={template.reason ? "button" : "div"}
-              onClick={template.reason ? () => showReasonAlert(template.reason) : undefined}
+              component={template.gupshup.reason ? "button" : "div"}
+              onClick={template.gupshup.reason ? () => showReasonAlert(template.gupshup.reason) : undefined}
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                backgroundColor: getStatusColor(template.status),
+                backgroundColor: getStatusColor(template.gupshup.status),
                 borderRadius: 1,
                 px: 1,
                 py: 0.5,
-                border: template.reason ? '1px dashed rgba(255,255,255,0.3)' : 'none',
-                cursor: template.reason ? 'pointer' : 'default',
-                '&:hover': template.reason ? {
+                border: template.gupshup.reason ? '1px dashed rgba(255,255,255,0.3)' : 'none',
+                cursor: template.gupshup.reason ? 'pointer' : 'default',
+                '&:hover': template.gupshup.reason ? {
                   opacity: 0.8,
                   transform: 'scale(1.02)'
                 } : {},
@@ -138,12 +140,12 @@ const TemplateCard = ({
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  backgroundColor: getStatusDotColor(template.status),
+                  backgroundColor: getStatusDotColor(template.gupshup.status),
                   mr: 0.5
                 }}
               />
-              <Typography variant="caption" sx={{ color: getStatusTextColor(template.status), fontWeight: 500 }}>
-                {template.status}
+              <Typography variant="caption" sx={{ color: getStatusTextColor(template.gupshup.status), fontWeight: 500 }}>
+                {template.gupshup.status}
               </Typography>
             </Box>
 
@@ -159,7 +161,7 @@ const TemplateCard = ({
               }}
             >
               <Typography variant="caption" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                {template.category}
+                {template.gupshup.category}
               </Typography>
             </Box>
 
@@ -175,7 +177,7 @@ const TemplateCard = ({
               }}
             >
               <Typography variant="caption" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                {template.templateType}
+                {template.gupshup.templateType}
               </Typography>
             </Box>
           </Box>
@@ -215,18 +217,74 @@ const TemplateCard = ({
             }}
           >
             {/* Imagen para plantillas tipo CAROUSEL o IMAGE */}
-            {(template.templateType === 'IMAGE' || template.templateType === 'VIDEO' || template.Type === 'DOCUMENT') && (
+            {/* Contenido multimedia para plantillas tipo IMAGE, VIDEO o DOCUMENT */}
+            {(template.gupshup.templateType === 'IMAGE' || template.gupshup.templateType === 'VIDEO' || template.gupshup.templateType === 'DOCUMENT') && (
               <Box sx={{ mb: 2, width: '100%', height: 140, borderRadius: 2, overflow: 'hidden' }}>
-                <img
-                  src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-UPVXEk3VrllOtMWXfyrUi4GVlt71zdxigtTGguOkqRgWmIX8_aT35EdrnTc0Jn5yy5c&usqp=CAU'
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '8px',
-                    alignContent: 'center'
-                  }}
-                />
+                {/* Mostrar imagen */}
+                {template.gupshup.templateType === 'IMAGE' && (
+                  <img
+                    src={template.talkme.url}
+                    alt="Template image"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                    }}
+                  />
+                )}
+
+                {/* Mostrar video */}
+                {template.gupshup.templateType === 'VIDEO' && (
+                  <video
+                    src={template.talkme.url}
+                    controls
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    Tu navegador no soporta el elemento video.
+                  </video>
+                )}
+
+                {/* Mostrar documento */}
+                {template.gupshup.templateType === 'DOCUMENT' && (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px',
+                      flexDirection: 'column',
+                      gap: 1
+                    }}
+                  >
+                    {/* Icono de documento */}
+                    <Box sx={{ fontSize: 24 }}>📄</Box>
+                    <Typography variant="caption" sx={{ textAlign: 'center', px: 1 }}>
+                      Documento
+                    </Typography>
+                    {/* Enlace para descargar/ver el documento */}
+                    <a
+                      href={template.talkme.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#1976d2',
+                        textDecoration: 'none',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Ver documento
+                    </a>
+                  </Box>
+                )}
               </Box>
             )}
 
@@ -244,7 +302,7 @@ const TemplateCard = ({
               }}
               component="div"
             >
-              {parseTemplateContent(template.data).text
+              {parseTemplateContent(template.gupshup.data).text
                 .replace(/\|/g, '')  // elimina todos los pipes
                 .split('\n')
                 .map((line, i) => (
@@ -271,7 +329,7 @@ const TemplateCard = ({
               }}
             >
               {getButtonsFromTemplate(template).map((button, index) => {
-                
+
                 let styles = {
                   borderRadius: 20,
                   px: 2,
@@ -280,7 +338,7 @@ const TemplateCard = ({
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent:'center',
+                  justifyContent: 'center',
                   gap: 1,
                 };
 
@@ -325,7 +383,7 @@ const TemplateCard = ({
           </Box>
 
           <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
-            <FechaModificacion timestamp={template.modifiedOn} />
+            <FechaModificacion timestamp={template.gupshup.modifiedOn} />
           </Typography>
 
         </Box>
