@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Asegúrate de instalar jwt-decode
+import { jwtDecode } from 'jwt-decode';
 import { useParams } from 'react-router-dom';
 import { alpha, Box, Button, Card, CardActions, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, FormControl, FormLabel, Input, InputAdornment, ListItemIcon, ListItemText, InputLabel, Menu, MenuItem, OutlinedInput, Select, Stack, styled, TextField, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -30,7 +30,6 @@ import CardBaseCarousel from '../components/CardBaseCarousel';
 import CardBaseSkeleton from '../components/CardBaseSkeleton';
 
 const TemplateAll = () => {
-  //PARA MANEJAR EL STATUS DE LAS PLANTILLAS | VARIABLES
   const { templateId } = useParams();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,19 +41,16 @@ const TemplateAll = () => {
   const [categoriaFiltro, setCategoriaFiltro] = useState('ALL');
   const [busquedaFiltro, setBusquedaFiltro] = useState('');
 
-  const navigate = useNavigate(); // Inicializa useNavigate
+  const navigate = useNavigate();
 
-  // Recupera el token del localStorage
   const token = localStorage.getItem('authToken');
 
-
-  // Decodifica el token para obtener appId y authCode
   let appId, authCode, urlTemplatesGS;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
       urlTemplatesGS = decoded.urlTemplatesGS;
     } catch (error) {
       console.error('Error decodificando el token:', error);
@@ -130,52 +126,49 @@ const TemplateAll = () => {
 
   */
 
+  const obtenerTemplatesMerge = async () => {
+    try {
+      const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
+      console.log('Templates obtenidos:', templates);
+      return templates;
+    } catch (error) {
+      console.error('Error al obtener templates:', error);
+      return [];
+    }
+  };
 
-  // Función para obtener las plantillas usando fetchMergedTemplates
-const obtenerTemplatesMerge = async () => {
-  try {
-    const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
-    console.log('Templates obtenidos:', templates);
-    return templates; // Retorna todas las plantillas (sin el slice)
-  } catch (error) {
-    console.error('Error al obtener templates:', error);
-    return []; // Retorna un array vacío en caso de error
-  }
-};
+  useEffect(() => {
+    if (appId && authCode && urlTemplatesGS) {
+      setLoading(true);
+      obtenerTemplatesMerge()
+        .then(data => {
+          setTemplates(data);
+          setLoading(false);
+        });
+    } else {
+      console.error('No se encontró appId, authCode o urlTemplatesGS en el token');
+    }
+  }, [appId, authCode, urlTemplatesGS]);
 
-// useEffect para cargar datos
-useEffect(() => {
-  if (appId && authCode && urlTemplatesGS) {
-    setLoading(true);
-    obtenerTemplatesMerge()
-      .then(data => {
-        setTemplates(data);
-        setLoading(false);
-      });
-  } else {
-    console.error('No se encontró appId, authCode o urlTemplatesGS en el token');
-  }
-}, [appId, authCode, urlTemplatesGS]); // Agregamos urlTemplatesGS a las dependencias
+  useEffect(() => {
+    let filtered = [...templates];
 
-useEffect(() => {
-  let filtered = [...templates];
+    if (tipoPlantillaFiltro !== 'ALL') {
+      filtered = filtered.filter(template => template.gupshup.templateType === tipoPlantillaFiltro);
+    }
 
-  if (tipoPlantillaFiltro !== 'ALL') {
-    filtered = filtered.filter(template => template.gupshup.templateType === tipoPlantillaFiltro);
-  }
+    if (categoriaFiltro && categoriaFiltro !== 'ALL') {
+      filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
+    }
 
-  if (categoriaFiltro && categoriaFiltro !== 'ALL') {
-    filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
-  }
+    if (busquedaFiltro.trim() !== '') {
+      filtered = filtered.filter(template =>
+        template.gupshup.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
+      );
+    }
 
-  if (busquedaFiltro.trim() !== '') {
-    filtered = filtered.filter(template =>
-      template.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
-    );
-  }
-
-  setFilteredTemplates(filtered);
-}, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
+    setFilteredTemplates(filtered);
+  }, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
 
   const handleFiltrarTipoPlantilla = (event) => {
     setTipoPlantillaFiltro(event.target.value);
@@ -185,8 +178,6 @@ useEffect(() => {
     setCategoriaFiltro(event.target.value);
   }
 
-
-  //MODIFICAR EL COLOR DEPENDIENDO DEL STATUS DE LAS PLANTILLAS
   const getStatusColor = (status) => {
     switch (status) {
       case 'REJECTED':
@@ -203,24 +194,24 @@ useEffect(() => {
   const getStatusTextColor = (status) => {
     switch (status) {
       case 'REJECTED':
-        return '#d32f2f'; // Rojo oscuro para texto
+        return '#d32f2f';
       case 'FAILED':
-        return '#e65100'; // Naranja oscuro para texto
+        return '#e65100';
       case 'APPROVED':
         return '#1B5E20';
       default:
-        return '#616161'; // Gris oscuro para texto
+        return '#616161';
     }
   };
 
   const getStatusDotColor = (status) => {
     switch (status) {
       case 'REJECTED':
-        return '#EF4444'; // Rojo
+        return '#EF4444';
       case 'FAILED':
-        return '#FF9900'; // Naranja
+        return '#FF9900';
       case 'APPROVED':
-        return '#34C759'; // Verde
+        return '#34C759';
       default:
         return '#000000';
     }
@@ -229,9 +220,8 @@ useEffect(() => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event, template) => {
-    // Verifica el template seleccionado
-    setAnchorEl(event.currentTarget); // Abre el menú
-    setSelectedTemplate(template); // Guarda el template seleccionado en el estado
+    setAnchorEl(event.currentTarget);
+    setSelectedTemplate(template);
   };
 
   const handleClose = () => {
@@ -239,10 +229,8 @@ useEffect(() => {
   };
 
   const handleEdit = (template) => {
-    // Validar el estado del template primero
-    if (template.status === "APPROVED" || template.status === "REJECTED" || template.status === "PAUSED") {
-      // Redirigir según el tipo de template
-      switch (template.templateType) {
+    if (template.gupshup.status === "APPROVED" || template.gupshup.status === "REJECTED" || template.gupshup.status === "PAUSED") {
+      switch (template.gupshup.templateType) {
         case 'CAROUSEL':
           navigate('/modify-template-carousel', { state: { template } });
           break;
@@ -256,11 +244,9 @@ useEffect(() => {
           navigate('/modify-template', { state: { template } });
           break;
         default:
-          // Ruta por defecto si no coincide con ningún tipo conocido
           navigate('/modify-template', { state: { template } });
       }
     } else {
-      // Si el estado no es válido, mostrar un mensaje de error
       Swal.fire({
         title: 'La plantilla no puede ser editada.',
         text: 'No se puede editar la plantilla porque su estado no es "APPROVED", "REJECTED" o "PAUSED".',
@@ -271,43 +257,42 @@ useEffect(() => {
     }
   };
 
-  // Función para manejar el clic en eliminar
   const handleDeleteClick = (template) => {
-    // Verifica el template en el estado
     setSelectedTemplate(template);
-    setDeleteModalOpen(true); // Abre el modal
+    setDeleteModalOpen(true);
   };
 
-  // Función para cancelar la eliminación
   const handleDeleteCancel = () => {
     setDeleteModalOpen(false);
     setSelectedTemplate(null);
   };
 
-  // Función para confirmar la eliminación
   const handleDeleteConfirm = async () => {
     try {
-      // Aquí iría tu lógica para eliminar la plantilla
-
-
-      // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
       setSelectedTemplate(null);
       setLoading(true);
 
-      // Recargar y actualizar el estado de plantillas
-      const newTemplates = await fetchTemplates(appId, authCode);
+      const newTemplates = await obtenerTemplatesMerge();
+
       setTemplates(newTemplates);
       setLoading(false);
     } catch (error) {
       console.error('Error al eliminar la plantilla:', error);
+      Swal.fire({
+        title: 'La plantilla no puedo ser eliminada.',
+        text: 'No se puede eliminar la plantilla.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
+      setLoading(false);
     }
   };
 
   const [anchorEl2, setAnchorEl2] = useState(null);
   const open2 = Boolean(anchorEl2);
 
-  // Estilo personalizado para el menú
   const StyledMenu = styled((props) => (
     <Menu
       elevation={0}
@@ -396,9 +381,7 @@ useEffect(() => {
   const CardComponents = {
     CAROUSEL: CardBaseCarousel,
     DEFAULT: CardBase,
-    // Agrega más tipos según necesites
   };
-
 
   return (
     <Box>
@@ -467,17 +450,14 @@ useEffect(() => {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
             gap: 3,
-            justifyItems: "center" // Esto centrará las tarjetas en sus celdas de grid
+            justifyItems: "center"
           }}>
             {loading ?
-              // Mostrar skeletons mientras carga
               Array.from(new Array(4)).map((_, index) => (
                 <CardBaseSkeleton key={index} />
               ))
               :
-              // Mostrar los datos reales cuando termine de cargar
               filteredTemplates.map((template) => {
-                // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
                 const CardComponent = CardComponents[template.gupshup.templateType] || CardComponents.DEFAULT;
 
                 return (

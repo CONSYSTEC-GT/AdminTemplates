@@ -28,9 +28,9 @@ import TemplateCardSkeleton from '../utils/SkeletonTemplates';
 import CardBase from '../components/CardBase';
 import CardBaseCarousel from '../components/CardBaseCarousel';
 import CardBaseSkeleton from '../components/CardBaseSkeleton';
+import { fetchMergedTemplates } from '../api/templatesServices';
 
 const TemplateAproved = () => {
-  //PARA MANEJAR EL STATUS DE LAS PLANTILLAS | VARIABLES
   const { templateId } = useParams();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,16 +42,14 @@ const TemplateAproved = () => {
   const [categoriaFiltro, setCategoriaFiltro] = useState('ALL');
   const [busquedaFiltro, setBusquedaFiltro] = useState('');
 
-  // Recupera el token del localStorage
   const token = localStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
   let appId, authCode;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -69,53 +67,44 @@ const TemplateAproved = () => {
 
   */
 
-  // Función para obtener las plantillas
-  const fetchTemplates = async (appId, authCode) => {
+  const obtenerTemplatesMerge = async () => {
     try {
-      const response = await fetch(`https://partner.gupshup.io/partner/app/${appId}/templates`, {
-        method: 'GET',
-        headers: {
-          Authorization: authCode,
-        },
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        return data.templates.filter(template => template.status === 'REJECTED');
-      }
-      return []; // Retorna un array vacío si no hay éxito
+      const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
+      console.log('Templates obtenidos:', templates);
+      return templates;
     } catch (error) {
-      console.error('Error fetching templates:', error);
-      return []; // Retorna un array vacío en caso de error
+      console.error('Error al obtener templates:', error);
+      return [];
     }
   };
-  // useEffect para cargar datos
+
   useEffect(() => {
-    if (appId && authCode) {
-      setLoading(true); // Asegúrate de que loading esté en true al inicio
-      fetchTemplates(appId, authCode)
+    if (appId && authCode && urlTemplatesGS) {
+      setLoading(true);
+      obtenerTemplatesMerge()
         .then(data => {
           setTemplates(data);
           setLoading(false);
         });
     } else {
-      console.error('No se encontró appId o authCode en el token');
+      console.error('No se encontró appId, authCode o urlTemplatesGS en el token');
     }
-  }, [appId, authCode]);
+  }, [appId, authCode, urlTemplatesGS]);
 
   useEffect(() => {
     let filtered = [...templates];
 
     if (tipoPlantillaFiltro !== 'ALL') {
-      filtered = filtered.filter(template => template.templateType === tipoPlantillaFiltro);
+      filtered = filtered.filter(template => template.gupshup.templateType === tipoPlantillaFiltro);
     }
 
     if (categoriaFiltro && categoriaFiltro !== 'ALL') {
-      filtered = filtered.filter(template => template.category === categoriaFiltro);
+      filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
     }
 
     if (busquedaFiltro.trim() !== '') {
       filtered = filtered.filter(template =>
-        template.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
+        template.gupshup.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
       );
     }
 
@@ -130,7 +119,6 @@ const TemplateAproved = () => {
     setCategoriaFiltro(event.target.value);
   }
 
-  //MODIFICAR EL COLOR DEPENDIENDO DEL STATUS DE LAS PLANTILLAS
   const getStatusColor = (status) => {
     switch (status) {
       case 'REJECTED':
@@ -147,24 +135,24 @@ const TemplateAproved = () => {
   const getStatusTextColor = (status) => {
     switch (status) {
       case 'REJECTED':
-        return '#d32f2f'; // Rojo oscuro para texto
+        return '#d32f2f';
       case 'FAILED':
-        return '#e65100'; // Naranja oscuro para texto
+        return '#e65100';
       case 'APPROVED':
         return '#1B5E20';
       default:
-        return '#616161'; // Gris oscuro para texto
+        return '#616161';
     }
   };
 
   const getStatusDotColor = (status) => {
     switch (status) {
       case 'REJECTED':
-        return '#EF4444'; // Rojo
+        return '#EF4444';
       case 'FAILED':
-        return '#FF9900'; // Naranja
+        return '#FF9900';
       case 'APPROVED':
-        return '#34C759'; // Verde
+        return '#34C759';
       default:
         return '#000000';
     }
@@ -173,9 +161,8 @@ const TemplateAproved = () => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event, template) => {
-    // Verifica el template seleccionado
-    setAnchorEl(event.currentTarget); // Abre el menú
-    setSelectedTemplate(template); // Guarda el template seleccionado en el estado
+    setAnchorEl(event.currentTarget);
+    setSelectedTemplate(template);
   };
 
   const handleClose = () => {
@@ -183,12 +170,9 @@ const TemplateAproved = () => {
   };
 
   const handleEdit = (template) => {
-    // Validar el estado del template
-    if (template.status === "APPROVED" || template.status === "REJECTED" || template.status === "PAUSED") {
-      // Si el estado es válido, navegar a la página de edición
+    if (template.gupshup.status === "APPROVED" || template.gupshup.status === "REJECTED" || template.gupshup.status === "PAUSED") {
       navigate('/modify-template', { state: { template } });
     } else {
-      // Si el estado no es válido, mostrar un mensaje de error
       Swal.fire({
         title: 'La plantilla no puede ser editada.',
         text: 'No se puede editar la plantilla porque su estado no es "APPROVED", "REJECTED" o "PAUSED".',
@@ -199,40 +183,39 @@ const TemplateAproved = () => {
     }
   };
 
-  // Función para manejar el clic en eliminar
   const handleDeleteClick = (template) => {
-    // Verifica el template en el estado
     setSelectedTemplate(template);
-    setDeleteModalOpen(true); // Abre el modal
+    setDeleteModalOpen(true);
   };
 
-  // Función para cancelar la eliminación
   const handleDeleteCancel = () => {
     setDeleteModalOpen(false);
     setSelectedTemplate(null);
   };
 
-  // Función para confirmar la eliminación
   const handleDeleteConfirm = async () => {
     try {
-      // Aquí iría tu lógica para eliminar la plantilla
-
-
-      // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
       setSelectedTemplate(null);
       setLoading(true);
 
-      // Recargar y actualizar el estado de plantillas
-      const newTemplates = await fetchTemplates(appId, authCode);
+      const newTemplates = await obtenerTemplatesMerge();
+
       setTemplates(newTemplates);
       setLoading(false);
     } catch (error) {
       console.error('Error al eliminar la plantilla:', error);
+      Swal.fire({
+        title: 'La plantilla no puedo ser eliminada.',
+        text: 'No se puede eliminar la plantilla.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
+      setLoading(false);
     }
   };
 
-  // Estilo personalizado para el menú
   const StyledMenu = styled((props) => (
     <Menu
       elevation={0}
@@ -321,7 +304,6 @@ const TemplateAproved = () => {
   const CardComponents = {
     CAROUSEL: CardBaseCarousel,
     DEFAULT: CardBase,
-    // Agrega más tipos según necesites
   };
 
   return (
@@ -391,41 +373,38 @@ const TemplateAproved = () => {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
             gap: 3,
-            justifyItems: "center" // Esto centrará las tarjetas en sus celdas de grid
+            justifyItems: "center"
           }}>
             {loading ?
-              // Mostrar skeletons mientras carga
               Array.from(new Array(4)).map((_, index) => (
                 <CardBaseSkeleton key={index} />
               ))
               :
-              // Mostrar los datos reales cuando termine de cargar
               filteredTemplates.map((template) => {
-                // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
-                const CardComponent = CardComponents[template.templateType] || CardComponents.DEFAULT;
+                const CardComponent = CardComponents[template.gupshup.templateType] || CardComponents.DEFAULT;
 
                 return (
                   <motion.div
-                                      key={template.id}
-                                      variants={cardVariants}
-                                      whileHover={{
-                                        scale: 1.05,
-                                        y: -10,
-                                        transition: { duration: 0.2 }
-                                      }}
-                                      whileTap={{ scale: 0.98 }}
-                                    >
-                  <CardComponent
                     key={template.id}
-                    template={template}
-                    handleEdit={handleEdit}
-                    handleDeleteClick={handleDeleteClick}
-                    showReasonAlert={showReasonAlert}
-                    parseTemplateContent={parseTemplateContent}
-                    getStatusColor={getStatusColor}
-                    getStatusDotColor={getStatusDotColor}
-                    getStatusTextColor={getStatusTextColor}
-                  />
+                    variants={cardVariants}
+                    whileHover={{
+                      scale: 1.05,
+                      y: -10,
+                      transition: { duration: 0.2 }
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <CardComponent
+                      key={template.id}
+                      template={template}
+                      handleEdit={handleEdit}
+                      handleDeleteClick={handleDeleteClick}
+                      showReasonAlert={showReasonAlert}
+                      parseTemplateContent={parseTemplateContent}
+                      getStatusColor={getStatusColor}
+                      getStatusDotColor={getStatusDotColor}
+                      getStatusTextColor={getStatusTextColor}
+                    />
                   </motion.div>
                 );
               })}

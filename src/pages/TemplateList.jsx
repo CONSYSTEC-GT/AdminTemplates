@@ -95,7 +95,7 @@ export default function BasicCard() {
   // Recupera el token del localStorage
   const token = localStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
+  /* Decodifica el token para obtener appId y authCode
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
@@ -116,7 +116,7 @@ export default function BasicCard() {
     }
   }
   
- /*
+ */
 
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, urlTemplatesGS;
 
@@ -127,7 +127,7 @@ export default function BasicCard() {
   idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
   empresaTalkMe = 2;
   urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
-  */
+  //
 
 
 /*
@@ -239,9 +239,9 @@ export default function BasicCard() {
 
   const handleEdit = (template) => {
     // Validar el estado del template primero
-    if (template.status === "APPROVED" || template.status === "REJECTED" || template.status === "PAUSED") {
+    if (template.gupshup.status === "APPROVED" || template.gupshup.status === "REJECTED" || template.gupshup.status === "PAUSED") {
       // Redirigir según el tipo de template
-      switch (template.templateType) {
+      switch (template.gupshup.templateType) {
         case 'CAROUSEL':
           navigate('/modify-template-carousel', { state: { template } });
           break;
