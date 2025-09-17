@@ -63,7 +63,7 @@ const TemplateAproved = () => {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
       console.log('Templates obtenidos:', templates);
       const templatesAprobados = templates.filter(template =>
-        template.gupshup?.status === 'APPROVED'
+        template.gupshup?.status === 'FAILED'
       );
       return templatesAprobados;
     } catch (error) {

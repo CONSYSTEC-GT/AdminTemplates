@@ -45,12 +45,13 @@ const TemplateAproved = () => {
 
   const token = localStorage.getItem('authToken');
 
-  let appId, authCode;
+  let appId, authCode, urlTemplatesGS;
   if (token) {
     try {
       const decoded = jwtDecode(token);
       appId = decoded.app_id;
       authCode = decoded.auth_code;
+      urlTemplatesGS = decoded.urlTemplatesGS;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -60,7 +61,10 @@ const TemplateAproved = () => {
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
       console.log('Templates obtenidos:', templates);
-      return templates;
+      const templatesAprobados = templates.filter(template =>
+        template.gupshup?.status === 'SEND'
+      );
+      return templatesAprobados;
     } catch (error) {
       console.error('Error al obtener templates:', error);
       return [];

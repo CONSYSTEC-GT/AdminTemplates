@@ -71,7 +71,10 @@ const TemplateAproved = () => {
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
       console.log('Templates obtenidos:', templates);
-      return templates;
+      const templatesAprobados = templates.filter(template =>
+        template.gupshup?.status === 'REJECTED'
+      );
+      return templatesAprobados;
     } catch (error) {
       console.error('Error al obtener templates:', error);
       return [];
