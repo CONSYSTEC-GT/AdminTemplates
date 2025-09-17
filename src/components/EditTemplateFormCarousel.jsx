@@ -5,13 +5,9 @@ import { jwtDecode } from 'jwt-decode';
 import { v4 as uuidv4 } from 'uuid';
 import Swal from 'sweetalert2';
 
+import { Smile } from "react-feather";
+import EmojiPicker from "emoji-picker-react";
 
-
-
-import { Smile } from "react-feather"; // Icono para emojis
-import EmojiPicker from "emoji-picker-react"; // Selector de emojis
-
-// Import Swiper styles
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -48,10 +44,10 @@ import { CustomDialog } from '../utils/CustomDialog';
 
 const EditTemplateFormCarousel = () => {
 
-  // Recupera el token del localStorage
+
   const token = localStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
+
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
@@ -91,13 +87,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const location = useLocation();
   const navigate = useNavigate();
-  const templateData = location.state?.template || {}; // Datos del template
-
-  //MODO DE EDICION || ESTO ES UN FLAG 
+  const templateData = location.state?.template.gupshup || {};
   const [modoEdicionActiva, setModoEdicionActiva] = useState(false);
-
-
-  //CAMPOS DEL FORMULARIO PARA EL REQUEST
   const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -111,7 +102,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [message, setMessage] = useState("");
   const [idTemplate, setIdTemplate] = useState("");
 
-  //carousel
   const [messageCard, setMessageCard] = useState("");
   const messageCardRefs = useRef({});
   const [cantidadBotones, setCantidadBotones] = useState("");
@@ -129,8 +119,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-
-  const [languageCode, setLanguageCode] = useState("es"); // Valor predeterminado: español
+  const [languageCode, setLanguageCode] = useState("es");
   const [languageTypeError, setLanguageTypeError] = useState(false);
   const [languageTypeHelperText, setLanguageTypeHelperText] = useState("");
 
@@ -150,25 +139,25 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [ejemploPlantillaError, setejemploPlantillaError] = useState(false);
   const [ejemploPlantillaHelperText, setejemploPlantillaHelperText] = useState("");
 
-  //const [message, setMessage] = useState("");
+
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showEmojiPickerCards, setShowEmojiPickerCards] = useState(false);
   const [variables, setVariables] = useState([]);
   const [variablesCard, setVariablesCard] = useState([]);
 
-  // Estado para almacenar ejemplos de variables
+
   const [variableExamples, setVariableExamples] = useState({});
   const [variableExamplesError, setvariableExamplesError] = useState(false);
   const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
   const [variableErrors, setVariableErrors] = useState({});
 
-  // Estado para almacenar ejemplos de variables
+
   const [variableExamplesCard, setVariableExamplesCard] = useState({});
   const [variableExamplesErrorCard, setvariableExamplesErrorCard] = useState(false);
   const [variableExamplesHelperTextCard, setvariableExamplesHelperTextCard] = useState("");
   const [variableErrorsCard, setVariableErrorsCard] = useState({});
 
-  // Estado para almacenar descripciones de variables
+
   const [variableDescriptions, setVariableDescriptions] = useState({});
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
@@ -177,7 +166,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [variableDescriptionsErrorCard, setvariableDescriptionsErrorCard] = useState(false);
   const [variableDescriptionsHelperTextCard, setvariableDescriptionsHelperTextCard] = useState("");
 
-  //ESTE ES PARA EL EXAMPLE MEDIA
+
   const [mediaId, setMediaId] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
@@ -199,12 +188,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
-  const emojiPickerButtonRef = useRef(null); // Para el botón
-  const emojiPickerComponentRef = useRef(null); // Para el componente del picker
+  const emojiPickerButtonRef = useRef(null);
+  const emojiPickerComponentRef = useRef(null);
 
   const [emojiCount, setEmojiCount] = useState(0);
 
-  // Cargar los datos en el formulario al montar el componente
+
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
@@ -215,7 +204,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         setVertical(templateData.vertical || "");
         setIdTemplate(templateData.id);
 
-        // Parsear containerMeta si existe
+
         if (templateData.containerMeta) {
           try {
             const meta = JSON.parse(templateData.containerMeta);
@@ -223,28 +212,20 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             setMessage(meta.data || "");
             setExample(meta.sampleText || "");
 
-            // Detectar el tipo de carrusel basado en la primera tarjeta
             if (meta.cards && meta.cards.length > 0) {
-
               setCarouselType(meta.cards[0].headerType);
-
-              // Detectar cantidad de botones y su tipo basado en la primera tarjeta
               if (meta.cards[0].buttons && meta.cards[0].buttons.length > 0) {
                 setCantidadBotones(String(meta.cards[0].buttons.length));
-
-
-
                 setTipoBoton(meta.cards[0].buttons[0].type || "QUICK_REPLY");
               }
 
-              // Configurar las tarjetas con sus datos
               const destructuredCards = meta.cards.map((card, index) => {
                 return {
-                  id: `card-${index}`, // Genera un ID único para cada tarjeta
+                  id: `card-${index}`,
                   messageCard: card.body || "",
-                  variablesCard: [], // Si tienes variables en el body, deberías extraerlas aquí
-                  variableDescriptions: {}, // Mapeo para descripciones de variables
-                  variableExamples: {}, // Mapeo para ejemplos de variables
+                  variablesCard: [],
+                  variableDescriptions: {},
+                  variableExamples: {},
                   fileData: card.mediaUrl ? {
                     url: card.mediaUrl,
                     id: card.mediaId || `media-${Date.now()}-${index}`,
@@ -268,7 +249,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         }
       }
 
-      // Segundo bloque try-catch movido dentro de loadData
+
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
         if (info === null) {
@@ -282,20 +263,20 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
           setMediaURL(info.url || "");
           setImagePreview(info.url || "");
-          setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+          setIdPlantilla(info.id_plantilla || "");
         }
       } catch (error) {
 
       }
     };
 
-    loadData(); // Llamada a la función dentro del useEffect
+    loadData();
   }, [templateData, urlTemplatesGS]);
 
-  // Segundo useEffect que se ejecuta cuando idPlantilla cambia
+
   useEffect(() => {
     const loadParametros = async () => {
-      if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
+      if (!idPlantilla) return;
 
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
@@ -319,9 +300,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-
-
-
         }
       } catch (error) {
 
@@ -329,7 +307,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     };
 
     loadParametros();
-  }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
+  }, [idPlantilla, urlTemplatesGS]);
 
   const resetForm = () => {
     setTemplateName("");
@@ -344,21 +322,20 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setUploadedUrl("");
     setVariables([]);
     setVariableDescriptions([]);
-    // Agrega cualquier otro estado relacionado
+
   };
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessageGupshup, setErrorMessageGupshup] = useState("La plantilla no pudo ser creada.");
 
-  // Función para mostrar Snackbar
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setOpenSnackbar(true);
   };
 
-  // Función para cerrar Snackbar
+
   const handleCloseSnackbar = (_, reason) => {
     if (reason === "clickaway") return;
     setOpenSnackbar(false);
@@ -376,7 +353,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
@@ -388,7 +365,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
@@ -400,7 +377,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
@@ -411,7 +388,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
@@ -423,7 +400,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
@@ -435,7 +412,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (exampleRef.current) exampleRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
@@ -447,55 +424,37 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
+
     } else {
 
     }
 
-    // Validar que todas las variables tengan un texto de ejemplo
+
     if (variables.length > 0) {
-
-      const newErrors = {}; // Objeto para almacenar los errores
-
+      const newErrors = {};
       for (const variable of variables) {
         if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
-
           isValid = false;
-          newErrors[variable] = "Este campo es requerido"; // Asignar mensaje de error
-
-          // Colocar el foco en el campo de texto de ejemplo vacío
+          newErrors[variable] = "Este campo es requerido";
           if (exampleRefs.current[variable]) {
             exampleRefs.current[variable].focus();
           }
         } else {
-
-          newErrors[variable] = ""; // Sin error
+          newErrors[variable] = "";
         }
       }
-
-      // Actualizar el estado de errores
       setVariableErrors(newErrors);
-
-      // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-
       } else {
-
       }
     } else {
-
     }
-
-
-    return isValid; // Retornar el valor final de isValid
+    return isValid;
   };
 
-  // Función para determinar el tipo de archivo basado en la extensión
   const getMediaType = (url) => {
-    // Extraer la extensión del archivo de la URL
     const extension = url.split('.').pop().toLowerCase();
 
-    // Determinar el tipo de archivo basado en la extensión
     if (['png', 'jpeg', 'jpg', 'gif'].includes(extension)) {
       return 'IMAGE';
     } else if (['mp4', '3gp', 'mov', 'avi'].includes(extension)) {
@@ -503,28 +462,19 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     } else if (['txt', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf'].includes(extension)) {
       return 'DOCUMENT';
     } else {
-      return 'null'; // En caso de que la extensión no sea reconocida
+      return 'null';
     }
   };
 
   const iniciarRequest = async () => {
     try {
-      // Hacer debug de las cards antes de formatear
-
-      // Primero verifica que cards esté definido
       if (!cards || cards.length === 0) {
         console.error("No hay tarjetas disponibles");
         return;
       }
-
-      // Luego formatea las cards
       const formattedCards = formatCardsForGupshup(cards);
-
-      // Ahora sí puedes hacer log de formattedCards
-
-      // Asegúrate de que todas las cards tengan los datos necesarios
       const isValid = formattedCards.every(card =>
-        card.mediaUrl && card.body // Añade aquí más validaciones si son necesarias
+        card.mediaUrl && card.body
       );
 
       if (!isValid) {
@@ -533,12 +483,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         return;
       }
 
-      //
-      const cardsToSendArray = [...cards]; // Esto es un array de objetos
-      const cardsToSend = JSON.stringify([...cards]); // Convertir a JSON string
-
-      // COMENTADO EL PRIMER REQUEST
-
+      const cardsToSendArray = [...cards];
+      const cardsToSend = JSON.stringify([...cards]);
 
       const result = await editTemplateCarouselGupshup(
         appId,
@@ -555,12 +501,11 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           mediaId,
           buttons,
           example,
-          carousel: JSON.stringify(formattedCards) // Enviar como string JSON
+          carousel: JSON.stringify(formattedCards)
         },
         idTemplate,
         validateFields
       );
-      //
 
       /*const result = {
         status: "success",
@@ -569,11 +514,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         }
       };*/
 
-      // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
 
-        // Hacer el segundo request a TalkMe API
-        
         const result2 = await editTemplateToTalkMe(
           idTemplate,
           {
@@ -591,7 +533,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           idBotRedes
         );
 
-        // Si el segundo request también fue exitoso
+
         if (result2) {
           Swal.fire({
             title: 'Éxito',
@@ -625,12 +567,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  // PANTALLAS
+
   const pantallasTalkMe = [
     '4 - Broadcast'
   ];
 
-  // CATEGORIAS
+
   const categories = [
     {
       id: 'MARKETING',
@@ -656,15 +598,15 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setSelectedCategory(event.target.value);
   };
 
-  //NOMBRE PLANTILLA
+
   const handleTemplateNameChange = (event) => {
-    // Reemplazar espacios con guiones bajos
+
     const newValue = event.target.value.replace(/\s+/g, '_');
 
-    // Actualizar el estado con el nuevo valor
+
     setTemplateName(newValue);
 
-    // Validar si el campo está vacío
+
     if (newValue.trim() === "") {
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
@@ -674,10 +616,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  //IDIOMA PLANTILLA
+
   const handleLanguageCodeChange = (event) => {
-    const selectedLanguage = event.target.value; // Esto ya es el código de idioma ("es", "en", "fr")
-    setLanguageCode(selectedLanguage); // Actualiza el estado directamente con el código
+    const selectedLanguage = event.target.value;
+    setLanguageCode(selectedLanguage);
 
     if (selectedLanguage.trim() === "") {
       setLanguageTypeError(true);
@@ -688,7 +630,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  // Mapeo de idiomas (código -> nombre)
   const languageMap = {
     es: "Español",
     en: "Inglés",
@@ -701,17 +642,17 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     fr: "frances",
   };
 
-  //VERTICAL PLANTILLA
+
   const handleVerticalChange = (event) => {
     setVertical(event.target.value)
   }
 
-  //TIPO PLANTILLA
+
   const handleTemplateTypeChange = (event) => {
     const newType = event.target.value;
     setTemplateType(newType);
 
-    // Solo limpiar header si el nuevo tipo NO es "TEXT"
+
     if (newType !== "TEXT") {
       setHeader("");
     }
@@ -728,14 +669,14 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  //CAROUSEL PLANTILLA
+
   const handleCarouselTypeChange = (event) => {
     setCarouselType(event.target.value)
   }
 
   const handleHeaderTemplateTypeChange = (event) => {
     setTemplateType(event.target.value);
-    setHeader(''); // Resetear el header al cambiar el tipo
+    setHeader('');
   };
 
   const handleHeaderTypeChange = (event) => {
@@ -745,19 +686,18 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  //HEADER PLANTILLA
-  const [mediaType, setMediaType] = useState(""); // Tipo de media (image, video, etc.)
-  const [mediaURL, setMediaURL] = useState(""); // URL del media
+  const [mediaType, setMediaType] = useState("");
+  const [mediaURL, setMediaURL] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const MAX_IMG_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
-  const [error, setError] = useState(''); // Estado para manejar errores
+  const MAX_IMG_SIZE = 5 * 1024 * 1024;
+  const [error, setError] = useState('');
 
   const handleMediaTypeChange = (event) => {
     setMediaType(event.target.value);
   };
 
   const handleCloseError = () => {
-    setError(''); // Cerrar el mensaje de error
+    setError('');
   };
 
   const handleMediaURLChange = (event) => {
@@ -770,11 +710,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     const selectedFile = event.target.files[0];
     if (selectedFile && selectedFile.size > MAX_IMG_SIZE) {
       setError('El archivo es demasiado grande. El tamaño máximo permitido es 5 MB.');
-      setSelectedFile(null);//Limpiar el archivo seleccionado
+      setSelectedFile(null);
     } else {
-      setError(''); //Limpio el mensaje de error
+      setError('');
       setSelectedFile(selectedFile);
-
     }
   };
 
@@ -785,7 +724,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   };
 
-  //FOOTER PLANTILLA
   const handleFooterChange = (e) => {
     if (e.target.value.length <= charLimit) {
       setFooter(e.target.value);
@@ -795,7 +733,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const charLimit = 60;
   const maxButtons = 3;
 
-  //BOTONES PLANTILLA
+
   const addButton = () => {
     if (buttons.length < maxButtons) {
       setButtons([
@@ -805,16 +743,14 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  // Función para actualizar botones en todas las cards
   const updateButtonsInAllCards = (newButtons) => {
     setCards(prevCards =>
       prevCards.map(card => ({
         ...card,
-        buttons: [...newButtons] // Copia los nuevos botones a todas las cards
+        buttons: [...newButtons]
       })))
   };
 
-  // Función para actualizar un botón específico
   const updateButton = (id, key, value) => {
     setCards(prevCards => {
       return prevCards.map(card => ({
@@ -826,20 +762,14 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     });
   };
 
-
-
   const removeButton = (id) => {
     setButtons(buttons.filter((button) => button.id !== id));
   };
 
-  // VARIABLES DEL BODY MESSAGE
-  // Función actualizada con límite de emojis
   const handleBodyMessageChange = (e) => {
     const newValue = event.target.value;
     setMessage(newValue);
 
-
-    // Validar si el campo está vacío
     if (newValue.trim() === "") {
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
@@ -848,15 +778,13 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       setcontenidoPlantillaTypeHelperText("");
     }
 
-
     const newText = e.target.value;
     const maxLength = 549;
     const emojiCount = countEmojis(newText);
     const maxEmojis = 10;
 
-    // Verificar si se excede el límite de emojis
     if (emojiCount > maxEmojis) {
-      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+
       if (countEmojis(message) <= maxEmojis) {
         Swal.fire({
           title: 'Límite de emojis',
@@ -866,7 +794,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           confirmButtonColor: '#00c3ff'
         });
       }
-      return; // No actualizar el texto si excede el límite de emojis
+      return;
     }
 
     if (newText.length > maxLength) {
@@ -881,12 +809,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
 
     if (newText.length <= maxLength) {
-      // Guardar el nuevo texto
+
       setMessage(newText);
-      // Actualizar el contador de emojis (necesitas agregar este estado)
+
       setEmojiCount(emojiCount);
 
-      // Verificar qué variables se han eliminado del texto
+
       const deletedVariables = [];
       variables.forEach(variable => {
         if (!newText.includes(variable)) {
@@ -894,15 +822,15 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         }
       });
 
-      // Si se eliminaron variables, actualiza el estado
+
       if (deletedVariables.length > 0) {
-        // Filtrar las variables eliminadas
+
         const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
 
-        // Actualizar el estado de las variables
+
         setVariables(remainingVariables);
 
-        // Actualizar las descripciones y ejemplos
+
         const newDescriptions = { ...variableDescriptions };
         const newExamples = { ...variableExamples };
         const newErrors = { ...variableErrors };
@@ -926,9 +854,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     const newEmojiCount = countEmojis(newText);
     const maxEmojis = 10;
 
-    // Verificar si se excede el límite de emojis
+
     if (newEmojiCount > maxEmojis) {
-      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+
       if (countEmojis(message) > maxEmojis) {
         Swal.fire({
           title: 'Límite de emojis',
@@ -938,7 +866,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           confirmButtonColor: '#00c3ff'
         });
       }
-      return; // No actualizar el texto si excede el límite de emojis
+      return;
     }
 
     if (newText.length > maxLength) {
@@ -956,10 +884,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       prevCards.map(card => {
         if (card.id !== cardId) return card;
 
-        // Variables actuales del mensaje
+
         const currentVariables = card.variablesCard || [];
 
-        // Identificar variables eliminadas
+
         const deletedVariables = currentVariables.filter(
           variable => !newText.includes(variable)
         );
@@ -968,7 +896,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           v => !deletedVariables.includes(v)
         );
 
-        // Actualizar descripciones y ejemplos
+
         const updatedDescriptions = { ...card.variableDescriptionsCard };
         const updatedExamples = { ...card.variableExamples };
 
@@ -990,25 +918,25 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
 
-  // VARIABLES DEL BODY MESSAGE
+
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
 
-    // Obtener la posición actual del cursor
+
     const cursorPosition = messageRef.current.selectionStart;
 
-    // Dividir el texto en dos partes: antes y después del cursor
+
     const textBeforeCursor = message.substring(0, cursorPosition);
     const textAfterCursor = message.substring(cursorPosition);
 
-    // Insertar la variable en la posición del cursor
+
     const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
     setMessage(newMessage);
 
-    // Actualizar el array de variables
+
     setVariables([...variables, newVariable]);
 
-    // OPCIONAL: Colocar el cursor después de la variable insertada
+
     setTimeout(() => {
       const newPosition = cursorPosition + newVariable.length;
       messageRef.current.focus();
@@ -1022,7 +950,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         if (card.id !== cardId) return card;
 
         const newVariable = `{{${card.variablesCard.length + 1}}}`;
-        // Usa la referencia específica de esta tarjeta
+
         const textFieldRef = messageCardRefs.current[cardId];
         const cursorPosition = textFieldRef?.selectionStart || 0;
 
@@ -1031,7 +959,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
         const newMessageCard = `${textBefore}${newVariable}${textAfter}`;
 
-        // OPCIONAL: Actualizar descripción y ejemplos también
+
         const updatedDescriptions = { ...card.variableDescriptionsCard, [newVariable]: "" };
         const updatedExamples = { ...card.variableExamples, [newVariable]: "" };
 
@@ -1055,7 +983,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setMessage(newText);
     setShowEmojiPicker(false);
 
-    // Aumenta el tiempo de espera para asegurar que el estado se actualiza
+
     setTimeout(() => {
       if (messageRef.current) {
         messageRef.current.focus();
@@ -1065,79 +993,79 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
   const handleEmojiClickCarousel = (emojiObject, cardId) => {
-      const input = messageCardRefs.current[cardId];
-      const cursor = input?.selectionStart || 0;
-  
-      setCards(prevCards =>
-        prevCards.map(card => {
-          if (card.id !== cardId) return card;
-  
-          const newText =
-            card.messageCard.slice(0, cursor) +
-            emojiObject.emoji +
-            card.messageCard.slice(cursor);
-  
-          // Contar los emojis en el nuevo texto
-          const newEmojiCountCard = countEmojis(newText);
-  
-          // Verificar si excedería el límite de 10 emojis
-          if (newEmojiCountCard > 10) {
-            // Mostrar alerta
-            Swal.fire({
-              title: 'Límite de emojis',
-              text: 'Solo puedes incluir un máximo de 10 emojis',
-              icon: 'warning',
-              confirmButtonText: 'Entendido',
-              confirmButtonColor: '#00c3ff'
-            });
-            setShowEmojiPickerCards(false);
-  
-            // Mantener el foco en el campo de texto
-            setTimeout(() => {
-              if (input) {
-                input.focus();
-                input.setSelectionRange(cursor, cursor);
-              }
-            }, 100);
-  
-            return card; // No actualizar el texto
-          }
-  
-          // Si está dentro del límite, actualizar el mensaje
-          return {
-            ...card,
-            messageCard: newText,
-            emojiCountCard: newEmojiCountCard // Asumiendo que tienes este campo en el objeto card
-          };
-        })
-      );
-  
-      setShowEmojiPickerCards(false);
-  
-      setTimeout(() => {
-        if (input) {
-          const newPos = cursor + emojiObject.emoji.length;
-          input.focus();
-          input.setSelectionRange(newPos, newPos);
+    const input = messageCardRefs.current[cardId];
+    const cursor = input?.selectionStart || 0;
+
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id !== cardId) return card;
+
+        const newText =
+          card.messageCard.slice(0, cursor) +
+          emojiObject.emoji +
+          card.messageCard.slice(cursor);
+
+
+        const newEmojiCountCard = countEmojis(newText);
+
+
+        if (newEmojiCountCard > 10) {
+
+          Swal.fire({
+            title: 'Límite de emojis',
+            text: 'Solo puedes incluir un máximo de 10 emojis',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#00c3ff'
+          });
+          setShowEmojiPickerCards(false);
+
+
+          setTimeout(() => {
+            if (input) {
+              input.focus();
+              input.setSelectionRange(cursor, cursor);
+            }
+          }, 100);
+
+          return card;
         }
-      }, 100);
-    };
+
+
+        return {
+          ...card,
+          messageCard: newText,
+          emojiCountCard: newEmojiCountCard
+        };
+      })
+    );
+
+    setShowEmojiPickerCards(false);
+
+    setTimeout(() => {
+      if (input) {
+        const newPos = cursor + emojiObject.emoji.length;
+        input.focus();
+        input.setSelectionRange(newPos, newPos);
+      }
+    }, 100);
+  };
 
 
 
 
-  // Función para borrar una variable específica
+
   const deleteVariable = (variableToDelete) => {
-    // Eliminar la variable del texto
+
     const newMessage = message.replace(variableToDelete, '');
     setMessage(newMessage);
 
-    // Eliminar la variable de la lista de variables
+
     const updatedVariables = variables.filter(v => v !== variableToDelete);
 
-    // Renumerar las variables restantes para mantener el orden secuencial
+
     const renumberedVariables = [];
-    const variableMapping = {}; // Mapeo de variable antigua a nueva
+    const variableMapping = {};
 
     updatedVariables.forEach((v, index) => {
       const newVar = `{{${index + 1}}}`;
@@ -1145,21 +1073,21 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       variableMapping[v] = newVar;
     });
 
-    // Actualizar el texto con las variables renumeradas
+
     let updatedMessage = newMessage;
     Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
       updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
     });
 
-    // Crear nuevos objetos para descripciones y ejemplos de variables
+
     const newVariableDescriptions = {};
     const newVariableExamples = {};
     const newVariableErrors = { ...variableErrors };
 
-    // Eliminar la variable eliminada de los errores
+
     delete newVariableErrors[variableToDelete];
 
-    // Copiar las descripciones y ejemplos con las nuevas claves
+
     Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
       if (variableDescriptions[oldVar]) {
         newVariableDescriptions[newVar] = variableDescriptions[oldVar];
@@ -1173,14 +1101,14 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       }
     });
 
-    // Actualizar todos los estados
+
     setMessage(updatedMessage);
     setVariables(renumberedVariables);
     setVariableDescriptions(newVariableDescriptions);
     setVariableExamples(newVariableExamples);
     setVariableErrors(newVariableErrors);
 
-    // Actualizar las referencias
+
     const newExampleRefs = {};
     renumberedVariables.forEach(v => {
       newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
@@ -1191,19 +1119,19 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
 
-  // Función para borrar una variable específica de la tarjeta
+
   const deleteVariableCard = (cardId, variableToDelete) => {
     setCards(prevCards =>
       prevCards.map(card => {
         if (card.id !== cardId) return card;
 
-        // 1. Eliminar la variable del mensaje
+
         const newMessage = card.messageCard.replace(variableToDelete, '');
 
-        // 2. Filtrar la variable a eliminar
+
         const updatedVariables = card.variablesCard.filter(v => v !== variableToDelete);
 
-        // 3. Renumerar variables restantes
+
         const renumberedVariables = [];
         const variableMapping = {};
 
@@ -1213,23 +1141,23 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           variableMapping[v] = newVar;
         });
 
-        // 4. Actualizar el mensaje con nuevas variables
+
         let updatedMessage = newMessage;
         Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
           updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
         });
 
-        // 5. Actualizar descripciones, ejemplos y errores
+
         const newVariableDescriptions = { ...card.variableDescriptions };
         const newVariableExamples = { ...card.variableExamples };
         const newVariableErrors = { ...card.variableErrors };
 
-        // Eliminar la variable que se está borrando
+
         delete newVariableDescriptions[variableToDelete];
         delete newVariableExamples[variableToDelete];
         delete newVariableErrors[variableToDelete];
 
-        // Actualizar las demás variables con nueva numeración
+
         Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
           if (newVariableDescriptions[oldVar]) {
             newVariableDescriptions[newVar] = newVariableDescriptions[oldVar];
@@ -1258,7 +1186,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
 
-  // Función para borrar todas las variables
+
   const deleteAllVariables = () => {
     let newMessage = message;
     variables.forEach(variable => {
@@ -1267,7 +1195,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setMessage(newMessage);
     setVariables([]);
 
-    // Limpiar todos los estados relacionados con variables
+
     setVariableDescriptions({});
     setVariableExamples({});
     setVariableErrors({});
@@ -1276,7 +1204,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     messageRef.current?.focus();
   };
 
-  // Nueva función para borrar todas las variables
+
   const deleteAllVariablesCard = (cardId) => {
     setCards(prevCards =>
       prevCards.map(card => {
@@ -1301,7 +1229,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
 
-  // Función para previsualizar el mensaje con ejemplos aplicados
+
   const previewMessage = () => {
     let previewHeader = header;
     let previewFooter = footer;
@@ -1361,7 +1289,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     );
   };
 
-  // Función para generar el ejemplo combinando el mensaje y los valores de las variables
+
   const generateExample = () => {
     let generatedExample = message;
     Object.keys(variableExamples).forEach(variable => {
@@ -1370,13 +1298,13 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     return generatedExample;
   };
 
-  // Función para reemplazar las variables en el mensaje con sus ejemplos
+
   const replaceVariables = (text, variables) => {
     let result = text;
 
 
     Object.keys(variables).forEach(variable => {
-      const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
+      const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g');
 
       result = result.replace(regex, variables[variable]);
     });
@@ -1385,12 +1313,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     return result;
   };
 
-  // Generar IDs únicos para los botones
+
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
 
 
-  // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
+
   useEffect(() => {
 
 
@@ -1403,9 +1331,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   }, [message, variableExamples]);
 
   useEffect(() => {
-    // Función que maneja los clics fuera del componente
+
     const handleClickOutside = (event) => {
-      // Verificar si el clic fue fuera tanto del botón como del picker
+
       if (
         showEmojiPicker &&
         emojiPickerButtonRef.current &&
@@ -1426,33 +1354,6 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   }
   )
-
-  /* Inicializar botones basado en la cantidad seleccionada
-  // Efecto para inicializar botones
-
-  useEffect(() => {
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.buttons.length > 0) return card; // ← ¡Evita sobreescribir si ya tiene botones!
-  
-        const newButtons = [];
-        for (let i = 0; i < cantidadBotones; i++) {
-          newButtons.push({
-            id: generateId(),
-            title: `Botón ${i + 1}`,
-            type: tipoBoton,
-            ...(tipoBoton === 'URL' && { url: '' }),
-            ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
-          });
-        }
-  
-        return {
-          ...card,
-          buttons: newButtons
-        };
-      })
-    );
-  }, [cantidadBotones, tipoBoton]); */
 
   const regenerarBotones = (cantidad, tipo) => {
     setCards(prevCards =>
@@ -1492,9 +1393,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
 
-  // Validación para URLs
+
   const updateButtonWithValidation = (id, field, value, setButtons, setValidationErrors) => {
-    // Validación simple de URL
+
     const isValid = value === '' || /^(ftp|http|https):\/\/[^ "]+$/.test(value);
 
     setButtons(prevButtons =>
@@ -1512,7 +1413,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const formatCardsForGupshup = (cards) => {
     return cards.map(card => {
-      // Transformar botones al formato requerido por Gupshup
+
       const transformedButtons = card.buttons.map(button => {
         if (button.type === "URL") {
           return {
@@ -1538,8 +1439,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         return null;
       }).filter(button => button !== null);
 
-      // Obtener la URL independientemente de la estructura de file
-      // Obtener la URL de manera más robusta
+
+
       let mediaUrl = '';
       if (card.fileData && card.fileData.url) {
         mediaUrl = card.fileData.url;
@@ -1548,11 +1449,11 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
 
-      // Crear el formato requerido por Gupshup
+
       return {
         headerType: "IMAGE",
         mediaUrl: mediaUrl,
-        mediaId: card.fileData?.mediaId || null,  // Usa el mediaId si existe
+        mediaId: card.fileData?.mediaId || null,
         exampleMedia: null,
         body: card.messageCard || "",
         sampleText: card.variableExamples?.messageCard || card.messageCard || "",
@@ -1561,36 +1462,36 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     });
   };
 
-  // Uso de la función
-  //const formattedCardsForGupshup = formatCardsForGupshup(cards);
-  //
 
 
-  // Estado para los acordeones - solo guardamos el ID único y el contenido del formulario
+
+
+
+
   const [accordions, setAccordions] = useState([
   ]);
 
-  // Estado para controlar qué acordeón está expandido
+
   const [expanded, setExpanded] = useState(false);
 
-  // Manejar cambios en la expansión del acordeón
+
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
 
-  // Manejar cambios en los formularios
+
   const handleFormChange = (id, field, value) => {
     setAccordions(accordions.map(accordion =>
       accordion.id === id ? { ...accordion, [field]: value } : accordion
     ));
   };
 
-  // Agregar nueva tarjeta
+
   const addAccordion = () => {
-    // Verificar si ya hay 10 acordeones
+
     if (cards.length >= 10) {
-      alert("No puedes tener más de 10 acordeones"); // Opcional: mostrar mensaje al usuario
-      return; // Salir de la función sin agregar más
+      alert("No puedes tener más de 10 acordeones");
+      return;
     }
 
     const cantidad = parseInt(cantidadBotones, 10);
@@ -1603,13 +1504,13 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
 
-  // Eliminar tarjeta
+
   const deleteAccordion = (id, e) => {
     e.stopPropagation();
     setCards(cards.filter(card => card.id !== id));
   };
 
-  // Actualizar cualquier campo de una tarjeta
+
   const updateCardField = (cardId, field, value) => {
     setCards(cards.map(card =>
       card.id === cardId ? { ...card, [field]: value } : card
@@ -1620,7 +1521,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     const botones = [];
     for (let i = 0; i < cantidad; i++) {
       botones.push({
-        id: generateId(), // o uuidv4() si preferís
+        id: generateId(),
         title: `Botón ${i + 1}`,
         type: tipo,
         ...(tipo === 'URL' && { url: '' }),
@@ -1633,9 +1534,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
 
-  // Manejar el fin del arrastre
+
   const onDragEnd = (result) => {
-    // Si no hay destino válido, no hacer nada
+
     if (!result.destination) return;
 
     const items = Array.from(accordions);
@@ -1645,32 +1546,31 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setAccordions(items);
   };
 
-  // Estado inicial para cada tarjeta del carrusel
+
   const initialCardState = {
-    id: uuidv4(), // o algún otro método para generar IDs únicos
+    id: uuidv4(),
     carouselType: "IMAGEN",
     messageCard: "",
     variablesCard: [],
     variableDescriptionsCard: {},
     variableExamples: {},
     buttons: [],
-    file: null, // para almacenar el archivo subido
-    // otros campos que necesites
+    file: null
   };
 
-  // Estado principal que contiene todas las tarjetas
+
   const [cards, setCards] = useState([initialCardState]);
 
   const currentCardId = cards[0].id;
 
 
 
-  // Función para manejar la subida de archivos para una card específica
+
   const handleFileUpload = (cardId, uploadResponse) => {
 
 
     if (uploadResponse) {
-      // Estructura esperada del uploadResponse después de las modificaciones
+
       const fileData = {
         url: uploadResponse.url,
         mediaId: uploadResponse.mediaId || null
@@ -1682,7 +1582,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         if (card.id === cardId) {
           return {
             ...card,
-            fileData: fileData // Guardar los datos del archivo en la tarjeta
+            fileData: fileData
           };
         }
         return card;
@@ -1692,9 +1592,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  // Función para contar emojis en un texto
+
   const countEmojis = (text) => {
-    // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
+
     const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
     const matches = text.match(emojiRegex);
     return matches ? matches.length : 0;
@@ -1703,18 +1603,18 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const handlePantallas = (event) => {
     const { target: { value } } = event;
 
-    // Procesar los valores seleccionados
+
     const selectedOptions = typeof value === 'string' ? value.split(',') : value;
 
-    // Extraer solo los números
+
     const numericValues = selectedOptions.map(option => {
       return option.split(' - ')[0].trim();
     });
 
-    // Guardar como string con comas para la API
+
     setPantallas(numericValues.join(','));
 
-    // Guardar el texto completo para mostrar (displayPantallas)
+
     setDisplayPantallas(selectedOptions);
   };
 
@@ -1791,7 +1691,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                     p: 2,
                     cursor: category.disabled ? "default" : "pointer",
                     opacity: category.disabled ? 0.5 : 1,
-                    border: categoriaPlantillaError && !selectedCategory ? "1px solid red" : "none", // Resaltar en rojo si hay error
+                    border: categoriaPlantillaError && !selectedCategory ? "1px solid red" : "none",
                     "&:hover": {
                       bgcolor: category.disabled
                         ? "transparent"
@@ -1885,7 +1785,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                 id="languageCode"
                 label="Escoge el idioma"
                 aria-required="true"
-                value={languageCode} // Usamos directamente el código de idioma
+                value={languageCode}
                 onChange={handleLanguageCodeChange}
                 ref={languageCodeRef}
               >
@@ -1959,13 +1859,13 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                 }}
                 inputRef={messageRef}
                 inputProps={{
-                  maxLength: 280, // Esto limita físicamente la entrada
+                  maxLength: 280,
                 }}
                 helperText={`${message.length}/550 caracteres | ${emojiCount}/10 emojis`}
                 FormHelperTextProps={{
                   sx: {
-                    textAlign: 'right', // Alinea el contador a la derecha
-                    color: message.length === 280 ? 'error.main' : 'text.secondary' // Cambia color si llega al límite
+                    textAlign: 'right',
+                    color: message.length === 280 ? 'error.main' : 'text.secondary'
                   }
                 }}
               />
@@ -2192,8 +2092,8 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     width: '100%',
-                                    backgroundColor: '#f4fdff', // Color de fondo del encabezado
-                                    borderTop: '3px solid #f4fdff', // Ejemplo de borde superior con el mismo color
+                                    backgroundColor: '#f4fdff',
+                                    borderTop: '3px solid #f4fdff',
 
                                   },
                                   cursor: 'default'
@@ -2228,7 +2128,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                                   {/*<FileUploadCarousel
                                     initialFile={card.fileData}  // <- Archivo actual de la API
                                     onUploadSuccess={(nuevosDatos) => {
-                                      // Actualiza el estado reemplazando el archivo viejo
+
                                       handleFileUpload(card.id, nuevosDatos);
                                     }}
                                   />*/}
@@ -2663,11 +2563,11 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
                     {/* Contenedor de botones con altura fija - MODIFICADO */}
                     <Box sx={{
-                      mt: 'auto', // Empuja los botones hacia abajo
-                      width: '100%', // Asegura que ocupe todo el ancho
+                      mt: 'auto',
+                      width: '100%',
                       display: 'flex',
                       flexDirection: 'column',
-                      px: 0 // Quita el padding horizontal
+                      px: 0
                     }}>
                       <Stack spacing={0} sx={{ width: '100%' }}>
                         {card.buttons.map((button, index) => (
