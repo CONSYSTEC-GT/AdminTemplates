@@ -72,7 +72,8 @@ export const fetchMergedTemplates = async (appId, authCode, templatesGS) => {
             quality: gupshupTemplate.quality,
             reason: gupshupTemplate.reason,
             createdOn: gupshupTemplate.createdOn,
-            modifiedOn: gupshupTemplate.modifiedOn
+            modifiedOn: gupshupTemplate.modifiedOn,
+            vertical: gupshupTemplate.vertical
           },
           // Datos de TalkMe
           talkme: {
