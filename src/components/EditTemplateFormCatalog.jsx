@@ -4,8 +4,8 @@ import { Alert, Box, Button, Checkbox, Chip, Container, Divider, FormControl, Fo
 import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode';
 
-import { Smile } from "react-feather"; // Icono para emojis
-import EmojiPicker from "emoji-picker-react"; // Selector de emojis
+import { Smile } from "react-feather";
+import EmojiPicker from "emoji-picker-react";
 
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
@@ -34,19 +34,19 @@ import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, 
 
 const TemplateForm = () => {
 
-  // Recupera el token del localStorage
+
   const token = localStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
+
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
-      appName = decoded.app_name; // Extrae el nombre de la aplicación
-      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
+      appName = decoded.app_name;
+      idUsuarioTalkMe = decoded.id_usuario;
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;
       empresaTalkMe = decoded.empresa;
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
@@ -54,18 +54,18 @@ const TemplateForm = () => {
       urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
-      
+
     }
   }
-    /*
+  /*
 
 let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
-appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
+appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487';
+authCode = 'sk_d416c60960504bab8be8bc3fac11a358';
+appName = 'DemosTalkMe55';
+idUsuarioTalkMe = 78; 
+idNombreUsuarioTalkMe = 'javier.colocho'; 
 empresaTalkMe = 2;
 idBotRedes = 721;
 idBot = 257;
@@ -76,9 +76,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const location = useLocation();
   const navigate = useNavigate();
-  const templateData = location.state?.template || {}; // Datos del template
+  const templateData = location.state?.template || {};
 
-  //CAMPOS DEL FORMULARIO PARA EL REQUEST
+
   const [loading, setLoading] = useState(false);
   const [idPlantilla, setIdPlantilla] = useState(";")
   const [templateName, setTemplateName] = useState("");
@@ -101,7 +101,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const [languageCode, setLanguageCode] = useState("es"); // Valor predeterminado: español
+  const [languageCode, setLanguageCode] = useState("es");
   const [languageTypeError, setLanguageTypeError] = useState(false);
   const [languageTypeHelperText, setLanguageTypeHelperText] = useState("");
 
@@ -121,24 +121,24 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [ejemploPlantillaError, setejemploPlantillaError] = useState(false);
   const [ejemploPlantillaHelperText, setejemploPlantillaHelperText] = useState("");
 
-  //const [message, setMessage] = useState("");
+
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [variables, setVariables] = useState([]);
 
-  // Estado para almacenar ejemplos de variables
+
   const [variableExamples, setVariableExamples] = useState({});
   const [variableExamplesError, setvariableExamplesError] = useState(false);
   const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
   const [variableErrors, setVariableErrors] = useState({});
 
-  // Estado para almacenar descripciones de variables
+
   const [variableDescriptions, setVariableDescriptions] = useState({});
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
   const [descriptionErrors, setDescriptionErrors] = useState({});
   const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
 
-  //ESTE ES PARA EL EXAMPLE MEDIA
+
   const [mediaId, setMediaId] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
@@ -159,7 +159,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const [idTemplate, setIdTemplate] = useState("");
 
-  // Primer useEffect: Cargar los datos en el formulario al montar el componente
+
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
@@ -170,7 +170,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         setVertical(templateData.vertical || "");
         setIdTemplate(templateData.id);
 
-        // Parsear containerMeta si existe
+
         if (templateData.containerMeta) {
           try {
             const meta = JSON.parse(templateData.containerMeta);
@@ -179,20 +179,20 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
             setMessage(messageText);
             setExample(meta.sampleText || "");
 
-            // Extrae variables del mensaje y actualiza el estado
+
             const extractedVariables = extractVariables(messageText);
-            setVariables(extractedVariables); // <- Aquí las guardas
+            setVariables(extractedVariables);
           } catch (error) {
             console.error("Error al parsear containerMeta:", error);
           }
         }
       }
 
-      // Segundo bloque try-catch movido dentro de loadData
+
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
         if (info === null) {
-          
+
         } else {
           const pantallasFromAPI = info.pantallas || "";
           setPantallas(pantallasFromAPI);
@@ -202,25 +202,25 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
           setMediaURL(info.url || "");
           setImagePreview(info.url || "");
-          setIdPlantilla(info.id_plantilla || ""); // Esto se establece aquí
+          setIdPlantilla(info.id_plantilla || "");
         }
       } catch (error) {
-        
+
       }
     };
 
-    loadData(); // Llamada a la función dentro del useEffect
+    loadData();
   }, [templateData, urlTemplatesGS]);
 
-  // Segundo useEffect que se ejecuta cuando idPlantilla cambia
+
   useEffect(() => {
     const loadParametros = async () => {
-      if (!idPlantilla) return; // No hacer nada si idPlantilla está vacío
+      if (!idPlantilla) return;
 
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
         if (infoParametros === null || infoParametros.length === 0) {
-          
+
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -239,17 +239,17 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
 
-          
-          
-          
+
+
+
         }
       } catch (error) {
-        
+
       }
     };
 
     loadParametros();
-  }, [idPlantilla, urlTemplatesGS]); // Se ejecuta cuando idPlantilla cambia
+  }, [idPlantilla, urlTemplatesGS]);
 
   const resetForm = () => {
     setTemplateName("");
@@ -263,21 +263,21 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setUploadedUrl("");
     setVariables([]);
     setVariableDescriptions([]);
-    // Agrega cualquier otro estado relacionado
+
   };
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessageGupshup, setErrorMessageGupshup] = useState("La plantilla no pudo ser creada.");
 
-  // Función para mostrar Snackbar
+
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setOpenSnackbar(true);
   };
 
-  // Función para cerrar Snackbar
+
   const handleCloseSnackbar = (_, reason) => {
     if (reason === "clickaway") return;
     setOpenSnackbar(false);
@@ -286,111 +286,111 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const validateFields = () => {
     let isValid = true;
 
-    
+
 
     if (!templateName || templateName.trim() === "") {
-      
+
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
       isValid = false;
       if (templateNameRef.current) templateNameRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
     if (!templateType || templateType.trim() === "") {
-      
+
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
       if (templateTypeRef.current) templateTypeRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      
+
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
     if (!vertical || vertical.trim() === "") {
-      
+
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
     if (!message || message.trim() === "") {
-      
+
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
     if (!example || example.trim() === "") {
-      
+
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (exampleRef.current) exampleRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      
+
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      
-      // No retornar aquí, continuar con la validación de otros campos
+
+
     } else {
-      
+
     }
 
-    // Validar que todas las variables tengan un texto de ejemplo
-    // Validar que todas las variables tengan un texto de ejemplo
+
+
     if (variables.length > 0) {
-      
+
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
-        // Validar ejemplo
+
         if (!variableExamples[variable]?.trim()) {
-          
+
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
         }
 
-        // Validar descripción
+
         if (!variableDescriptions[variable]?.trim()) {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -398,68 +398,68 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         }
       }
 
-      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        
+
         isValid = false;
 
-        // Marcar todas las variables con descripciones duplicadas
+
         duplicateVariables.forEach(variable => {
           newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
         });
 
-        // Enfocar la primera variable con descripción duplicada
+
         const firstDuplicateVariable = Array.from(duplicateVariables)[0];
         if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        
-        // Limpiar errores de descripción
+
+
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
         });
       }
 
-      // 3. Validar que todas las variables tengan descripción (opcional)
+
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
-          // Enfocar el campo de descripción vacío
+
           if (descriptionRefs.current && descriptionRefs.current[variable]) {
             descriptionRefs.current[variable].focus();
           }
         }
       }
 
-      // Actualizar el estado de errores
+
       setVariableErrors(newErrors);
 
-      // Si hay errores, no retornar aquí, continuar con el flujo
+
       if (!isValid) {
-        
+
       } else {
-        
+
       }
     } else {
-      
+
     }
 
-    
-    return isValid; // Retornar el valor final de isValid
+
+    return isValid;
   };
 
-  // Función para determinar el tipo de archivo basado en la extensión
+
   const getMediaType = (url) => {
-    // Extraer la extensión del archivo de la URL
+
     const extension = url.split('.').pop().toLowerCase();
 
-    // Determinar el tipo de archivo basado en la extensión
+
     if (['png', 'jpeg', 'jpg', 'gif'].includes(extension)) {
       return 'IMAGE';
     } else if (['mp4', '3gp', 'mov', 'avi'].includes(extension)) {
@@ -467,16 +467,16 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     } else if (['txt', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf'].includes(extension)) {
       return 'DOCUMENT';
     } else {
-      return 'null'; // En caso de que la extensión no sea reconocida
+      return 'null';
     }
   };
 
-  
+
 
   const iniciarRequest = async () => {
     if (loading) return;
     setLoading(true);
-    
+
     const isValid = validateFields();
     if (!isValid) {
       Swal.fire({
@@ -487,11 +487,11 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         confirmButtonColor: '#00c3ff'
       });
       setLoading(false);
-      return; // Detener si hay errores
+      return;
     }
 
     try {
-      // Hacer el primer request a GupShup API
+
       const result = await editTemplateCatalogGupshup(
         appId,
         authCode,
@@ -513,17 +513,17 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       const result = {
         status: "success",
         template: {
-          id: "84a9f2cc-fc56-45ec-a43b-e77e456487e6" // Puedes poner cualquier ID de prueba aquí
+          id: "84a9f2cc-fc56-45ec-a43b-e77e456487e6"
         }
       };*/
 
-      // Verificar si el primer request fue exitoso
+
       if (result && result.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
+
         const templateId = result.template.id;
 
-        // Hacer el segundo request a TalkMe API
-        
+
+
         const result2 = await editTemplateToTalkMe(
           templateId,
           {
@@ -540,7 +540,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
           idBotRedes
         );
 
-        // El tercer request se maneja dentro de saveTemplateToTalkMe
+
         if (result2) {
           Swal.fire({
             title: 'Éxito',
@@ -555,16 +555,16 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
         }
       } else {
         Swal.fire({
-        title: 'Error',
-        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-        icon: 'error',
-        confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#00c3ff'
-      });
-      setLoading(false);
+          title: 'Error',
+          text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+          icon: 'error',
+          confirmButtonText: 'Cerrar',
+          confirmButtonColor: '#00c3ff'
+        });
+        setLoading(false);
       }
     } catch (error) {
-      
+
       Swal.fire({
         title: 'Error',
         text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
@@ -574,17 +574,17 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       });
       setLoading(false);
     }
-};
+  };
 
-  //MEDIA
+
   const handleUploadSuccess = (uploadedMediaId) => {
-    
+
     setMediaId(uploadedMediaId);
-    // Mostrar mensaje de éxito
+
     showSnackbar("✅ Archivo subido exitosamente", "success");
   };
 
-  // PANTALLAS
+
   const pantallasTalkMe = [
     '0 - Notificaciones',
     '1 - Contactos',
@@ -594,7 +594,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     '5 - Operador/Supervisor'
   ];
 
-  // CATEGORIAS
+
   const categories = [
     {
       id: 'MARKETING',
@@ -620,15 +620,15 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setSelectedCategory(event.target.value);
   };
 
-  //NOMBRE PLANTILLA
+
   const handleTemplateNameChange = (event) => {
-    // Reemplazar espacios con guiones bajos
+
     const newValue = event.target.value.replace(/\s+/g, '_');
 
-    // Actualizar el estado con el nuevo valor
+
     setTemplateName(newValue);
 
-    // Validar si el campo está vacío
+
     if (newValue.trim() === "") {
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
@@ -638,10 +638,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  //IDIOMA PLANTILLA
+
   const handleLanguageCodeChange = (event) => {
-    const selectedLanguage = event.target.value; // Esto ya es el código de idioma ("es", "en", "fr")
-    setLanguageCode(selectedLanguage); // Actualiza el estado directamente con el código
+    const selectedLanguage = event.target.value;
+    setLanguageCode(selectedLanguage);
 
     if (selectedLanguage.trim() === "") {
       setLanguageTypeError(true);
@@ -652,7 +652,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  // Mapeo de idiomas (código -> nombre)
+
   const languageMap = {
     es: "Español",
     en: "Inglés",
@@ -665,17 +665,17 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     fr: "frances",
   };
 
-  //VERTICAL PLANTILLA
+
   const handleVerticalChange = (event) => {
     setVertical(event.target.value)
   }
 
-  //TIPO PLANTILLA
+
   const handleTemplateTypeChange = (event) => {
     const newType = event.target.value;
     setTemplateType(newType);
 
-    // Solo limpiar header si el nuevo tipo NO es "TEXT"
+
     if (newType !== "TEXT") {
       setHeader("");
     }
@@ -695,7 +695,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
   const handleHeaderTemplateTypeChange = (event) => {
     setTemplateType(event.target.value);
-    setHeader(''); // Resetear el header al cambiar el tipo
+    setHeader('');
   };
 
   const handleHeaderTypeChange = (event) => {
@@ -705,12 +705,12 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }
   };
 
-  //HEADER PLANTILLA
-  const [mediaType, setMediaType] = useState(""); // Tipo de media (image, video, etc.)
-  const [mediaURL, setMediaURL] = useState(""); // URL del media
+
+  const [mediaType, setMediaType] = useState("");
+  const [mediaURL, setMediaURL] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const MAX_IMG_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
-  const [error, setError] = useState(''); // Estado para manejar errores
+  const MAX_IMG_SIZE = 5 * 1024 * 1024;
+  const [error, setError] = useState('');
 
 
 
@@ -719,7 +719,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   };
 
   const handleCloseError = () => {
-    setError(''); // Cerrar el mensaje de error
+    setError('');
   };
 
   const handleMediaURLChange = (event) => {
@@ -734,9 +734,9 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       setError('El archivo es demasiado grande. El tamaño máximo permitido es 5 MB.');
       setSelectedFile(null);//Limpiar el archivo seleccionado
     } else {
-      setError(''); //Limpio el mensaje de error
+      setError('');
       setSelectedFile(selectedFile);
-      
+
     }
   };
 
@@ -744,10 +744,10 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-    
+
   };
 
-  //FOOTER PLANTILLA
+
   const handleFooterChange = (e) => {
     if (e.target.value.length <= charLimit) {
       setFooter(e.target.value);
@@ -757,7 +757,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const charLimit = 60;
   const maxButtons = 10;
 
-  //BOTONES PLANTILLA
+
   const addButton = () => {
     if (buttons.length < maxButtons) {
       setButtons([
@@ -779,107 +779,107 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setButtons(buttons.filter((button) => button.id !== id));
   };
 
-  // VARIABLES DEL BODY MESSAGE
 
-  // Función actualizada con límite de emojis
-    const handleBodyMessageChange = (e) => {
-      let newText = e.target.value; // ✅ Cambiar const por let
-      const maxLength = 550;
-      const emojiCount = countEmojis(newText);
-      const maxEmojis = 10;
-  
-      // Renumerar variables solo si se detectan (ej: al pegar)
-      if (newText.includes("{{")) {
-        newText = renumberVariables(newText); // ✅ Ahora funciona correctamente
-      }
-  
-      // Verificar si se excede el límite de emojis
-      if (emojiCount > maxEmojis) {
-        // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
-        if (countEmojis(message) <= maxEmojis) {
-          Swal.fire({
-            title: 'Límite de emojis',
-            text: 'Solo puedes incluir un máximo de 10 emojis',
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#00c3ff'
-          });
-        }
-        return; // No actualizar el texto si excede el límite de emojis
-      }
-  
-      if (newText.length > maxLength) {
+
+
+  const handleBodyMessageChange = (e) => {
+    let newText = e.target.value;
+    const maxLength = 550;
+    const emojiCount = countEmojis(newText);
+    const maxEmojis = 10;
+
+
+    if (newText.includes("{{")) {
+      newText = renumberVariables(newText);
+    }
+
+
+    if (emojiCount > maxEmojis) {
+
+      if (countEmojis(message) <= maxEmojis) {
         Swal.fire({
-          title: 'Limite de caracteres',
-          text: 'Solo puedes incluir un máximo de 550 caracteres',
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
           icon: 'warning',
           confirmButtonText: 'Entendido',
           confirmButtonColor: '#00c3ff'
         });
-        return;
       }
-  
-      // Continuar con tu lógica existente si está dentro del límite de caracteres
-      if (newText.length <= maxLength) {
-        // Guardar el nuevo texto
-        setMessage(newText);
-  
-        // Actualizar el contador de emojis (necesitas agregar este estado)
-        setEmojiCount(emojiCount);
-  
-        // Extraer y actualizar variables automáticamente
-        const detectedVariables = extractVariables(newText);
-        if (
-          detectedVariables.length !== variables.length ||
-          !detectedVariables.every(v => variables.includes(v))
-        ) {
-          setVariables(detectedVariables);
+      return;
+    }
+
+    if (newText.length > maxLength) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+
+    if (newText.length <= maxLength) {
+
+      setMessage(newText);
+
+
+      setEmojiCount(emojiCount);
+
+
+      const detectedVariables = extractVariables(newText);
+      if (
+        detectedVariables.length !== variables.length ||
+        !detectedVariables.every(v => variables.includes(v))
+      ) {
+        setVariables(detectedVariables);
+      }
+
+
+      const deletedVariables = [];
+      variables.forEach(variable => {
+        if (!newText.includes(variable)) {
+          deletedVariables.push(variable);
         }
-  
-        // Verificar qué variables se han eliminado del texto
-        const deletedVariables = [];
-        variables.forEach(variable => {
-          if (!newText.includes(variable)) {
-            deletedVariables.push(variable);
-          }
+      });
+
+
+      if (deletedVariables.length > 0) {
+
+        const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
+
+
+        setVariables(remainingVariables);
+
+
+        const newDescriptions = { ...variableDescriptions };
+        const newExamples = { ...variableExamples };
+        const newErrors = { ...variableErrors };
+
+        deletedVariables.forEach(v => {
+          delete newDescriptions[v];
+          delete newExamples[v];
+          delete newErrors[v];
         });
-  
-        // Si se eliminaron variables, actualiza el estado
-        if (deletedVariables.length > 0) {
-          // Filtrar las variables eliminadas
-          const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
-  
-          // Actualizar el estado de las variables
-          setVariables(remainingVariables);
-  
-          // Actualizar las descripciones y ejemplos
-          const newDescriptions = { ...variableDescriptions };
-          const newExamples = { ...variableExamples };
-          const newErrors = { ...variableErrors };
-  
-          deletedVariables.forEach(v => {
-            delete newDescriptions[v];
-            delete newExamples[v];
-            delete newErrors[v];
-          });
-  
-          setVariableDescriptions(newDescriptions);
-          setVariableExamples(newExamples);
-          setVariableErrors(newErrors);
-        }
+
+        setVariableDescriptions(newDescriptions);
+        setVariableExamples(newExamples);
+        setVariableErrors(newErrors);
       }
-    };
-    
+    }
+  };
+
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
     setMessage((prev) => `${prev} ${newVariable}`);
     setVariables([...variables, newVariable]);
   };
 
-  // Función para extraer variables ({{1}}, {{2}}, etc.)
+
   const extractVariables = (text) => {
     const regex = /\{\{\d+\}\}/g;
-    return text.match(regex) || []; // Retorna un array (ej: ["{{1}}", "{{2}}"])
+    return text.match(regex) || [];
   };
 
   const handleEmojiClick = (emojiObject) => {
@@ -887,26 +887,26 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     setShowEmojiPicker(false);
   };
 
-  // Llamada correcta al hook (sin el tercer parámetro)
+
   useClickOutside(
-    emojiPickerRef, 
+    emojiPickerRef,
     () => setShowEmojiPicker(false)
   );
 
-  // Nueva función para borrar una variable específica
+
   const deleteVariable = (variableToDelete) => {
-    // Eliminar la variable del texto
+
     const newMessage = message.replace(variableToDelete, '');
     setMessage(newMessage);
 
-    // Eliminar la variable de la lista de variables
+
     const updatedVariables = variables.filter(v => v !== variableToDelete);
     setVariables(updatedVariables);
 
     messageRef.current?.focus();
   };
 
-  // Nueva función para borrar todas las variables
+
   const deleteAllVariables = () => {
     let newMessage = message;
     variables.forEach(variable => {
@@ -917,7 +917,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     messageRef.current?.focus();
   };
 
-  // Función para previsualizar el mensaje con ejemplos aplicados
+
   const previewMessage = () => {
     let previewHeader = header;
     let previewFooter = footer;
@@ -932,7 +932,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      
+
       return updatedExamples;
     });
   };
@@ -945,7 +945,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     }));
   };
 
-  // Función para generar el ejemplo combinando el mensaje y los valores de las variables
+
   const generateExample = () => {
     let generatedExample = message;
     Object.keys(variableExamples).forEach(variable => {
@@ -954,24 +954,24 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     return generatedExample;
   };
 
-  // Función para reemplazar las variables en el mensaje con sus ejemplos
+
   const replaceVariables = (text, variables) => {
     let result = text;
-    
+
 
     Object.keys(variables).forEach(variable => {
-      const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g'); // 🔥 Búsqueda exacta de {{variable}}
-      
+      const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g');
+
       result = result.replace(regex, variables[variable]);
     });
 
-    
+
     return result;
   };
 
-  // Función para contar emojis en un texto
+
   const countEmojis = (text) => {
-    // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
+
     const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
     const matches = text.match(emojiRegex);
     return matches ? matches.length : 0;
@@ -980,27 +980,27 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const handlePantallas = (event) => {
     const { target: { value } } = event;
 
-    // Procesar los valores seleccionados
+
     const selectedOptions = typeof value === 'string' ? value.split(',') : value;
 
-    // Extraer solo los números
+
     const numericValues = selectedOptions.map(option => {
       return option.split(' - ')[0].trim();
     });
 
-    // Guardar como string con comas para la API
+
     setPantallas(numericValues.join(','));
 
-    // Guardar el texto completo para mostrar (displayPantallas)
+
     setDisplayPantallas(selectedOptions);
   };
 
-  // 1. Función para detectar duplicados
+
   const getDuplicateDescriptions = (descriptions) => {
     const descriptionCounts = {};
     const duplicates = new Set();
 
-    // Contar ocurrencias de cada descripción (ignorando vacías)
+
     Object.entries(descriptions).forEach(([variable, description]) => {
       if (description && description.trim()) {
         const cleanDesc = description.trim().toLowerCase();
@@ -1013,7 +1013,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
       }
     });
 
-    // Retornar variables que tienen descripciones duplicadas
+
     const duplicateVariables = new Set();
     duplicates.forEach(desc => {
       descriptionCounts[desc].forEach(variable => {
@@ -1024,7 +1024,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
     return duplicateVariables;
   };
 
-  // 3. En tu componente, calcular duplicados
+
   const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
   const procesarPantallasAPI = (pantallasString) => {
@@ -1045,14 +1045,14 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
 
 
 
-  // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
+
   useEffect(() => {
-    
-    
+
+
 
     const newExample = replaceVariables(message, variableExamples);
 
-    
+
 
     setExample(newExample);
   }, [message, variableExamples]);
@@ -1114,7 +1114,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
                   p: 2,
                   cursor: category.disabled ? "default" : "pointer",
                   opacity: category.disabled ? 0.5 : 1,
-                  border: categoriaPlantillaError && !selectedCategory ? "1px solid red" : "none", // Resaltar en rojo si hay error
+                  border: categoriaPlantillaError && !selectedCategory ? "1px solid red" : "none",
                   "&:hover": {
                     bgcolor: category.disabled
                       ? "transparent"
@@ -1209,7 +1209,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
               id="languageCode"
               label="Escoge el idioma"
               aria-required="true"
-              value={languageCode} // Usamos directamente el código de idioma
+              value={languageCode}
               onChange={handleLanguageCodeChange}
               ref={languageCodeRef}
             >
@@ -1271,7 +1271,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
               label="Escribe"
               placeholder="Ingresa el contenido de tu mensaje aquí..."
               value={message}
-              //onChange={(e) => setMessage(e.target.value)}
+
               onChange={handleBodyMessageChange}
               sx={{
                 mb: 3,
