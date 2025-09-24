@@ -100,11 +100,11 @@ export default function BasicCard() {
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
-      appName = decoded.app_name; // Extrae el nombre de la aplicación
-      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
+      appName = decoded.app_name;
+      idUsuarioTalkMe = decoded.id_usuario;
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;
       empresaTalkMe = decoded.empresa;
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
