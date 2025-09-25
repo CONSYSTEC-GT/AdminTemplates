@@ -36,6 +36,9 @@
     "swiper": "^11.2.6",
     "uuid": "^11.1.0"
   },
+  "overrides": {
+    "@aws-cdk/cloud-assembly-schema": "2.80.0"
+  },
   "devDependencies": {
     "@aws-amplify/backend": "^1.10.0",
     "@aws-amplify/backend-cli": "^1.2.0",
