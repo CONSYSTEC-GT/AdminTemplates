@@ -6,7 +6,8 @@
   "homepage": "https://javiercolocho.github.io/plantgup/",
   "scripts": {
     "dev": "vite",
-    "build": "npm install --legacy-peer-deps && vite build",
+    "build": "vite build",
+    "build:amplify": "npm install --legacy-peer-deps --prefer-offline && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
@@ -56,5 +57,11 @@
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vite": "^6.0.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "overrides": {
+    "@aws-sdk/types": "^3.821.0"
   }
 }
