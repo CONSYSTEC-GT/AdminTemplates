@@ -398,7 +398,7 @@ export default function BasicCard() {
 
       {/*TITULO PRIMER BLOQUE */}<Paper elevation={3} sx={{ padding: 3, borderRadius: 2 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Plantillas TalkMe D
+          Plantillas TalkMe Desarrollo
         </Typography>
 
         <Box display="flex" justifyContent="space-between" alignItems="center">
