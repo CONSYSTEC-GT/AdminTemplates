@@ -58,6 +58,9 @@
     "typescript": "^5.7.3",
     "vite": "^6.0.5"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.24.3"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
