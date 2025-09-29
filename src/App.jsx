@@ -1,4 +1,3 @@
-// App.jsx
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,7 +5,7 @@ import { Box } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import AppRoutes from './routes';
 import LoadingSpinner from './utils/LoadingSpinner';
-import SessionManager from './hooks/SessionManager'; // Importar el SessionManager
+import SessionManager from './hooks/SessionManager';
 
 function App() {
   const location = useLocation();
@@ -33,24 +32,20 @@ function App() {
             
             if (decoded.exp < currentTime) {
               console.error('Token expirado');
-              //localStorage.removeItem('authToken');
-              localStorage.removeItem('authToken');
+              sessionStorage.removeItem('authToken');
+              sessionStorage.removeItem('initialRemainingMinutes');
               setIsLoading(false);
               navigate('/login-required');
               return;
             }
             
-            localStorage.setItem('authToken', token);
-            //localStorage.setItem('authToken', token);
+            sessionStorage.setItem('authToken', token);
             
-            // Calcular minutos restantes y guardar en localStorage
             const remainingTimeInSeconds = decoded.exp - currentTime;
             const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
             
-            // Guardamos en localStorage solo si no existe un valor previo
-            if (!localStorage.getItem('initialRemainingMinutes')) {
-              localStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
-              
+            if (!sessionStorage.getItem('initialRemainingMinutes')) {
+              sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
             }
             
             const { app_id, auth_code, app_name } = decoded;
@@ -58,8 +53,8 @@ function App() {
             
           } catch (error) {
             console.error('Token inválido', error);
-            localStorage.removeItem('authToken');
-            //localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('initialRemainingMinutes');
             navigate('/login-required');
           }
         }

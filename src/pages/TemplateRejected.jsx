@@ -42,7 +42,7 @@ const TemplateAproved = () => {
   const [categoriaFiltro, setCategoriaFiltro] = useState('ALL');
   const [busquedaFiltro, setBusquedaFiltro] = useState('');
 
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
   let appId, authCode, urlTemplatesGS;
   if (token) {
@@ -55,18 +55,6 @@ const TemplateAproved = () => {
       console.error('Error decodificando el token:', error);
     }
   }
-
-  /*
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe;
-
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-
-  */
 
   const obtenerTemplatesMerge = async () => {
     try {

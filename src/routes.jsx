@@ -16,6 +16,7 @@ import ModifyTemplateCatalogPage from './pages/ModifyTemplateCatalogPage';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './utils/ProtectedRoute';
 import LoginRequired from './pages/LoginRequired';
+import SessionClose from './pages/SessionClose';
 import LoadingSpinner from './utils/LoadingSpinner';
 
 const AppRoutes = () => {
@@ -27,6 +28,7 @@ const AppRoutes = () => {
       <Routes>
         {/* Ruta pública para la página de error */}
         <Route path="/login-required" element={<LoginRequired />} />
+        <Route path="/session-closed" element={<SessionClose />} />
 
         {/* Rutas protegidas */}
         <Route element={<Sidebar />}>

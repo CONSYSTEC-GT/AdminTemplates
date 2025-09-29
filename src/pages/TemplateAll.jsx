@@ -43,7 +43,7 @@ const TemplateAll = () => {
 
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
   let appId, authCode, urlTemplatesGS;
   if (token) {

@@ -34,9 +34,7 @@ import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, 
 
 const TemplateForm = () => {
 
-
-  const token = localStorage.getItem('authToken');
-
+  const token = sessionStorage.getItem('authToken');
 
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
@@ -57,22 +55,6 @@ const TemplateForm = () => {
 
     }
   }
-  /*
-
-let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487';
-authCode = 'sk_d416c60960504bab8be8bc3fac11a358';
-appName = 'DemosTalkMe55';
-idUsuarioTalkMe = 78; 
-idNombreUsuarioTalkMe = 'javier.colocho'; 
-empresaTalkMe = 2;
-idBotRedes = 721;
-idBot = 257;
-urlTemplatesGS = 'http://localhost:3004/api/';
-apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
 
   const location = useLocation();
   const navigate = useNavigate();

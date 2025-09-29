@@ -346,17 +346,14 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
-  //
   let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
       idUsuarioTalkMe = decoded.id_usuario;
       idNombreUsuarioTalkMe = decoded.nombre_usuario;
       empresaTalkMe = decoded.empresa;
@@ -364,34 +361,11 @@ const TemplateFormCarousel = () => {
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
       apiToken = decoded.apiToken;
-      
-      //
-      //
-      //
-      //
-      //
-
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
   }
-  //
 
-  /*
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  idBotRedes = 721;
-  idBot = 257;
-  urlTemplatesGS = 'http://localhost:3004/api/';
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
   const iniciarRequest = async () => {
     try {
 

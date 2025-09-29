@@ -20,16 +20,14 @@ import { obtenerApiToken } from '../api/templatesGSApi';
 
 const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImagePreview, onHeaderChange }) => {
 
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
   let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
       idUsuarioTalkMe = decoded.id_usuario;
       idNombreUsuarioTalkMe = decoded.nombre_usuario;
       empresaTalkMe = decoded.empresa;
@@ -41,8 +39,6 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
       console.error('Error decodificando el token:', error);
     }
   }
-
-
 
   const charLimit = 60;
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -166,28 +162,16 @@ const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImageP
 
       const mediaId = gupshupData.handleId.message;
       
-      //
-
-      //obtengo el API_TOKEN desde templatesGS
-
       let apiToken;
 
       try {
-         apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe); // Solo recibes el string del token
-        
-        // Aquí puedes guardarlo en el estado, localStorage, o usarlo directamente
+         apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
       } catch (error) {
         console.error("Fallo al obtener token:", error);
       }
 
-
-
-
-      // Subir archivo al servicio propio
-      
       const base64Content = await convertToBase64(selectedFile);
       
-
       const payload = {
         idEmpresa: empresaTalkMe,
         idBot: idBot,
