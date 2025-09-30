@@ -378,13 +378,13 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
             file_name: file.name,
             file_type: file.type,
             file_size: file.size,
-            app_id: appId
+            app_id: tokenData.appId
           },
           metadata: {
-            idEmpresa: empresaTalkMe,
-            idBot: idBot,
-            idBotRedes: idBotRedes,
-            idUsuario: idUsuarioTalkMe,
+            idEmpresa: tokenData.empresaTalkMe,
+            idBot: tokenData.idBot,
+            idBotRedes: tokenData.idBotRedes,
+            idUsuario: tokenData.idUsuarioTalkMe,
           }
         };
 
