@@ -371,7 +371,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         const peticionGupshup = {
           metodo: 'POST',
           headers: {
-            Authorization: authCode,
+            Authorization: tokenData.authCode,
             'Content-Type': 'multipart/form-data'
           },
           payload: {
@@ -392,7 +392,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
           headers: {
-            Authorization: authCode,
+            Authorization: tokenData.authCode,
           },
         });
 
