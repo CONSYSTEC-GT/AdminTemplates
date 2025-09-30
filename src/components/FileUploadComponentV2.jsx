@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Button, CircularProgress, Typography, Alert, Chip } from '@mui/material';
 import { CloudUpload, CheckCircle, Error as ErrorIcon, Close } from '@mui/icons-material';
 import axios from 'axios';
@@ -6,26 +6,6 @@ import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
-
-const token = sessionStorage.getItem('authToken');
-
-let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-if (token) {
-  try {
-    const decoded = jwtDecode(token);
-    appId = decoded.app_id;
-    authCode = decoded.auth_code;
-    idUsuarioTalkMe = decoded.id_usuario;
-    idNombreUsuarioTalkMe = decoded.nombre_usuario;
-    empresaTalkMe = decoded.empresa;
-    idBotRedes = decoded.id_bot_redes;
-    idBot = decoded.id_bot;
-    urlTemplatesGS = decoded.urlTemplatesGS;
-    urlWsFTP = decoded.urlWsFTP;
-  } catch (error) {
-    console.error('Error decodificando el token:', error);
-  }
-}
 
 const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onHeaderChange }) => {
 
@@ -36,6 +16,28 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
   const fileInputRef = useRef(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [imagePreview, setImagePreview] = useState(null); // Estado para la vista previa de la imagen
+
+  let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
+  useEffect(() => {
+  const token = sessionStorage.getItem('authToken');
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      appId = decoded.app_id;
+      appName = decoded.app_name;
+      authCode = decoded.auth_code;
+      idUsuarioTalkMe = decoded.id_usuario;
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;
+      empresaTalkMe = decoded.empresa;
+      idBotRedes = decoded.id_bot_redes;
+      idBot = decoded.id_bot;
+      urlTemplatesGS = decoded.urlTemplatesGS;
+      urlWsFTP = decoded.urlWsFTP;
+    } catch (error) {
+      console.error('Error decodificando el token:', error);
+    }
+  }
+}, []);
 
   // Función utilitaria para mostrar alertas según el código de estado HTTP
   const showResponseAlert = (status, data = null, context = 'operación') => {

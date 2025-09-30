@@ -78,8 +78,6 @@ const TemplateCard = ({
     }
   };
 
-  console.log("template talkme url:", template.talkme.url);
-
   return (
     <Card
       sx={{

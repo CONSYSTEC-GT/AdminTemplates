@@ -129,7 +129,6 @@ const TemplateAll = () => {
   const obtenerTemplatesMerge = async () => {
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
-      console.log('Templates obtenidos:', templates);
       return templates;
     } catch (error) {
       console.error('Error al obtener templates:', error);

@@ -31,7 +31,6 @@ const EditTemplateForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const templateData = location.state?.template.gupshup || {};
-  console.log("templateData: ", templateData);
 
   const token = sessionStorage.getItem('authToken');
 

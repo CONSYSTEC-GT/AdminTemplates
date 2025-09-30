@@ -108,7 +108,6 @@ export default function BasicCard() {
   const obtenerTemplatesMerge = async () => {
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
-      console.log('Templates obtenidos:', templates);
       return templates.slice(0, 4);
     } catch (error) {
       console.error('Error al obtener templates:', error);
@@ -346,7 +345,7 @@ export default function BasicCard() {
 
       {/*TITULO PRIMER BLOQUE */}<Paper elevation={3} sx={{ padding: 3, borderRadius: 2 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Plantillas TalkMe Desarrollo
+          Plantillas TalkMe
         </Typography>
 
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -511,10 +510,7 @@ export default function BasicCard() {
             :
             // Mostrar los datos reales cuando termine de cargar
             templates.map((template, index) => {
-              console.log("templates map: ", templates)
-              // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
               const CardComponent = CardComponents[template.gupshup.templateType] || CardComponents.DEFAULT;
-              console.log("templates type: ", template.gupshup.templateType)
 
               return (
                 <motion.div

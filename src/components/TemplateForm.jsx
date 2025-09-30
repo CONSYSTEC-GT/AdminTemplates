@@ -347,11 +347,12 @@ const validateFields = async () => {
 
   const token = sessionStorage.getItem('authToken');
 
-  let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
+  let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
   if (token) {
     try {
       const decoded = jwtDecode(token);
       appId = decoded.app_id;
+      appName = decoded.app_name;
       authCode = decoded.auth_code;
       idUsuarioTalkMe = decoded.id_usuario;
       idNombreUsuarioTalkMe = decoded.nombre_usuario;
