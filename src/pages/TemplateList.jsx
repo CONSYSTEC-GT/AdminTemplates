@@ -127,6 +127,18 @@ export default function BasicCard() {
     }
   }, [appId, authCode]);
   //
+  useEffect(() => {
+  const handleKeyPress = (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+      e.preventDefault();
+      setIsSupportMode(prev => !prev);
+      console.log('Modo soporte:', !isSupportMode);
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyPress);
+  return () => window.removeEventListener('keydown', handleKeyPress);
+}, [isSupportMode]);
 
 
   const getStatusColor = (status) => {
@@ -389,7 +401,8 @@ export default function BasicCard() {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-2px)'
-                }
+                },
+                display: isSupportMode ? 'inline-flex' : 'none'
               }}
             >
               Ver datos del token
