@@ -84,6 +84,8 @@ export default function BasicCard() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
+  const [isSupportMode, setIsSupportMode] = useState(false);
+
   const token = sessionStorage.getItem('authToken');
 
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
