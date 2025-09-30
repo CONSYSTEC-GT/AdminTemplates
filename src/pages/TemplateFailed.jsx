@@ -44,7 +44,7 @@ const TemplateAproved = () => {
 
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
   let appId, authCode, urlTemplatesGS;
   if (token) {
@@ -61,7 +61,6 @@ const TemplateAproved = () => {
   const obtenerTemplatesMerge = async () => {
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
-      console.log('Templates obtenidos:', templates);
       const templatesAprobados = templates.filter(template =>
         template.gupshup?.status === 'FAILED'
       );

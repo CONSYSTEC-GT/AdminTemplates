@@ -23,16 +23,14 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
   let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
       idUsuarioTalkMe = decoded.id_usuario;
       idNombreUsuarioTalkMe = decoded.nombre_usuario;
       empresaTalkMe = decoded.empresa;
@@ -45,42 +43,17 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
     }
   }
 
-  /*
-
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  empresaTalkMe = 2;
-  idBotRedes = 721;
-  idBot = 257;
-  urlTemplatesGS = 'http://localhost:3004/api/';
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-  */
-
   const iniciarRequest = async () => {
     try {
-      // Hacer el primer request
       const result = await handleDelete();
-
-      // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
 
-        // Hacer el segundo request, pasando el `id` como parámetro
         await handleDelete2(templateId, idNombreUsuarioTalkMe);
 
-        // Cierra el modal y notifica al padre
-        onClose(); // Cierra el modal de confirmación
-        onConfirm(template); // Esto llama a handleDeleteConfirm en el padre
+        onClose();
+        onConfirm(template);
 
-        // Mostrar confirmación de éxito
         Swal.fire({
           title: 'Eliminado',
           text: 'La plantilla fue eliminada correctamente.',
@@ -126,7 +99,6 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
     );
 
     if (response.ok) {
-      // Registrar eliminación exitosa
       await saveTemplateLog({
         TEMPLATE_NAME: template.elementName,
         APP_ID: appId,
@@ -145,14 +117,13 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
         ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
         GUPSHUP_TEMPLATE_ID: template.id,
         urlTemplatesGS,
-        STATUS: "DELETED", // Estado específico para eliminación
+        STATUS: "DELETED",
         REJECTION_REASON: null,
-        CREADO_POR: idNombreUsuarioTalkMe, // Asegúrate de tener esta variable disponible
+        CREADO_POR: idNombreUsuarioTalkMe,
       });
 
       return { status: "success", template: { id: template.id } };
     } else {
-      // Obtener detalles del error
       const errorText = await response.text();
       let errorResponse;
       try {
@@ -161,7 +132,6 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
         errorResponse = { message: "Error no JSON", raw: errorText };
       }
 
-      // Registrar error en eliminación
       await saveTemplateLog({
         TEMPLATE_NAME: template.elementName,
         APP_ID: appId,
@@ -180,7 +150,7 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
         ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
         GUPSHUP_TEMPLATE_ID: template.id,
         urlTemplatesGS,
-        STATUS: "DELETE_ERROR", // Estado específico para error en eliminación
+        STATUS: "DELETE_ERROR",
         REJECTION_REASON: errorResponse.message || "Error al eliminar plantilla",
         CREADO_POR: idNombreUsuarioTalkMe,
       });
@@ -188,7 +158,6 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
       return { status: "error", message: errorResponse.message };
     }
   } catch (error) {
-    // Registrar error de conexión/excepción
     await saveTemplateLog({
       TEMPLATE_NAME: template.elementName,
       APP_ID: appId,
@@ -232,7 +201,7 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
       if (!response.ok) {
         const errorResponse = await response.json();
         console.error("Error response:", errorResponse);
-        return null; // Retornar null en caso de error
+        return null; 
       }
 
       const result = await response.json();
@@ -240,15 +209,13 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
       return result;
     } catch (error) {
       console.error("Error en el segundo request:", error);
-      return null; // Retornar null en caso de error
+      return null;
     }
   };
 
-
-  // Modificamos también esta función para manejar apropiadamente el cierre
   const handleCloseConfirmationModal = () => {
     setShowConfirmationModal(false);
-    onConfirm(template); // Ahora llamamos a onConfirm al cerrar el modal de confirmación
+    onConfirm(template);
   };
 
   if (!template) return null;

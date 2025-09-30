@@ -30,20 +30,19 @@ const EditTemplateForm = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const templateData = location.state?.template.gupshup || {}; // Datos del template
-  console.log("templateData: ", templateData);
+  const templateData = location.state?.template.gupshup || {};
 
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id; // Extrae appId del token
-      authCode = decoded.auth_code; // Extrae authCode del token
-      appName = decoded.app_name; // Extrae el nombre de la aplicación
-      idUsuarioTalkMe = decoded.id_usuario;  // Cambiado de idUsuario a id_usuario
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;  // Cambiado de nombreUsuario a nombre_usuario
+      appId = decoded.app_id;
+      authCode = decoded.auth_code;
+      appName = decoded.app_name;
+      idUsuarioTalkMe = decoded.id_usuario;
+      idNombreUsuarioTalkMe = decoded.nombre_usuario;
       empresaTalkMe = decoded.empresa;
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
@@ -54,22 +53,6 @@ const EditTemplateForm = () => {
 
     }
   }
-  /*
-
-let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-empresaTalkMe = 2;
-idBotRedes = 721;
-idBot = 257;
-urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
-apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
 
   const [loading, setLoading] = useState(false);
   const [idPlantilla, setIdPlantilla] = useState(";")
@@ -96,7 +79,7 @@ urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const [languageCode, setLanguageCode] = useState("es"); // Valor predeterminado: español
+  const [languageCode, setLanguageCode] = useState("es");
   const [languageTypeError, setLanguageTypeError] = useState(false);
   const [languageTypeHelperText, setLanguageTypeHelperText] = useState("");
 

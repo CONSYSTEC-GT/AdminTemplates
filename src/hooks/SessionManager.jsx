@@ -15,12 +15,12 @@ const SessionManager = () => {
     const sessionStartRef = useRef(Date.now());
     const warningShownRef = useRef(false);
 
-    // Obtener token del localStorage
-    const token = localStorage.getItem('authToken');
+    // Obtener token del sessionStorage
+    const token = sessionStorage.getItem('authToken');
 
-    // Función para obtener minutos de inactividad desde localStorage
+    // Función para obtener minutos de inactividad desde sessionStorage
     const getInactivityMinutes = useCallback(() => {
-        const savedMinutes = localStorage.getItem('initialRemainingMinutes');
+        const savedMinutes = sessionStorage.getItem('initialRemainingMinutes');
         return savedMinutes ? parseInt(savedMinutes, 10) : 15; // 15 minutos por defecto
     }, []);
 
@@ -43,10 +43,10 @@ const SessionManager = () => {
     // Función para cerrar sesión
     const logout = useCallback(() => {
         clearAllTimeouts();
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('initialRemainingMinutes');
-        localStorage.removeItem('sessionStartTime');
-        localStorage.removeItem('lastActivityTime');
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('initialRemainingMinutes');
+        sessionStorage.removeItem('sessionStartTime');
+        sessionStorage.removeItem('lastActivityTime');
         navigate('/login-required');
     }, [navigate, clearAllTimeouts]);
 
@@ -93,9 +93,9 @@ const SessionManager = () => {
         lastActivityRef.current = now;
         sessionStartRef.current = now;
         
-        // Guardar en localStorage para persistencia
-        localStorage.setItem('sessionStartTime', now.toString());
-        localStorage.setItem('lastActivityTime', now.toString());
+        // Guardar en sessionStorage para persistencia en la misma pestaña
+        sessionStorage.setItem('sessionStartTime', now.toString());
+        sessionStorage.setItem('lastActivityTime', now.toString());
         
         // Limpiar timers existentes
         clearAllTimeouts();
@@ -135,9 +135,9 @@ const SessionManager = () => {
     const initializeSession = useCallback(() => {
         const now = Date.now();
         
-        // Verificar si hay una sesión previa guardada
-        const savedSessionStart = localStorage.getItem('sessionStartTime');
-        const savedLastActivity = localStorage.getItem('lastActivityTime');
+        // Verificar si hay una sesión previa guardada en sessionStorage
+        const savedSessionStart = sessionStorage.getItem('sessionStartTime');
+        const savedLastActivity = sessionStorage.getItem('lastActivityTime');
         
         if (savedSessionStart && savedLastActivity) {
             const sessionStart = parseInt(savedSessionStart, 10);
@@ -200,9 +200,9 @@ const SessionManager = () => {
                 return;
             }
 
-            // Guardamos en localStorage solo si no existe un valor previo
-            if (!localStorage.getItem('initialRemainingMinutes')) {
-                localStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
+            // Guardamos en sessionStorage solo si no existe un valor previo
+            if (!sessionStorage.getItem('initialRemainingMinutes')) {
+                sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
             }
 
             

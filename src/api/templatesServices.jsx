@@ -23,7 +23,6 @@ const fetchTalkmeTemplates = async (urlTemplatesGS) => {
 
  const url = urlTemplatesGS.endsWith('/') ? urlTemplatesGS + 'plantillas' : urlTemplatesGS + '/plantillas';
 
- console.log("url en templatesServices.jsx: ", url);
   try {
     const response = await fetch(url);
     const data = await response.json();

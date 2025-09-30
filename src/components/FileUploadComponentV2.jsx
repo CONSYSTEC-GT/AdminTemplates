@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Button, CircularProgress, Typography, Alert, Chip } from '@mui/material';
 import { CloudUpload, CheckCircle, Error as ErrorIcon, Close } from '@mui/icons-material';
 import axios from 'axios';
@@ -6,43 +6,6 @@ import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
-
-/*
-let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-empresaTalkMe = 2;
-idBotRedes = 721;
-idBot = 257;
-urlTemplatesGS = 'http://localhost:3004/api/';
-apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-urlWsFTP = 'https://dev.talkme.pro/WsFTP/api/ftp/upload';
-*/
-
-// Decodifica el token para obtener appId y authCode
-const token = localStorage.getItem('authToken');
-
-let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-if (token) {
-  try {
-    const decoded = jwtDecode(token);
-    appId = decoded.app_id; // Extrae appId del token
-    authCode = decoded.auth_code; // Extrae authCode del token
-    idUsuarioTalkMe = decoded.id_usuario;
-    idNombreUsuarioTalkMe = decoded.nombre_usuario;
-    empresaTalkMe = decoded.empresa;
-    idBotRedes = decoded.id_bot_redes;
-    idBot = decoded.id_bot;
-    urlTemplatesGS = decoded.urlTemplatesGS;
-    urlWsFTP = decoded.urlWsFTP;
-  } catch (error) {
-    console.error('Error decodificando el token:', error);
-  }
-}
 
 const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onHeaderChange }) => {
 
@@ -53,6 +16,72 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
   const fileInputRef = useRef(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [imagePreview, setImagePreview] = useState(null); // Estado para la vista previa de la imagen
+  const [tokenData, setTokenData] = useState(null);
+  const [tokenError, setTokenError] = useState(false);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('authToken');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setTokenData({
+          appId: decoded.app_id,
+          appName: decoded.app_name,
+          authCode: decoded.auth_code,
+          idUsuarioTalkMe: decoded.id_usuario,
+          idNombreUsuarioTalkMe: decoded.nombre_usuario,
+          empresaTalkMe: decoded.empresa,
+          idBotRedes: decoded.id_bot_redes,
+          idBot: decoded.id_bot,
+          urlTemplatesGS: decoded.urlTemplatesGS,
+          urlWsFTP: decoded.urlWsFTP
+        });
+      } catch (error) {
+        console.error('Error decodificando el token:', error);
+        setTokenError(true);
+      }
+    } else {
+      setTokenError(true);
+    }
+  }, []);
+
+  // 👇 Función helper para validar datos del token
+  const validarTokenData = () => {
+    if (!tokenData) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No hay datos de autenticación disponibles. Por favor, inicia sesión nuevamente.',
+      });
+      return false;
+    }
+
+    // Validar campos críticos
+    const camposCriticos = {
+      'App ID': tokenData.appId,
+      'Empresa': tokenData.empresaTalkMe,
+      'ID Bot': tokenData.idBot,
+      'ID Bot Redes': tokenData.idBotRedes,
+      'ID Usuario': tokenData.idUsuarioTalkMe,
+      'URL Templates': tokenData.urlTemplatesGS,
+      'URL wsFTP': tokenData.urlWsFTP
+    };
+
+    const camposFaltantes = Object.entries(camposCriticos)
+      .filter(([_, valor]) => !valor)
+      .map(([nombre, _]) => nombre);
+
+    if (camposFaltantes.length > 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Datos incompletos',
+        text: `Faltan los siguientes datos: ${camposFaltantes.join(', ')}`,
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   // Función utilitaria para mostrar alertas según el código de estado HTTP
   const showResponseAlert = (status, data = null, context = 'operación') => {
@@ -300,6 +329,11 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
   };
 
   const realUpload = async (file) => {
+
+    if (!validarTokenData()) {
+      return;
+    }
+
     let gupshupSuccess = false;
     let mediaId = null;
 
@@ -317,14 +351,14 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
       FIN_PETICION: new Date().toISOString(),
       LOCAL_PAYMENT_HASH: null,
       NOTIFICACION_PAYMENT_HASH: null,
-      CREADO_POR: idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
+      CREADO_POR: tokenData.idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
     });
 
     // === PRIMERA PARTE: SUBIDA A GUPSHUP ===
     let logGupshup = null;
     try {
         const gupshupStartTime = new Date();
-        const gupshupUrl = `https://partner.gupshup.io/partner/app/${appId}/upload/media`;
+        const gupshupUrl = `https://partner.gupshup.io/partner/app/${tokenData.appId}/upload/media`;
 
         // Inicializar log para Gupshup
         logGupshup = crearLogBase("SUBIDA_ARCHIVO_GUPSHUP", gupshupUrl);
@@ -337,20 +371,20 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         const peticionGupshup = {
           metodo: 'POST',
           headers: {
-            Authorization: authCode,
+            Authorization: tokenData.authCode,
             'Content-Type': 'multipart/form-data'
           },
           payload: {
             file_name: file.name,
             file_type: file.type,
             file_size: file.size,
-            app_id: appId
+            app_id: tokenData.appId
           },
           metadata: {
-            idEmpresa: empresaTalkMe,
-            idBot: idBot,
-            idBotRedes: idBotRedes,
-            idUsuario: idUsuarioTalkMe,
+            idEmpresa: tokenData.empresaTalkMe,
+            idBot: tokenData.idBot,
+            idBotRedes: tokenData.idBotRedes,
+            idUsuario: tokenData.idUsuarioTalkMe,
           }
         };
 
@@ -358,7 +392,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         const gupshupResponse = await axios.post(gupshupUrl, gupshupFormData, {
           headers: {
-            Authorization: authCode,
+            Authorization: tokenData.authCode,
           },
         });
 
@@ -446,28 +480,28 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         const wsftpStartTime = new Date();
 
         // Inicializar log para WSFTP
-        logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP", urlWsFTP);
+        logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP", tokenData.urlWsFTP);
         logWsftp.INICIO_PETICION = wsftpStartTime.toISOString();
 
         let apiToken;
 
         try {
-          apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
+          apiToken = await obtenerApiToken(tokenData.urlTemplatesGS, tokenData.empresaTalkMe);
         } catch (tokenError) {
           throw new Error(`Fallo al obtener token: ${tokenError.message}`);
         }
 
         const base64Content = await convertToBase64(file);
 
-        const payload = {
-          idEmpresa: empresaTalkMe,
-          idBot: idBot,
-          idBotRedes: idBotRedes,
-          idUsuario: idUsuarioTalkMe,
-          tipoCarga: 3,
-          nombreArchivo: file.name,
-          contenidoArchivo: base64Content.split(',')[1],
-        };
+      const payload = {
+        idEmpresa: tokenData.empresaTalkMe,
+        idBot: tokenData.idBot,
+        idBotRedes: tokenData.idBotRedes,
+        idUsuario: tokenData.idUsuarioTalkMe,
+        tipoCarga: 3,
+        nombreArchivo: file.name,
+        contenidoArchivo: base64Content.split(',')[1],
+      };
 
         // Preparar datos de petición para el log
         const peticionWsftp = {
@@ -477,10 +511,10 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
             'Content-Type': 'application/json'
           },
           payload: {
-            idEmpresa: empresaTalkMe,
-            idBot: idBot,
-            idBotRedes: idBotRedes,
-            idUsuario: idUsuarioTalkMe,
+            idEmpresa: tokenData.empresaTalkMe,
+            idBot: tokenData.idBot,
+            idBotRedes: tokenData.idBotRedes,
+            idUsuario: tokenData.idUsuarioTalkMe,
             tipoCarga: 3,
             nombreArchivo: file.name,
             contenidoArchivo: '***BASE64_CONTENT***',
@@ -496,7 +530,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         logWsftp.PETICION = JSON.stringify(peticionWsftp);
 
         const ownServiceResponse = await axios.post(
-          urlWsFTP,
+          tokenData.urlWsFTP,
           payload,
           {
             headers: {

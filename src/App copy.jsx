@@ -32,20 +32,20 @@ function App() {
             
             if (decoded.exp < currentTime) {
               console.error('Token expirado');
-              localStorage.removeItem('authToken');
+              sessionStorage.removeItem('authToken');
               setIsLoading(false);
               navigate('/login-required');
               return;
             }
             
             //localStorage.setItem('authToken', token);
-            localStorage.setItem('authToken', token);
+            //localStorage.setItem('authToken', token);
             const { app_id, auth_code, app_name } = decoded;
             window.history.replaceState({}, document.title, window.location.pathname);
             
           } catch (error) {
             console.error('Token inválido', error);
-            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
             navigate('/login-required');
           }
         }

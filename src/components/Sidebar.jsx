@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { useTheme } from '@mui/material/styles';
+import { IconButton, Tooltip } from '@mui/material';
+import Swal from 'sweetalert2';
 
 // Iconos
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -18,6 +20,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import ForumIcon from '@mui/icons-material/Forum';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const NAVIGATION = [
   {
@@ -105,6 +108,33 @@ export default function Sidebar(props) {
   const { window } = props;
   const theme = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+
+const handleLogout = () => {
+  Swal.fire({
+    title: 'Cerrar sesión',
+    text: "¿Estás seguro que deseas salir?",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#00c3ff',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, cerrar sesión',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+     
+      Swal.fire({
+        title: '¡Sesión cerrada!',
+        text: 'Has cerrado sesión exitosamente',
+        icon: 'success',
+        timer: 750,
+        showConfirmButton: false
+      }).then(() => {
+        navigate('/session-closed');
+      });
+    }
+  });
+};
 
   // Determina si el menú está seleccionado basado en la ruta actual
   const isSelected = (segment) => {
@@ -161,7 +191,25 @@ export default function Sidebar(props) {
         titleStyle: { color: theme.palette.primary.main }
       }}
     >
-      <DashboardLayout>
+      <DashboardLayout
+        slots={{
+          toolbarActions: () => (
+            <Tooltip title="Cerrar sesión">
+              <IconButton
+                onClick={handleLogout}
+                color="inherit"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                  }
+                }}
+              >
+                <LogoutIcon />
+              </IconButton>
+            </Tooltip>
+          ),
+        }}
+      >
         <Outlet />
       </DashboardLayout>
     </AppProvider>

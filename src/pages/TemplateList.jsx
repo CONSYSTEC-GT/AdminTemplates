@@ -8,11 +8,9 @@ import Swal from 'sweetalert2'
 import LoginRequired from './LoginRequired';
 import { fetchMergedTemplates } from '../api/templatesServices';
 
-//componentes
 import { alpha, Card, CardContent, Typography, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Button, ListItemIcon, ListItemText, Grid, Box, Menu, MenuItem, Stack, TextField, Paper, styled } from '@mui/material';
 import { CircularProgress } from '@mui/material';
 
-//iconos
 import AddIcon from '@mui/icons-material/Add';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
 import EditIcon from '@mui/icons-material/Edit';
@@ -28,7 +26,6 @@ import CategoryIcon from '@mui/icons-material/Category';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 
-// MODAL PARA ELIMINAR
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 
@@ -37,7 +34,6 @@ import CardBase from '../components/CardBase';
 import CardBaseCarousel from '../components/CardBaseCarousel';
 import CardBaseSkeleton from '../components/CardBaseSkeleton';
 
-// Componente reutilizable para las tarjetas
 const TemplateCard = ({ title, subtitle, description, onEdit, onDelete, whatsappStyle }) => (
   <Card
     sx={{
@@ -81,21 +77,17 @@ export default function BasicCard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { templateId } = useParams();
-
-  // Estados
   const [templates, setTemplates] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tokenValid, setTokenValid] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  // const API_GUPSHUP_URL = process.env.API_GUPSHUP;
 
+  const [isSupportMode, setIsSupportMode] = useState(false);
 
-  // Recupera el token del localStorage
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
 
-  // Decodifica el token para obtener appId y authCode
   let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
   if (token) {
     try {
@@ -112,63 +104,12 @@ export default function BasicCard() {
       urlWsFTP = decoded.urlWsFTP;
     } catch (error) {
       console.error('Error decodificando el token:', error);
-      
     }
   }
-  
- /*
-
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, urlTemplatesGS;
-
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487'; // Extrae appId del token
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358'; // Extrae authCode del token
-  appName = 'DemosTalkMe55'; // Extrae el nombre de la aplicación
-  idUsuarioTalkMe = 78;  // Cambiado de idUsuario a id_usuario
-  idNombreUsuarioTalkMe = 'javier.colocho';  // Cambiado de nombreUsuario a nombre_usuario
-  empresaTalkMe = 2;
-  urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api/';
-  */
-
-
-/*
-  const fetchTemplates = async (appId, authCode) => {
-    try {
-      const response = await fetch(`https://partner.gupshup.io/partner/app/${appId}/templates`, {
-        method: 'GET',
-        headers: {
-          Authorization: authCode,
-        },
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        return data.templates.slice(0, 4);
-      }
-      return [];
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    if (appId && authCode) {
-      setLoading(true);
-      fetchTemplates(appId, authCode)
-        .then(data => {
-          setTemplates(data);
-          setLoading(false);
-        });
-    } else {
-      console.error('No se encontró appId o authCode en el token');
-    }
-  }, [appId, authCode]);
-
-  */
 
   const obtenerTemplatesMerge = async () => {
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
-      console.log('Templates obtenidos:', templates);
       return templates.slice(0, 4);
     } catch (error) {
       console.error('Error al obtener templates:', error);
@@ -188,6 +129,18 @@ export default function BasicCard() {
     }
   }, [appId, authCode]);
   //
+  useEffect(() => {
+  const handleKeyPress = (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+      e.preventDefault();
+      setIsSupportMode(prev => !prev);
+      console.log('Modo soporte:', !isSupportMode);
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyPress);
+  return () => window.removeEventListener('keydown', handleKeyPress);
+}, [isSupportMode]);
 
 
   const getStatusColor = (status) => {
@@ -206,41 +159,39 @@ export default function BasicCard() {
   const getStatusTextColor = (status) => {
     switch (status) {
       case 'REJECTED':
-        return '#d32f2f'; // Rojo oscuro para texto
+        return '#d32f2f';
       case 'FAILED':
-        return '#e65100'; // Naranja oscuro para texto
+        return '#e65100';
       case 'APPROVED':
         return '#1B5E20';
       default:
-        return '#616161'; // Gris oscuro para texto
+        return '#616161';
     }
   };
 
   const getStatusDotColor = (status) => {
     switch (status) {
       case 'REJECTED':
-        return '#EF4444'; // Rojo
+        return '#EF4444';
       case 'FAILED':
-        return '#FF9900'; // Naranja
+        return '#FF9900';
       case 'APPROVED':
-        return '#34C759'; // Verde
+        return '#34C759';
       default:
         return '#000000';
     }
   };
 
   const handleCreateClick = () => {
-    navigate('/CreateTemplatePage'); // Navega a la página para crear plantilla
+    navigate('/CreateTemplatePage');
   };
 
   const handleVerTemplates = () => {
-    navigate('/plantillas/todas/'); // Navega a la página para editar la plantilla con su ID
+    navigate('/plantillas/todas/');
   };
 
   const handleEdit = (template) => {
-    // Validar el estado del template primero
     if (template.gupshup.status === "APPROVED" || template.gupshup.status === "REJECTED" || template.gupshup.status === "PAUSED") {
-      // Redirigir según el tipo de template
       switch (template.gupshup.templateType) {
         case 'CAROUSEL':
           navigate('/modify-template-carousel', { state: { template } });
@@ -256,11 +207,9 @@ export default function BasicCard() {
 
           break;
         default:
-          // Ruta por defecto si no coincide con ningún tipo conocido
           navigate('/modify-template', { state: { template } });
       }
     } else {
-      // Si el estado no es válido, mostrar un mensaje de error
       Swal.fire({
         title: 'La plantilla no puede ser editada.',
         text: 'No se puede editar la plantilla porque su estado no es "APPROVED", "REJECTED" o "PAUSED".',
@@ -277,39 +226,30 @@ export default function BasicCard() {
   };
 
   const handleClick = (event, template) => {
-    // Verifica el template seleccionado
-    setAnchorEl(event.currentTarget); // Abre el menú
-    setSelectedTemplate(template); // Guarda el template seleccionado en el estado
+
+    setAnchorEl(event.currentTarget);
+    setSelectedTemplate(template);
   };
 
-  // Función para manejar el clic en eliminar
   const handleDeleteClick = (template) => {
-    setSelectedTemplate(template); // ← ¡AGREGA ESTA LÍNEA!
+    setSelectedTemplate(template);
     setDeleteModalOpen(true);
   };
 
-  // Función para cancelar la eliminación
   const handleDeleteCancel = () => {
     setDeleteModalOpen(false);
     setSelectedTemplate(null);
   };
 
-  // Función para confirmar la eliminación
   const handleDeleteConfirm = async () => {
     try {
-      // Aquí iría tu lógica para eliminar la plantilla
-
-
-      // Cierra el modal y limpia el estado
       setDeleteModalOpen(false);
       setSelectedTemplate(null);
       setLoading(true);
 
-      // Recargar y actualizar el estado de plantillas
       const newTemplates = await fetchTemplates(appId, authCode);
       setTemplates(newTemplates);
       setLoading(false);
-
 
     } catch (error) {
       console.error('Error al eliminar la plantilla:', error);
@@ -328,26 +268,26 @@ export default function BasicCard() {
   const open2 = Boolean(anchorEl2);
 
   const handleClose2 = () => {
-    setAnchorEl2(null); // Cierra el menú
+    setAnchorEl2(null);
   };
 
   const handleCrearPlantilla = (event) => {
-    setAnchorEl2(event.currentTarget); // Abre el menú
+    setAnchorEl2(event.currentTarget);
   };
 
   const crearPlantillaTradicional = () => {
-    handleClose2(); // Cierra el menú antes de navegar
-    navigate("/CreateTemplatePage/CreateTemplatePage"); // Redirige a otra plantilla
+    handleClose2();
+    navigate("/CreateTemplatePage/CreateTemplatePage");
   };
 
   const crearPlantillaCatalogo = () => {
-    handleClose2(); // Cierra el menú antes de navegar
-    navigate("/CreateTemplatePage/CreateTemplateCatalog"); // Redirige a otra plantilla
+    handleClose2();
+    navigate("/CreateTemplatePage/CreateTemplateCatalog");
   };
 
   const crearPlantillaCarrusel = () => {
-    handleClose2(); // Cierra el menú antes de navegar
-    navigate("/CreateTemplatePage/CreateTemplateCarousel"); // Redirige a otra plantilla
+    handleClose2();
+    navigate("/CreateTemplatePage/CreateTemplateCarousel");
   };
 
   const showReasonAlert = (reason) => {
@@ -390,7 +330,28 @@ export default function BasicCard() {
   const CardComponents = {
     CAROUSEL: CardBaseCarousel,
     DEFAULT: CardBase,
-    // Agrega más tipos según necesites
+  };
+
+  const mostrarInformacionToken = () => {
+    Swal.fire({
+      title: 'Información del Token:',
+      html: `
+      <div style="text-align: left;">
+        <p><strong>Detalles del token:</strong></p>
+        <p>App ID: ${appId}</p>
+        <p>Auth Code: ${authCode}</p>
+        <p>App Name: ${appName}</p>
+        <p>Usuario: ${idNombreUsuarioTalkMe}</p>
+        <p>Empresa: ${empresaTalkMe}</p>
+        <p>ID Bot: ${idBot}</p>
+        <p>url templatesGS: ${urlTemplatesGS}</p>
+        <p>url wsFTP: ${urlWsFTP}</p>
+      </div>
+    `,
+      icon: 'info',
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#00c3ff'
+    });
   };
 
   return (
@@ -398,7 +359,7 @@ export default function BasicCard() {
 
       {/*TITULO PRIMER BLOQUE */}<Paper elevation={3} sx={{ padding: 3, borderRadius: 2 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Plantillas TalkMe Desarrollo
+          Plantillas TalkMe
         </Typography>
 
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -431,6 +392,22 @@ export default function BasicCard() {
               }}
             >
               Crear plantilla
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              size="large"
+              onClick={mostrarInformacionToken}
+              sx={{
+                borderRadius: 2,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)'
+                },
+                display: isSupportMode ? 'inline-flex' : 'none'
+              }}
+            >
+              Ver datos del token
             </Button>
           </motion.div>
           <Menu
@@ -548,10 +525,7 @@ export default function BasicCard() {
             :
             // Mostrar los datos reales cuando termine de cargar
             templates.map((template, index) => {
-              console.log("templates map: ", templates)
-              // Obtener el componente adecuado (usamos DEFAULT si el tipo no está definido)
               const CardComponent = CardComponents[template.gupshup.templateType] || CardComponents.DEFAULT;
-              console.log("templates type: ", template.gupshup.templateType)
 
               return (
                 <motion.div
