@@ -351,7 +351,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
       FIN_PETICION: new Date().toISOString(),
       LOCAL_PAYMENT_HASH: null,
       NOTIFICACION_PAYMENT_HASH: null,
-      CREADO_POR: idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
+      CREADO_POR: tokenData.idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
     });
 
     // === PRIMERA PARTE: SUBIDA A GUPSHUP ===
