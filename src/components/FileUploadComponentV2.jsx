@@ -480,7 +480,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         const wsftpStartTime = new Date();
 
         // Inicializar log para WSFTP
-        logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP", urlWsFTP);
+        logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP", decoded.urlWsFTP);
         logWsftp.INICIO_PETICION = wsftpStartTime.toISOString();
 
         let apiToken;
@@ -530,7 +530,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
         logWsftp.PETICION = JSON.stringify(peticionWsftp);
 
         const ownServiceResponse = await axios.post(
-          urlWsFTP,
+          decoded.urlWsFTP,
           payload,
           {
             headers: {
