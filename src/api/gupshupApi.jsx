@@ -43,10 +43,25 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
   if (footer) data.append("footer", footer);
   if (mediaId) data.append("exampleMedia", mediaId);
 
+  // Formatear botones según su tipo
   const formattedButtons = buttons.map((button) => {
-    const buttonData = { type: button.type, text: button.title };
-    if (button.type === "URL") buttonData.url = button.url;
-    else if (button.type === "PHONE_NUMBER") buttonData.phone_number = button.phoneNumber;
+    const buttonData = { type: button.type };
+    
+    // Para botones FLOW, mantener todos los campos específicos
+    if (button.type === "FLOW") {
+      buttonData.text = button.text;
+      buttonData.flow_id = button.flow_id;
+      buttonData.flow_action = button.flow_action;
+      buttonData.navigate_screen = button.navigate_screen;
+      if (button.icon) buttonData.icon = button.icon;
+    } 
+    // Para otros tipos de botones
+    else {
+      buttonData.text = button.title || button.text;
+      if (button.type === "URL") buttonData.url = button.url;
+      else if (button.type === "PHONE_NUMBER") buttonData.phone_number = button.phoneNumber;
+    }
+    
     return buttonData;
   });
 
@@ -932,3 +947,72 @@ export const editTemplateCarouselGupshup = async (appId, authCode, templateData,
   }
 };
 
+export const viewFlows = async (appId, authCode) => {
+  try {
+    const response = await fetch(`https://partner.gupshup.io/partner/app/${appId}/flows`, {
+      method: 'GET',
+      headers: {
+        Authorization: authCode,
+      },
+    });
+    const data = await response.json();
+    
+    if (Array.isArray(data)) {
+      const filtered = data.filter(flow => flow.status === "PUBLISHED");
+      return filtered;
+    }
+    
+    if (data.status === 'success' && data.templates) {
+      const filtered = data.templates.filter(flow => flow.status === "PUBLISHED");
+      return filtered;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching Gupshup templates:', error);
+    return [];
+  }
+};
+
+export const getFlowScreenName = async (appId, authCode, flowId) => {
+  try {
+    const assetsResponse = await fetch(
+      `https://partner.gupshup.io/partner/app/${appId}/flows/${flowId}/assets`,
+      {
+        headers: {
+          'Authorization': authCode
+        }
+      }
+    );
+
+    if (!assetsResponse.ok) {
+      throw new Error('Error al obtener los assets del flow');
+    }
+
+    const assets = await assetsResponse.json();
+    
+    const flowJsonAsset = assets.find(asset => asset.asset_type === 'FLOW_JSON');
+    
+    if (!flowJsonAsset) {
+      throw new Error('No se encontró el flow.json');
+    }
+
+    const flowJsonResponse = await fetch(flowJsonAsset.download_url);
+    
+    if (!flowJsonResponse.ok) {
+      throw new Error('Error al descargar el flow.json');
+    }
+
+    const flowJson = await flowJsonResponse.json();
+    
+    if (flowJson.screens && flowJson.screens.length > 0) {
+      return flowJson.screens[0].id;
+      console.log("flowjson screen:", flowJson);
+    }
+
+    throw new Error('No se encontraron pantallas en el flow');
+    
+  } catch (error) {
+    console.error('Error al obtener el nombre de la pantalla:', error);
+    throw error;
+  }
+};
