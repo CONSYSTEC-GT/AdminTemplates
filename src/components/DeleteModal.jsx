@@ -3,7 +3,7 @@ import { Alert, Modal, Box, Typography, Button, Snackbar } from '@mui/material';
 import { Delete as DeleteIcon, Check as CheckIcon } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
-import { saveTemplateLog } from '../api/templatesGSLog';
+import { guardarLogArchivos } from "../api/templatesGSArchivosLogs";
 
 const modalStyle = {
   position: 'absolute',
@@ -22,6 +22,7 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const token = sessionStorage.getItem('authToken');
 
@@ -44,35 +45,28 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
   }
 
   const iniciarRequest = async () => {
-    try {
-      const result = await handleDelete();
-      if (result && result.status === "success") {
-        const templateId = result.template.id;
+  if (loading) return;
+  setLoading(true);
+  
+  try {
+    const result = await handleDelete();
+    
+    if (result && result.status === "success") {
+      const templateId = result.template.id;
+      await handleDelete2(templateId, idNombreUsuarioTalkMe);
 
-        await handleDelete2(templateId, idNombreUsuarioTalkMe);
+      onClose();
+      onConfirm(template);
 
-        onClose();
-        onConfirm(template);
-
-        Swal.fire({
-          title: 'Eliminado',
-          text: 'La plantilla fue eliminada correctamente.',
-          icon: 'success',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
-      } else {
-        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
-        Swal.fire({
-          title: 'Error',
-          text: 'La plantilla no pudo ser eliminada correctamente.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
-      }
-    } catch (error) {
-      console.error("Ocurrió un error:", error);
+      Swal.fire({
+        title: 'Eliminado',
+        text: 'La plantilla fue eliminada correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#00c3ff'
+      });
+    } else {
+      console.error("El primer request no fue exitoso o no tiene el formato esperado.");
       Swal.fire({
         title: 'Error',
         text: 'La plantilla no pudo ser eliminada correctamente.',
@@ -81,46 +75,66 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
         confirmButtonColor: '#00c3ff'
       });
     }
-  };
+  } catch (error) {
+    console.error("Ocurrió un error:", error);
+    Swal.fire({
+      title: 'Error',
+      text: 'La plantilla no pudo ser eliminada correctamente.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#00c3ff'
+    });
+  } finally {
+    // Esto se ejecuta SIEMPRE, sea éxito o error
+    setLoading(false);
+  }
+};
 
 
-  const handleDelete = async () => {
+const handleDelete = async () => {
   if (!template) return;
 
+  const url = `https://partner.gupshup.io/partner/app/${appId}/template/${template.gupshup.elementName}`;
+  const inicioPeticion = new Date().toISOString();
+
   try {
-    const response = await fetch(
-      `https://partner.gupshup.io/partner/app/${appId}/template/${template.elementName}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: authCode,
-        },
-      }
-    );
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        Authorization: authCode,
+      },
+    });
+
+    const finPeticion = new Date().toISOString();
 
     if (response.ok) {
-      await saveTemplateLog({
-        TEMPLATE_NAME: template.elementName,
-        APP_ID: appId,
-        CATEGORY: template.category || null,
-        LANGUAGE_CODE: template.languageCode || null,
-        TEMPLATE_TYPE: template.templateType || null,
-        VERTICAL: template.vertical || null,
-        CONTENT: template.content || null,
-        HEADER: template.header || null,
-        FOOTER: template.footer || null,
-        MEDIA_ID: template.mediaId || null,
-        BUTTONS: template.buttons ? JSON.stringify(template.buttons) : null,
-        EXAMPLE: template.example || null,
-        EXAMPLE_HEADER: template.exampleHeader || null,
-        ENABLE_SAMPLE: null,
-        ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
-        GUPSHUP_TEMPLATE_ID: template.id,
-        urlTemplatesGS,
-        STATUS: "DELETED",
-        REJECTION_REASON: null,
+      await guardarLogArchivos({
+        NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_ELIMINAR_EXITOSO",
+        TIPO_LOG: 1,
+        URL_PETICION: url,
+        PETICION: {
+          method: 'DELETE',
+          headers: {
+            Authorization: authCode,
+          },
+          templateName: template.gupshup.elementName,
+          appId: appId,
+          templateData: {
+            id: template.gupshup.id,
+            category: template.gupshup.category,
+            languageCode: template.gupshup.languageCode,
+            templateType: template.gupshup.templateType,
+          }
+        },
+        RESPUESTA: {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+        },
+        INICIO_PETICION: inicioPeticion,
+        FIN_PETICION: finPeticion,
         CREADO_POR: idNombreUsuarioTalkMe,
-      });
+      }, urlTemplatesGS);
 
       return { status: "success", template: { id: template.id } };
     } else {
@@ -132,54 +146,66 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
         errorResponse = { message: "Error no JSON", raw: errorText };
       }
 
-      await saveTemplateLog({
-        TEMPLATE_NAME: template.elementName,
-        APP_ID: appId,
-        CATEGORY: template.category || null,
-        LANGUAGE_CODE: template.languageCode || null,
-        TEMPLATE_TYPE: template.templateType || null,
-        VERTICAL: template.vertical || null,
-        CONTENT: template.content || null,
-        HEADER: template.header || null,
-        FOOTER: template.footer || null,
-        MEDIA_ID: template.mediaId || null,
-        BUTTONS: template.buttons ? JSON.stringify(template.buttons) : null,
-        EXAMPLE: template.example || null,
-        EXAMPLE_HEADER: template.exampleHeader || null,
-        ENABLE_SAMPLE: null,
-        ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
-        GUPSHUP_TEMPLATE_ID: template.id,
-        urlTemplatesGS,
-        STATUS: "DELETE_ERROR",
-        REJECTION_REASON: errorResponse.message || "Error al eliminar plantilla",
+      await guardarLogArchivos({
+        NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_ELIMINAR_ERROR",
+        TIPO_LOG: 2,
+        URL_PETICION: url,
+        PETICION: {
+          method: 'DELETE',
+          headers: {
+            Authorization: authCode,
+          },
+          templateName: template.gupshup.elementName,
+          appId: appId,
+          templateData: {
+            id: template.gupshup.id,
+            category: template.gupshup.category,
+            languageCode: template.gupshup.languageCode,
+            templateType: template.gupshup.templateType,
+          }
+        },
+        RESPUESTA: {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          error: errorResponse,
+        },
+        INICIO_PETICION: inicioPeticion,
+        FIN_PETICION: finPeticion,
         CREADO_POR: idNombreUsuarioTalkMe,
-      });
+      }, urlTemplatesGS);
 
       return { status: "error", message: errorResponse.message };
     }
   } catch (error) {
-    await saveTemplateLog({
-      TEMPLATE_NAME: template.elementName,
-      APP_ID: appId,
-      CATEGORY: template.category || null,
-      LANGUAGE_CODE: template.languageCode || null,
-      TEMPLATE_TYPE: template.templateType || null,
-      VERTICAL: template.vertical || null,
-      CONTENT: template.content || null,
-      HEADER: template.header || null,
-      FOOTER: template.footer || null,
-      MEDIA_ID: template.mediaId || null,
-      BUTTONS: template.buttons ? JSON.stringify(template.buttons) : null,
-      EXAMPLE: template.example || null,
-      EXAMPLE_HEADER: template.exampleHeader || null,
-      ENABLE_SAMPLE: null,
-      ALLOW_TEMPLATE_CATEGORY_CHANGE: null,
-      GUPSHUP_TEMPLATE_ID: template.id,
-      urlTemplatesGS,
-      STATUS: "DELETE_ERROR",
-      REJECTION_REASON: error.message || "Error inesperado al eliminar",
+    const finPeticion = new Date().toISOString();
+    
+    await guardarLogArchivos({
+      NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_ELIMINAR_EXCEPTION",
+      TIPO_LOG: 2,
+      URL_PETICION: url,
+      PETICION: {
+        method: 'DELETE',
+        headers: {
+          Authorization: authCode,
+        },
+        templateName: template.gupshup.elementName,
+        appId: appId,
+        templateData: {
+          id: template.gupshup.id,
+          category: template.gupshup.category,
+          languageCode: template.gupshup.languageCode,
+          templateType: template.gupshup.templateType,
+        }
+      },
+      RESPUESTA: {
+        error: error.message,
+        stack: error.stack,
+      },
+      INICIO_PETICION: inicioPeticion,
+      FIN_PETICION: finPeticion,
       CREADO_POR: idNombreUsuarioTalkMe,
-    });
+    }, urlTemplatesGS);
 
     return { status: "error" };
   }
@@ -238,20 +264,20 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
               </Typography>
               <Box sx={{ bgcolor: 'grey.100', p: 2, borderRadius: 1, mb: 2 }}>
                 <Typography variant="body1" gutterBottom>
-                  <strong>Nombre:</strong> {template.elementName}
+                  <strong>Nombre:</strong> {template.gupshup.elementName}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  <strong>Estado:</strong> {template.status}
+                  <strong>Estado:</strong> {template.gupshup.status}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  <strong>Categoría:</strong> {template.category}
+                  <strong>Categoría:</strong> {template.gupshup.category}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  <strong>Tipo:</strong> {template.templateType}
+                  <strong>Tipo:</strong> {template.gupshup.templateType}
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                   <strong>Fecha de creación:</strong>{' '}
-                  {new Date(template.createdOn).toLocaleString()}
+                  {new Date(template.gupshup.createdOn).toLocaleString()}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
@@ -263,8 +289,9 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={iniciarRequest}
+                  disabled={loading}
                 >
-                  Eliminar
+                  {loading ? "Eliminando..." : "Eliminar plantilla"}
                 </Button>
               </Box>
             </>
