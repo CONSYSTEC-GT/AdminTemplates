@@ -247,7 +247,7 @@ export default function BasicCard() {
       setSelectedTemplate(null);
       setLoading(true);
 
-      const newTemplates = await fetchTemplates(appId, authCode);
+      const newTemplates = await obtenerTemplatesMerge();
       setTemplates(newTemplates);
       setLoading(false);
 
