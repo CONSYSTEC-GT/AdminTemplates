@@ -148,7 +148,7 @@ const EditTemplateForm = () => {
             setHeader(meta.header || "");
             setFooter(meta.footer || "");
             setExample(meta.sampleText || "");
-            setMediaId(meta.sampleMedia || "");
+            setMediaId(meta.sampleMedia || meta.mediaId || "");
 
             if (meta.buttons && Array.isArray(meta.buttons)) {
               setButtons(
@@ -189,6 +189,8 @@ const EditTemplateForm = () => {
 
     loadData();
   }, [templateData, urlTemplatesGS, templateData.id]);
+
+  console.log("TemplateData: ", templateData);
 
   useEffect(() => {
     const loadParametros = async () => {
