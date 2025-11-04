@@ -322,7 +322,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
     MEDIA: MEDIA,
     URL: uploadedUrl,
     PANTALLAS: PANTALLAS,
-    ESTADO: 1,
+    ESTADO: 0,
     AUTORIZADO: 0,
     ELIMINADO: 0,
     SEGUIMIENTO_EDC: 0,
