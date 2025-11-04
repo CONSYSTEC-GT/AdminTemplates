@@ -148,7 +148,11 @@ const EditTemplateForm = () => {
             setHeader(meta.header || "");
             setFooter(meta.footer || "");
             setExample(meta.sampleText || "");
-            setMediaId(meta.sampleMedia || meta.mediaId || "");
+            setMediaId(meta.sampleMedia || "");
+
+            if (meta.mediaUrl) {
+              setMediaId(meta.mediaUrl);
+            }
 
             if (meta.buttons && Array.isArray(meta.buttons)) {
               setButtons(

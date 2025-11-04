@@ -228,7 +228,7 @@ const TemplateAll = () => {
   };
 
   const handleEdit = (template) => {
-    if (template.gupshup.status === "APPROVED" || template.gupshup.status === "REJECTED" || template.gupshup.status === "PAUSED") {
+    if (template.gupshup.status === "APPROVED" || template.gupshup.status === "REJECTED" || template.gupshup.status === "PAUSED" || template.gupshup.status === "PENDING") {
       switch (template.gupshup.templateType) {
         case 'CAROUSEL':
           navigate('/modify-template-carousel', { state: { template } });
