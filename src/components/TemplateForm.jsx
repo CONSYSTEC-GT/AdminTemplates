@@ -345,7 +345,7 @@ const TemplateForm = () => {
 
   const token = sessionStorage.getItem('authToken');
 
-  /*
+  //
   let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
   if (token) {
     try {
@@ -367,7 +367,7 @@ const TemplateForm = () => {
     }
   }
 
-  */
+  /*
   let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
   appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487';
@@ -376,11 +376,12 @@ const TemplateForm = () => {
   idUsuarioTalkMe = 78;
   idNombreUsuarioTalkMe = 'javier.colocho';
   empresaTalkMe = 2;
-  //urlTemplatesGS = 'http://localhost:3004/api/';
+  urlTemplatesGS = 'http://localhost:3004/api/';
   urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api'
   idBotRedes= 721;
   idBot = 257;
   apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+  */
 
   const iniciarRequest = async () => {
     if (loading) return;
