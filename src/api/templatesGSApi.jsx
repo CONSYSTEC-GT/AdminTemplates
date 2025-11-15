@@ -2,73 +2,82 @@ import Swal from 'sweetalert2';
 import { showSnackbar } from '../utils/Snackbar';
 import { getMediaType } from '../utils/validarUrl';
 
-const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions, variableTypes, urlTemplatesGS) => {
+const saveTemplateParams = async (
+  ID_PLANTILLA,
+  variables,
+  variableDescriptions,
+  variableTypes,
+  variableExamples, // ⬅️ Agregar este parámetro
+  urlTemplatesGS
+) => {
   console.log('🔵 === INICIO saveTemplateParams ===');
   console.log('📥 Parámetros recibidos:', {
     ID_PLANTILLA,
     variables,
     variableDescriptions,
     variableTypes,
+    variableExamples, // ⬅️ Agregar al log
     urlTemplatesGS
   });
   
-  const tipoDatoId = 1;
   const url = urlTemplatesGS + 'parametros';
   
   try {
     const results = [];
     
-    // Filtrar solo las variables normales (no listas)
-    const normalVariables = variables.filter(variable => variableTypes[variable] !== 'list');
-    console.log('📊 Variables filtradas (normales):', normalVariables);
-    console.log('📊 Variables tipo lista excluidas:', variables.filter(variable => variableTypes[variable] === 'list'));
+    // ⬅️ CAMBIO: Procesar TODAS las variables (tanto normales como listas)
+    console.log('📊 Procesando todas las variables:', variables);
     
-    for (let i = 0; i < normalVariables.length; i++) {
-      const variable = normalVariables[i];
-      console.log(`\n🔄 Procesando variable ${i + 1}/${normalVariables.length}:`, variable);
+    for (let i = 0; i < variables.length; i++) {
+      const variable = variables[i];
+      const variableType = variableTypes[variable] || 'normal';
       
-      const variableData = {
+      console.log(`\n🔄 Procesando variable ${i + 1}/${variables.length}: ${variable} (tipo: ${variableType})`);
+      
+      const data = {
         ID_PLANTILLA: ID_PLANTILLA,
-        ID_PLANTILLA_TIPO_DATO: tipoDatoId,
-        NOMBRE: variableDescriptions[variable] || '',
-        PLACEHOLDER: variableDescriptions[variable] || '',
-        ORDEN: i,
+        NOMBRE: variableDescriptions[variable] || variable,
+        // ⬅️ Solo usar ejemplo si es variable normal
+        PLACEHOLDER: variableType === 'normal' ? (variableExamples[variable] || '') : '',
+        ORDEN: i + 1,
         CREADO_POR: idNombreUsuarioTalkMe || "Sistema.TalkMe",
       };
       
-      console.log('📤 Datos a enviar:', variableData);
-
+      console.log('📤 Datos a enviar:', data);
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(variableData),
+        body: JSON.stringify(data),
       });
-
+      
       console.log('📡 Response status:', response.status);
-
+      
       if (!response.ok) {
         const errorMessage = await response.text();
         console.error('❌ Error en response:', errorMessage);
-        throw new Error(`Error al guardar la variable ${variable}: ${errorMessage}`);
+        throw new Error(
+          `Error al guardar el parámetro ${variable}: ${errorMessage}`
+        );
       }
-
+      
       const result = await response.json();
       console.log('✅ Variable guardada exitosamente:', result);
       results.push(result);
     }
-
+    
     console.log('🎉 Total de variables guardadas:', results.length);
     if (results.length > 0) {
-      showSnackbar("✅ Variables guardadas exitosamente", "success");
+      showSnackbar("✅ Parámetros guardados exitosamente", "success");
     }
     
     console.log('🔵 === FIN saveTemplateParams ===\n');
     return results;
   } catch (error) {
     console.error('💥 Error en saveTemplateParams:', error);
-    showSnackbar("❌ Error al guardar las variables", "error");
+    showSnackbar("❌ Error al guardar los parámetros", "error");
     throw error;
   }
 };
@@ -279,7 +288,7 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
   }
 };
 
-export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes= [], variables = [], variableDescriptions = {}, variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
+export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes= [], variables = [], variableDescriptions = {}, variableExamples = {},variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
   //const url = 'https://certificacion.talkme.pro/templatesGS/api/plantillas/';
@@ -385,6 +394,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
         variables,
         variableDescriptions,
         variableTypes,
+        variableExamples,
         urlTemplatesGS
       );
 

@@ -464,6 +464,7 @@ const TemplateForm = () => {
           variableTypes,
           variables,
           variableDescriptions,
+          variableExamples,
           variableLists,
           [],
           idBotRedes,
