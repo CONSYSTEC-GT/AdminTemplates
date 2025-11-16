@@ -438,7 +438,7 @@ const TemplateForm = () => {
       const mockResult = {
         status: "success",
         template: {
-          id: "test_lista3" // Usa un ID de prueba aquí
+          id: "test_lista4" // Usa un ID de prueba aquí
         }
       };
 

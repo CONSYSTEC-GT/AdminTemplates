@@ -4,6 +4,7 @@ import { getMediaType } from '../utils/validarUrl';
 
 const saveTemplateParams = async (
   ID_PLANTILLA,
+  idNombreUsuarioTalkMe,
   variables,
   variableDescriptions,
   variableTypes,
@@ -84,6 +85,7 @@ const saveTemplateParams = async (
 
 const saveTemplateParamsOptions = async (
   ID_PLANTILLA,
+  idNombreUsuarioTalkMe,
   variables,
   variableDescriptions,
   variableTypes,
@@ -93,6 +95,7 @@ const saveTemplateParamsOptions = async (
   console.log('🟢 === INICIO saveTemplateParamsOptions ===');
   console.log('📥 Parámetros recibidos:', {
     ID_PLANTILLA,
+    idNombreUsuarioTalkMe,
     variables,
     variableDescriptions,
     variableTypes,
@@ -391,6 +394,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
       // Guardar variables normales
       await saveTemplateParams(
         result.ID_PLANTILLA,
+        idNombreUsuarioTalkMe,
         variables,
         variableDescriptions,
         variableTypes,
@@ -401,6 +405,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
       // Guardar listas de opciones
       await saveTemplateParamsOptions(
         result.ID_PLANTILLA,
+        idNombreUsuarioTalkMe ,
         variables,
         variableDescriptions,
         variableTypes,
