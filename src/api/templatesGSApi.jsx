@@ -159,7 +159,8 @@ const saveTemplateParamsOptions = async (
         
         const optionData = {
           ID_PLANTILLA_PARAMETRO: ID_PLANTILLA_PARAMETRO,
-          NOMBRE: variableDescriptions[variable] || variable,
+          //NOMBRE: variableDescriptions[variable] || variable,
+          NOMBRE: options[j],
           PLACEHOLDER: options[j],
           ORDEN: j + 1,
           CREADO_POR: idNombreUsuarioTalkMe || "Sistema.TalkMe",

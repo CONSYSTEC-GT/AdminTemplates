@@ -402,7 +402,7 @@ const TemplateForm = () => {
     }
 
     try {
-      /*
+      //
       // Hacer el primer request a GupShup API
       const result = await createTemplateGupshup(
         appId,
@@ -426,15 +426,12 @@ const TemplateForm = () => {
         urlTemplatesGS,
         validateFields
       );
-      //
-
-      //
       // Verificar si el primer request fue exitoso
       if (result && result.status === "success" && result.template && result.template.id) {
         // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
-        */
-      // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
+        //
+      /* Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
       const mockResult = {
         status: "success",
         template: {
@@ -447,7 +444,7 @@ const TemplateForm = () => {
         // Extraer el valor de `id` del objeto `template`
         const templateId = mockResult.template.id;
 
-        //
+        */
 
         // Hacer el segundo request a TalkMe API
         const result2 = await saveTemplateToTalkMe(
