@@ -8,7 +8,7 @@ const saveTemplateParams = async (
   variables,
   variableDescriptions,
   variableTypes,
-  variableExamples, // ⬅️ Agregar este parámetro
+  variableExamples,
   urlTemplatesGS
 ) => {
   console.log('🔵 === INICIO saveTemplateParams ===');
@@ -17,7 +17,7 @@ const saveTemplateParams = async (
     variables,
     variableDescriptions,
     variableTypes,
-    variableExamples, // ⬅️ Agregar al log
+    variableExamples,
     urlTemplatesGS
   });
   
@@ -26,7 +26,6 @@ const saveTemplateParams = async (
   try {
     const results = [];
     
-    // ⬅️ CAMBIO: Procesar TODAS las variables (tanto normales como listas)
     console.log('📊 Procesando todas las variables:', variables);
     
     for (let i = 0; i < variables.length; i++) {
@@ -35,10 +34,13 @@ const saveTemplateParams = async (
       
       console.log(`\n🔄 Procesando variable ${i + 1}/${variables.length}: ${variable} (tipo: ${variableType})`);
       
+      // ⬅️ Determinar el ID_PLANTILLA_TIPO_DATO según el tipo
+      const ID_PLANTILLA_TIPO_DATO = variableType === 'list' ? 5 : 1;
+      
       const data = {
         ID_PLANTILLA: ID_PLANTILLA,
+        ID_PLANTILLA_TIPO_DATO: ID_PLANTILLA_TIPO_DATO, // ⬅️ AGREGAR ESTE CAMPO
         NOMBRE: variableDescriptions[variable] || variable,
-        // ⬅️ Solo usar ejemplo si es variable normal
         PLACEHOLDER: variableType === 'normal' ? (variableExamples[variable] || '') : '',
         ORDEN: i + 1,
         CREADO_POR: idNombreUsuarioTalkMe || "Sistema.TalkMe",
