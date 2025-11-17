@@ -119,7 +119,7 @@ const saveTemplateParamsOptions = async (
       return results;
     }
     
-    // Primero necesitamos obtener los IDs de los parámetros creados
+    // Obtener los parámetros creados
     console.log('🔍 Obteniendo IDs de parámetros de la BD...');
     const parametrosResponse = await fetch(`${urlTemplatesGS}parametros?ID_PLANTILLA=${ID_PLANTILLA}`);
     
@@ -130,7 +130,16 @@ const saveTemplateParamsOptions = async (
     const parametrosExistentes = await parametrosResponse.json();
     console.log('📋 Parámetros existentes en BD:', parametrosExistentes);
     
-    for (const variable of listVariables) {
+    // SOLUCIÓN: Crear un mapa por ORDEN para hacer el match correcto
+    // Ya que el ORDEN se guarda como i+1 en saveTemplateParams
+    const parametrosPorOrden = {};
+    parametrosExistentes.forEach(p => {
+      parametrosPorOrden[p.ORDEN] = p;
+    });
+    console.log('🗺️ Mapa de parámetros por ORDEN:', parametrosPorOrden);
+    
+    for (let i = 0; i < listVariables.length; i++) {
+      const variable = listVariables[i];
       console.log(`\n🔄 Procesando variable lista: ${variable}`);
       
       const options = variableLists[variable] || [];
@@ -141,25 +150,42 @@ const saveTemplateParamsOptions = async (
         continue;
       }
       
-      // Buscar el ID_PLANTILLA_PARAMETRO correspondiente
-      const parametro = parametrosExistentes.find(p => 
-        p.NOMBRE === variableDescriptions[variable] || p.PLACEHOLDER === variableDescriptions[variable]
-      );
+      // Encontrar el índice original de esta variable en el array completo
+      const indexInOriginalArray = variables.indexOf(variable);
+      const orden = indexInOriginalArray + 1; // El ORDEN que se guardó en saveTemplateParams
+      
+      console.log(`🔍 Buscando parámetro con ORDEN: ${orden}`);
+      
+      // Buscar el parámetro por ORDEN
+      const parametro = parametrosPorOrden[orden];
       
       if (!parametro) {
-        console.error(`❌ No se encontró el parámetro para la variable ${variable}`);
+        console.error(`❌ No se encontró el parámetro con ORDEN ${orden} para la variable ${variable}`);
+        console.error(`Variables disponibles:`, Object.keys(parametrosPorOrden));
+        continue;
+      }
+      
+      // Validar que sea una variable de tipo lista
+      if (parametro.ID_PLANTILLA_TIPO_DATO !== 5) {
+        console.error(`❌ El parámetro encontrado no es de tipo lista (ID_PLANTILLA_TIPO_DATO: ${parametro.ID_PLANTILLA_TIPO_DATO})`);
         continue;
       }
       
       const ID_PLANTILLA_PARAMETRO = parametro.ID_PLANTILLA_PARAMETRO;
-      console.log(`🔑 ID_PLANTILLA_PARAMETRO encontrado: ${ID_PLANTILLA_PARAMETRO}`);
+      console.log(`✅ ID_PLANTILLA_PARAMETRO encontrado: ${ID_PLANTILLA_PARAMETRO}`);
+      console.log(`   Detalles del parámetro:`, {
+        ID: parametro.ID_PLANTILLA_PARAMETRO,
+        NOMBRE: parametro.NOMBRE,
+        ORDEN: parametro.ORDEN,
+        TIPO: parametro.ID_PLANTILLA_TIPO_DATO
+      });
       
+      // Guardar cada opción de la lista
       for (let j = 0; j < options.length; j++) {
         console.log(`  📌 Guardando opción ${j + 1}/${options.length}: ${options[j]}`);
         
         const optionData = {
           ID_PLANTILLA_PARAMETRO: ID_PLANTILLA_PARAMETRO,
-          //NOMBRE: variableDescriptions[variable] || variable,
           NOMBRE: options[j],
           PLACEHOLDER: options[j],
           ORDEN: j + 1,
