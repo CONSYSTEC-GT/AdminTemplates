@@ -238,6 +238,16 @@ const EditTemplateForm = () => {
   const validateFields = () => {
     let isValid = true;
 
+    if (templateType === "IMAGE" && !mediaId) {
+    Swal.fire({
+      title: 'Imagen requerida',
+      text: 'Debes cargar una imagen para este tipo de plantilla.',
+      icon: 'warning',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#00c3ff'
+    });
+    return false;
+  }
 
 
     if (!templateName || templateName.trim() === "") {
@@ -386,6 +396,16 @@ const EditTemplateForm = () => {
 
     }
 
+    if (!isValid) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Campos incompletos.',
+      icon: 'error',
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#00c3ff'
+    });
+  }
+
 
     return isValid; // Retornar el valor final de isValid
   };
@@ -396,13 +416,7 @@ const EditTemplateForm = () => {
 
     const isValid = validateFields();
     if (!isValid) {
-      Swal.fire({
-        title: 'Error',
-        text: 'Campos incompletos.',
-        icon: 'error',
-        confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#00c3ff'
-      });
+      //Swal.fire({title: 'Error', text: 'Campos incompletos.', icon: 'error', confirmButtonText: 'Cerrar', confirmButtonColor: '#00c3ff'});
       setLoading(false);
       return;
     }
