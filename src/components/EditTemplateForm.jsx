@@ -244,6 +244,16 @@ const EditTemplateForm = () => {
   const validateFields = () => {
     let isValid = true;
 
+    if (templateType === "IMAGE" && !mediaId) {
+    Swal.fire({
+      title: 'Imagen requerida',
+      text: 'Debes cargar una imagen para este tipo de plantilla.',
+      icon: 'warning',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#00c3ff'
+    });
+    return false;
+  }
 
 
     if (!templateName || templateName.trim() === "") {
