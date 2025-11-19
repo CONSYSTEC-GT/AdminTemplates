@@ -25,6 +25,13 @@ import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, 
 import { useClickOutside } from '../utils/emojiClick';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 
+const SAMPLE_MEDIA_REGEX = /^\d+::[A-Za-z0-9+/._=-]+(?::[A-Za-z0-9+/._=-]+)+$/;
+
+const isValidSampleMedia = (value) => {
+  if (typeof value !== "string") return false;
+  return SAMPLE_MEDIA_REGEX.test(value.trim());
+};
+
 
 const EditTemplateForm = () => {
 
@@ -151,7 +158,13 @@ const EditTemplateForm = () => {
             //setMediaId(meta.sampleMedia || "");
 
             if (meta.sampleMedia) {
-              setMediaId(meta.sampleMedia);
+              if (isValidSampleMedia(meta.sampleMedia)) {
+                setMediaId(meta.sampleMedia);
+              } else {
+                setMediaId("");
+              }
+            } else {
+              setMediaId("");
             }
 
             if (meta.buttons && Array.isArray(meta.buttons)) {
@@ -244,16 +257,29 @@ const EditTemplateForm = () => {
   const validateFields = () => {
     let isValid = true;
 
-    if (templateType === "IMAGE" && !mediaId) {
-    Swal.fire({
-      title: 'Imagen requerida',
-      text: 'Debes cargar una imagen para este tipo de plantilla.',
-      icon: 'warning',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#00c3ff'
-    });
-    return false;
-  }
+    if (templateType === "IMAGE") {
+      if (!mediaId) {
+        Swal.fire({
+          title: 'Imagen requerida',
+          text: 'Debes cargar una imagen para este tipo de plantilla.',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+        return false;
+      }
+
+      if (!isValidSampleMedia(mediaId)) {
+        Swal.fire({
+          title: 'Imagen inválida',
+          text: 'El identificador del sampleMedia no es válido. Vuelve a cargar la imagen.',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+        return false;
+      }
+    }
 
 
     if (!templateName || templateName.trim() === "") {
