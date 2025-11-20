@@ -425,8 +425,9 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         // Guardar log exitoso de Gupshup
         try {
-          await guardarLogArchivos(logGupshup, urlTemplatesGS);
+          await guardarLogArchivos(logGupshup, tokenData.urlTemplatesGS);
         } catch (logError) {
+          // Error al guardar log, pero no interrumpe el flujo principal
         }
 
     } catch (gupshupError) {
@@ -454,8 +455,9 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
           // Guardar log de error de Gupshup
           try {
-            await guardarLogArchivos(logGupshup, urlTemplatesGS);
+            await guardarLogArchivos(logGupshup, tokenData.urlTemplatesGS);
           } catch (logError) {
+            // Error al guardar log, pero no interrumpe el flujo principal
           }
         }
 
@@ -569,8 +571,9 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
         // Guardar log exitoso de WSFTP
         try {
-          await guardarLogArchivos(logWsftp, urlTemplatesGS);
+          await guardarLogArchivos(logWsftp, tokenData.urlTemplatesGS);
         } catch (logError) {
+          // Error al guardar log, pero no interrumpe el flujo principal
         }
 
         // ✅ AMBOS SERVICIOS EXITOSOS - ACTUALIZAR ESTADO AQUÍ
@@ -617,8 +620,9 @@ const ImprovedFileUpload = ({ onUploadSuccess, templateType, onImagePreview, onH
 
           // Guardar log de error de WSFTP
           try {
-            await guardarLogArchivos(logWsftp, urlTemplatesGS);
+            await guardarLogArchivos(logWsftp, tokenData.urlTemplatesGS);
           } catch (logError) {
+            // Error al guardar log, pero no interrumpe el flujo principal
           }
         }
 

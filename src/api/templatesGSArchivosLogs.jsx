@@ -1,9 +1,14 @@
 export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
-
-    const url = urlTemplatesGS + 'logs_ws'
-    
     // Función para registrar logs de subida de archivos
     try {
+        // Validar que urlTemplatesGS esté definido
+        if (!urlTemplatesGS) {
+            throw new Error('urlTemplatesGS no está definido');
+        }
+
+        // Construir la URL correctamente
+        const url = `${urlTemplatesGS}logs_ws/`;
+
         // Usar los datos proporcionados en logArchivosData o valores por defecto
         const payload = {
             ID_LOG_WS: logArchivosData.ID_LOG_WS || null,
@@ -27,11 +32,8 @@ export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
             CREADO_POR: logArchivosData.CREADO_POR || "USUARIO_DESCONOCIDO"
         };
 
-        
-        
-
         // Realizar la petición con fetch
-        const response = await fetch(`${urlTemplatesGS}logs_ws/`, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -41,17 +43,22 @@ export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
 
         if (!response.ok) {
             // Si la respuesta no es exitosa, lanzar un error con el mensaje
-            const errorData = await response.json().catch(() => null);
+            let errorData = null;
+            try {
+                errorData = await response.json();
+            } catch (parseError) {
+                const textError = await response.text();
+                errorData = { message: textError || `Error HTTP ${response.status}` };
+            }
+            
             throw new Error(errorData?.message || `Error en la petición: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-
         
         return data;
     } catch (error) {
-        console.error('❌ Error al registrar log:', error.message);
-        // No queremos que el logging cause problemas en el flujo principal
-        throw error; // Opcional: depende de si quieres manejar el error fuera
+        // Lanzar el error para que sea manejado en el componente
+        throw error;
     }
 };
