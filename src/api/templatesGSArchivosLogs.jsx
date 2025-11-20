@@ -1,9 +1,20 @@
 export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
-
-    const url = urlTemplatesGS + 'logs_ws'
-    
     // Función para registrar logs de subida de archivos
     try {
+        // Validar que urlTemplatesGS esté definido
+        if (!urlTemplatesGS) {
+            throw new Error('urlTemplatesGS no está definido');
+        }
+
+        // Construir la URL correctamente
+        const url = `${urlTemplatesGS}logs_ws/`;
+        
+        console.log('🔍 [guardarLogArchivos] Iniciando guardado de log:', {
+            evento: logArchivosData.NOMBRE_EVENTO,
+            url: url,
+            urlTemplatesGS: urlTemplatesGS
+        });
+
         // Usar los datos proporcionados en logArchivosData o valores por defecto
         const payload = {
             ID_LOG_WS: logArchivosData.ID_LOG_WS || null,
@@ -27,11 +38,17 @@ export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
             CREADO_POR: logArchivosData.CREADO_POR || "USUARIO_DESCONOCIDO"
         };
 
-        
-        
+        console.log('📦 [guardarLogArchivos] Payload preparado:', {
+            evento: payload.NOMBRE_EVENTO,
+            url_peticion: payload.URL_PETICION,
+            tiene_peticion: !!payload.PETICION,
+            tiene_respuesta: !!payload.RESPUESTA,
+            creado_por: payload.CREADO_POR
+        });
 
         // Realizar la petición con fetch
-        const response = await fetch(`${urlTemplatesGS}logs_ws/`, {
+        console.log('🚀 [guardarLogArchivos] Enviando petición a:', url);
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,19 +56,47 @@ export const guardarLogArchivos = async (logArchivosData, urlTemplatesGS) => {
             body: JSON.stringify(payload)
         });
 
+        console.log('📡 [guardarLogArchivos] Respuesta recibida:', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+        });
+
         if (!response.ok) {
             // Si la respuesta no es exitosa, lanzar un error con el mensaje
-            const errorData = await response.json().catch(() => null);
+            let errorData = null;
+            try {
+                errorData = await response.json();
+            } catch (parseError) {
+                const textError = await response.text();
+                console.error('❌ [guardarLogArchivos] Error al parsear respuesta de error:', textError);
+                errorData = { message: textError || `Error HTTP ${response.status}` };
+            }
+            
+            console.error('❌ [guardarLogArchivos] Error en la respuesta:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorData: errorData
+            });
+            
             throw new Error(errorData?.message || `Error en la petición: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-
+        console.log('✅ [guardarLogArchivos] Log guardado exitosamente:', data);
         
         return data;
     } catch (error) {
-        console.error('❌ Error al registrar log:', error.message);
-        // No queremos que el logging cause problemas en el flujo principal
-        throw error; // Opcional: depende de si quieres manejar el error fuera
+        console.error('❌ [guardarLogArchivos] Error al registrar log:', {
+            message: error.message,
+            stack: error.stack,
+            urlTemplatesGS: urlTemplatesGS,
+            logArchivosData: {
+                evento: logArchivosData?.NOMBRE_EVENTO,
+                url_peticion: logArchivosData?.URL_PETICION
+            }
+        });
+        // Lanzar el error para que sea manejado en el componente
+        throw error;
     }
 };
