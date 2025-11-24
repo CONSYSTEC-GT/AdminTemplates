@@ -25,7 +25,7 @@ const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(variableData),
       });
 
       if (!response.ok) {
@@ -237,18 +237,28 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
 
     // Si tenemos variables, hacer el tercer request
     if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-      await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
+      try {
+        await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
+      } catch (error) {
+        console.error("Error guardando parámetros:", error);
+        // Continuar con el guardado de tarjetas aunque falle el guardado de parámetros
+      }
     }
 
     if (result && result.ID_PLANTILLA && cards && cards.length > 0) {
-      await saveCardsTemplate(
-        {
-          ID_PLANTILLA: result.ID_PLANTILLA,
-          cards: cards
-        },
-        idNombreUsuarioTalkMe,
-        urlTemplatesGS
-      );
+      try {
+        await saveCardsTemplate(
+          {
+            ID_PLANTILLA: result.ID_PLANTILLA,
+            cards: cards
+          },
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS
+        );
+      } catch (error) {
+        console.error("Error guardando tarjetas:", error);
+        showSnackbar("❌ Error al guardar las tarjetas", "error");
+      }
     }
 
     return result; // Retornar el resultado en caso de éxito
