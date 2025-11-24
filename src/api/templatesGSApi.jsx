@@ -2,52 +2,24 @@ import Swal from 'sweetalert2';
 import { showSnackbar } from '../utils/Snackbar';
 import { getMediaType } from '../utils/validarUrl';
 
-const saveTemplateParams = async (
-  ID_PLANTILLA,
-  idNombreUsuarioTalkMe,
-  variables,
-  variableDescriptions,
-  variableTypes,
-  variableExamples,
-  urlTemplatesGS
-) => {
-  console.log('🔵 === INICIO saveTemplateParams ===');
-  console.log('📥 Parámetros recibidos:', {
-    ID_PLANTILLA,
-    variables,
-    variableDescriptions,
-    variableTypes,
-    variableExamples,
-    urlTemplatesGS
-  });
+const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS) => {
+  const tipoDatoId = 1;
+  const url = urlTemplatesGS + 'parametros'
   
-  const url = urlTemplatesGS + 'parametros';
-  
+
   try {
     const results = [];
-    
-    console.log('📊 Procesando todas las variables:', variables);
-    
     for (let i = 0; i < variables.length; i++) {
-      const variable = variables[i];
-      const variableType = variableTypes[variable] || 'normal';
-      
-      console.log(`\n🔄 Procesando variable ${i + 1}/${variables.length}: ${variable} (tipo: ${variableType})`);
-      
-      // ⬅️ Determinar el ID_PLANTILLA_TIPO_DATO según el tipo
-      const ID_PLANTILLA_TIPO_DATO = variableType === 'list' ? 5 : 1;
-      
-      const data = {
+      const variableData = {
         ID_PLANTILLA: ID_PLANTILLA,
-        ID_PLANTILLA_TIPO_DATO: ID_PLANTILLA_TIPO_DATO, // ⬅️ AGREGAR ESTE CAMPO
-        NOMBRE: variableDescriptions[variable] || variable,
-        PLACEHOLDER: variableType === 'normal' ? (variableExamples[variable] || '') : '',
-        ORDEN: i + 1,
-        CREADO_POR: idNombreUsuarioTalkMe || "Sistema.TalkMe",
+        ID_PLANTILLA_TIPO_DATO: tipoDatoId,
+        NOMBRE: variableDescriptions[variables[i]] || '',
+        PLACEHOLDER: variableDescriptions[variables[i]] || '',
+        ORDEN: i,
+        CREADO_POR: "Sistema.TalkMe",
       };
-      
-      console.log('📤 Datos a enviar:', data);
-      
+
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -55,179 +27,22 @@ const saveTemplateParams = async (
         },
         body: JSON.stringify(data),
       });
-      
-      console.log('📡 Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorMessage = await response.text();
-        console.error('❌ Error en response:', errorMessage);
-        throw new Error(
-          `Error al guardar el parámetro ${variable}: ${errorMessage}`
-        );
+        throw new Error(`Error al guardar la variable ${variables[i]}: ${errorMessage}`);
       }
       
       const result = await response.json();
-      console.log('✅ Variable guardada exitosamente:', result);
       results.push(result);
     }
-    
-    console.log('🎉 Total de variables guardadas:', results.length);
-    if (results.length > 0) {
-      showSnackbar("✅ Parámetros guardados exitosamente", "success");
-    }
-    
-    console.log('🔵 === FIN saveTemplateParams ===\n');
-    return results;
-  } catch (error) {
-    console.error('💥 Error en saveTemplateParams:', error);
-    showSnackbar("❌ Error al guardar los parámetros", "error");
-    throw error;
-  }
-};
 
-const saveTemplateParamsOptions = async (
-  ID_PLANTILLA,
-  idNombreUsuarioTalkMe,
-  variables,
-  variableDescriptions,
-  variableTypes,
-  variableLists,
-  urlTemplatesGS
-) => {
-  console.log('🟢 === INICIO saveTemplateParamsOptions ===');
-  console.log('📥 Parámetros recibidos:', {
-    ID_PLANTILLA,
-    idNombreUsuarioTalkMe,
-    variables,
-    variableDescriptions,
-    variableTypes,
-    variableLists,
-    urlTemplatesGS
-  });
-  
-  const url = urlTemplatesGS + 'parametros_opciones';
-  
-  try {
-    const results = [];
     
-    // Filtrar solo las variables de tipo lista
-    const listVariables = variables.filter(variable => variableTypes[variable] === 'list');
-    console.log('📊 Variables de tipo lista encontradas:', listVariables);
-    
-    if (listVariables.length === 0) {
-      console.log('⚠️ No hay variables de tipo lista para procesar');
-      return results;
-    }
-    
-    // Obtener los parámetros creados
-    console.log('🔍 Obteniendo IDs de parámetros de la BD...');
-    const parametrosResponse = await fetch(`${urlTemplatesGS}parametros?ID_PLANTILLA=${ID_PLANTILLA}`);
-    
-    if (!parametrosResponse.ok) {
-      throw new Error('Error al obtener los parámetros existentes');
-    }
-    
-    const parametrosExistentes = await parametrosResponse.json();
-    console.log('📋 Parámetros existentes en BD:', parametrosExistentes);
-    
-    // SOLUCIÓN: Crear un mapa por ORDEN para hacer el match correcto
-    // Ya que el ORDEN se guarda como i+1 en saveTemplateParams
-    const parametrosPorOrden = {};
-    parametrosExistentes.forEach(p => {
-      parametrosPorOrden[p.ORDEN] = p;
-    });
-    console.log('🗺️ Mapa de parámetros por ORDEN:', parametrosPorOrden);
-    
-    for (let i = 0; i < listVariables.length; i++) {
-      const variable = listVariables[i];
-      console.log(`\n🔄 Procesando variable lista: ${variable}`);
-      
-      const options = variableLists[variable] || [];
-      console.log(`📝 Opciones para ${variable}:`, options);
-      
-      if (options.length === 0) {
-        console.log(`⚠️ No hay opciones para la variable ${variable}`);
-        continue;
-      }
-      
-      // Encontrar el índice original de esta variable en el array completo
-      const indexInOriginalArray = variables.indexOf(variable);
-      const orden = indexInOriginalArray + 1; // El ORDEN que se guardó en saveTemplateParams
-      
-      console.log(`🔍 Buscando parámetro con ORDEN: ${orden}`);
-      
-      // Buscar el parámetro por ORDEN
-      const parametro = parametrosPorOrden[orden];
-      
-      if (!parametro) {
-        console.error(`❌ No se encontró el parámetro con ORDEN ${orden} para la variable ${variable}`);
-        console.error(`Variables disponibles:`, Object.keys(parametrosPorOrden));
-        continue;
-      }
-      
-      // Validar que sea una variable de tipo lista
-      if (parametro.ID_PLANTILLA_TIPO_DATO !== 5) {
-        console.error(`❌ El parámetro encontrado no es de tipo lista (ID_PLANTILLA_TIPO_DATO: ${parametro.ID_PLANTILLA_TIPO_DATO})`);
-        continue;
-      }
-      
-      const ID_PLANTILLA_PARAMETRO = parametro.ID_PLANTILLA_PARAMETRO;
-      console.log(`✅ ID_PLANTILLA_PARAMETRO encontrado: ${ID_PLANTILLA_PARAMETRO}`);
-      console.log(`   Detalles del parámetro:`, {
-        ID: parametro.ID_PLANTILLA_PARAMETRO,
-        NOMBRE: parametro.NOMBRE,
-        ORDEN: parametro.ORDEN,
-        TIPO: parametro.ID_PLANTILLA_TIPO_DATO
-      });
-      
-      // Guardar cada opción de la lista
-      for (let j = 0; j < options.length; j++) {
-        console.log(`  📌 Guardando opción ${j + 1}/${options.length}: ${options[j]}`);
-        
-        const optionData = {
-          ID_PLANTILLA_PARAMETRO: ID_PLANTILLA_PARAMETRO,
-          NOMBRE: options[j],
-          PLACEHOLDER: options[j],
-          ORDEN: j + 1,
-          CREADO_POR: idNombreUsuarioTalkMe || "Sistema.TalkMe",
-        };
-        
-        console.log('  📤 Datos a enviar:', optionData);
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(optionData),
-        });
-        
-        console.log('  📡 Response status:', response.status);
-        
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          console.error('  ❌ Error en response:', errorMessage);
-          throw new Error(
-            `Error al guardar la opción ${options[j]} de la variable ${variable}: ${errorMessage}`
-          );
-        }
-        
-        const result = await response.json();
-        console.log('  ✅ Opción guardada exitosamente:', result);
-        results.push(result);
-      }
-    }
-    
-    console.log('🎉 Total de opciones guardadas:', results.length);
-    if (results.length > 0) {
-      showSnackbar("✅ Opciones de listas guardadas exitosamente", "success");
-    }
-    
-    console.log('🟢 === FIN saveTemplateParamsOptions ===\n');
+    showSnackbar("✅ Variables guardadas exitosamente", "success");
     return results;
   } catch (error) {
-    console.error('💥 Error en saveTemplateParamsOptions:', error);
-    showSnackbar("❌ Error al guardar las opciones de listas", "error");
+    console.error('Error:', error);
+    showSnackbar("❌ Error al guardar las variables", "error");
     throw error;
   }
 };
@@ -320,7 +135,7 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
   }
 };
 
-export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes= [], variables = [], variableDescriptions = {}, variableExamples = {},variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
+export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], idBotRedes, urlTemplatesGS) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
   //const url = 'https://certificacion.talkme.pro/templatesGS/api/plantillas/';
@@ -345,7 +160,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#00c3ff'
     });
-    return null;
+    return null; // Retornar null si la categoría no es válida
   }
 
   let TIPO_PLANTILLA;
@@ -354,6 +169,8 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   } else {
     TIPO_PLANTILLA = 0;
   }
+
+  
 
   const mediaMap = {
     image: "image",
@@ -420,27 +237,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
 
     // Si tenemos variables, hacer el tercer request
     if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-      // Guardar variables normales
-      await saveTemplateParams(
-        result.ID_PLANTILLA,
-        idNombreUsuarioTalkMe,
-        variables,
-        variableDescriptions,
-        variableTypes,
-        variableExamples,
-        urlTemplatesGS
-      );
-
-      // Guardar listas de opciones
-      await saveTemplateParamsOptions(
-        result.ID_PLANTILLA,
-        idNombreUsuarioTalkMe ,
-        variables,
-        variableDescriptions,
-        variableTypes,
-        variableLists,
-        urlTemplatesGS
-      );
+      await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
     }
 
     if (result && result.ID_PLANTILLA && cards && cards.length > 0) {

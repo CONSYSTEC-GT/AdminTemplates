@@ -115,13 +115,6 @@ const TemplateForm = () => {
   const emojiPickerRef = useRef(null);
   const debounceTimeout = useRef(null);
 
-  const [variableTypes, setVariableTypes] = useState({});
-  const [variableLists, setVariableLists] = useState({});
-  const [editingOption, setEditingOption] = useState(null);
-  const [draggedItem, setDraggedItem] = useState(null);
-  const listInputRefs = useRef({});
-
-
   const resetForm = () => {
     setTemplateName("");
     setSelectedCategory("");
@@ -158,7 +151,7 @@ const TemplateForm = () => {
     setOpenSnackbar(false);
   };
 
-  const validateFields = async () => {
+const validateFields = async () => {
     let isValid = true;
 
     if (!templateName || templateName.trim() === "") {
@@ -180,149 +173,158 @@ const TemplateForm = () => {
 
       } else {
       }
-    }
+      }
 
-    if (!templateType || templateType.trim() === "") {
+      if (!templateType || templateType.trim() === "") {
 
-      setTemplateTypeError(true);
-      setTemplateTypeHelperText("Este campo es requerido");
-      isValid = false;
-      if (templateTypeRef.current) templateTypeRef.current.focus();
+        setTemplateTypeError(true);
+        setTemplateTypeHelperText("Este campo es requerido");
+        isValid = false;
+        if (templateTypeRef.current) templateTypeRef.current.focus();
 
-      // No retornar aquí, continuar con la validación de otros campos
-    } else {
-
+        // No retornar aquí, continuar con la validación de otros campos
+      } else {
+      
     }
 
     if (displayPantallas.length === 0) {
-
+      
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-
+      
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
     if (!languageCode || languageCode.trim() === "") {
-
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-
+      
     }
 
     if (!vertical || vertical.trim() === "") {
-
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-
+      
     }
 
     if (!message || message.trim() === "") {
-
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-
+      
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-
+      
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-
+      
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-    const newErrors = {};
-    const newDescriptionErrors = {};
-
-    for (const variable of variables) {
-      const variableType = variableTypes[variable] || 'normal';
       
-      // Validar descripción (requerida para todos los tipos)
-      if (!variableDescriptions[variable]?.trim()) {
-        isValid = false;
-        newDescriptionErrors[variable] = "El campo Descripción es requerido";
-      } else {
-        newDescriptionErrors[variable] = "";
-      }
+      const newErrors = {};
+      const newDescriptionErrors = {};
 
-      // Validar según el tipo de variable
-      if (variableType === 'normal') {
-        // Para variables normales: validar ejemplo
+      for (const variable of variables) {
+        // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
+          
           isValid = false;
-          newErrors[variable] = "El campo Texto de ejemplo es requerido";
+          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
         }
-      } else if (variableType === 'list') {
-        // Para listas: validar que tenga al menos una opción
-        if (!variableLists[variable] || variableLists[variable].length === 0) {
+
+        // Validar descripción
+        if (!variableDescriptions[variable]?.trim()) {
+          
           isValid = false;
-          newErrors[variable] = "Debe agregar al menos una opción a la lista";
+          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
-          newErrors[variable] = "";
-        }
-      }
-    }
-
-    // Validar descripciones duplicadas
-    const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-    if (duplicateVariables.size > 0) {
-      isValid = false;
-      
-      duplicateVariables.forEach(variable => {
-        newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
-      });
-
-      // Enfocar la primera variable con descripción duplicada
-      const firstDuplicateVariable = Array.from(duplicateVariables)[0];
-      if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
-        descriptionRefs.current[firstDuplicateVariable].focus();
-      }
-    } else {
-      // Limpiar errores de descripción duplicada
-      variables.forEach(variable => {
-        if (!newDescriptionErrors[variable]) {
           newDescriptionErrors[variable] = "";
         }
-      });
+      }
+
+      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+      if (duplicateVariables.size > 0) {
+        
+        isValid = false;
+
+        // Marcar todas las variables con descripciones duplicadas
+        duplicateVariables.forEach(variable => {
+          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+        });
+
+        // Enfocar la primera variable con descripción duplicada
+        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+          descriptionRefs.current[firstDuplicateVariable].focus();
+        }
+      } else {
+        
+        // Limpiar errores de descripción
+        variables.forEach(variable => {
+          newDescriptionErrors[variable] = "";
+        });
+      }
+
+      // 3. Validar que todas las variables tengan descripción (opcional)
+      for (const variable of variables) {
+        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
+          
+          isValid = false;
+          newDescriptionErrors[variable] = "La descripción es requerida";
+
+          // Enfocar el campo de descripción vacío
+          if (descriptionRefs.current && descriptionRefs.current[variable]) {
+            descriptionRefs.current[variable].focus();
+          }
+        }
+      }
+
+      // Actualizar el estado de errores
+      setVariableErrors(newErrors);
+
+      // Si hay errores, no retornar aquí, continuar con el flujo
+      if (!isValid) {
+        
+      } else {
+        
+      }
+    } else {
+      
     }
 
-    // Actualizar estados de errores
-    setVariableErrors(newErrors);
-    // Si tienes un estado para errores de descripción, actualízalo también
-    // setDescriptionErrors(newDescriptionErrors);
-
-  } else {
-    // No hay variables - considerar si esto es válido o no según tu caso
-    // isValid = false; // Descomenta si necesitas al menos una variable
-  }
-
-
+    
     return isValid; // Retornar el valor final de isValid
   };
 
@@ -345,7 +347,6 @@ const TemplateForm = () => {
 
   const token = sessionStorage.getItem('authToken');
 
-  //
   let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
   if (token) {
     try {
@@ -366,22 +367,6 @@ const TemplateForm = () => {
       console.error('Error decodificando el token:', error);
     }
   }
-
-  /*
-  let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
-
-  appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487';
-  authCode = 'sk_d416c60960504bab8be8bc3fac11a358';
-  appName = 'DemosTalkMe55';
-  idUsuarioTalkMe = 78;
-  idNombreUsuarioTalkMe = 'javier.colocho';
-  empresaTalkMe = 2;
-  urlTemplatesGS = 'http://localhost:3004/api/';
-  urlTemplatesGS = 'https://dev.talkme.pro/templatesGS/api'
-  idBotRedes= 721;
-  idBot = 257;
-  apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
-  */
 
   const iniciarRequest = async () => {
     if (loading) return;
@@ -430,12 +415,12 @@ const TemplateForm = () => {
       if (result && result.status === "success" && result.template && result.template.id) {
         // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
-        //
-      /* Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
+        /*
+       // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
       const mockResult = {
         status: "success",
         template: {
-          id: "test_lista4" // Usa un ID de prueba aquí
+          id: "ID_PRUEBA_LOCAL1" // Usa un ID de prueba aquí
         }
       };
 
@@ -458,11 +443,8 @@ const TemplateForm = () => {
             uploadedUrl
           },
           idNombreUsuarioTalkMe || "Sistema.TalkMe",
-          variableTypes,
           variables,
           variableDescriptions,
-          variableExamples,
-          variableLists,
           [],
           idBotRedes,
           urlTemplatesGS
@@ -509,7 +491,7 @@ const TemplateForm = () => {
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-
+    
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -571,41 +553,41 @@ const TemplateForm = () => {
   };
 
   // Función para validar el nombre de la plantilla
-  const validateTemplateName = async (nombre) => {
-    // Reemplazar _ por espacios
-    const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
-
-    if (!nombreFormateado.trim() || !idBotRedes) return;
-
-
-    setIsValidating(true);
+const validateTemplateName = async (nombre) => {
+  // Reemplazar _ por espacios
+  const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
+  
+  if (!nombreFormateado.trim() || !idBotRedes) return;
 
 
-    try {
-      const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
+  setIsValidating(true);
 
-      if (existe === true) {
-        setTemplateNameError(true);
-        setTemplateNameHelperText("Ya existe una plantilla con este nombre");
-      } else if (existe === false) {
-        // Solo limpiar el error si no hay otros errores
-        if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
-          setTemplateNameError(false);
-          setTemplateNameHelperText("Nombre disponible");
-        }
-      } else {
-        // Error en la validación (existe === null)
-        setTemplateNameError(true);
-        setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+  
+  try {
+    const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
+    
+    if (existe === true) {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Ya existe una plantilla con este nombre");
+    } else if (existe === false) {
+      // Solo limpiar el error si no hay otros errores
+      if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
+        setTemplateNameError(false);
+        setTemplateNameHelperText("Nombre disponible");
       }
-    } catch (error) {
-      console.error("Error en validación:", error);
+    } else {
+      // Error en la validación (existe === null)
       setTemplateNameError(true);
       setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
-    } finally {
-      setIsValidating(false);
     }
-  };
+  } catch (error) {
+    console.error("Error en validación:", error);
+    setTemplateNameError(true);
+    setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+  } finally {
+    setIsValidating(false);
+  }
+};
 
   //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
@@ -707,7 +689,7 @@ const TemplateForm = () => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-
+      
     }
   };
 
@@ -715,11 +697,11 @@ const TemplateForm = () => {
   const handleHeaderChange = (e) => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
-
+      
       setExampleHeader(e.target.value);
-
+      
     }
-
+    
   };
 
 
@@ -862,6 +844,45 @@ const TemplateForm = () => {
     }
   };
 
+  // VARIABLES DEL BODY MESSAGE
+  const handleAddVariable = () => {
+    const newVariable = `{{${variables.length + 1}}}`;
+
+    // Verificar si al añadir la variable se superaría el límite de caracteres
+    if (message.length + newVariable.length > 550) {
+      // Puedes mostrar un mensaje de error o simplemente no hacer nada
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+    // Obtener la posición actual del cursor
+    const cursorPosition = messageRef.current.selectionStart;
+
+    // Dividir el texto en dos partes: antes y después del cursor
+    const textBeforeCursor = message.substring(0, cursorPosition);
+    const textAfterCursor = message.substring(cursorPosition);
+
+    // Insertar la variable en la posición del cursor
+    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
+    setMessage(newMessage);
+
+    // Actualizar el array de variables
+    setVariables([...variables, newVariable]);
+
+    // OPCIONAL: Colocar el cursor después de la variable insertada
+    setTimeout(() => {
+      const newPosition = cursorPosition + newVariable.length;
+      messageRef.current.focus();
+      messageRef.current.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
+
   const handleEmojiClick = (emojiObject) => {
     const cursor = messageRef.current.selectionStart;
     const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
@@ -929,11 +950,93 @@ const TemplateForm = () => {
     }, 100);
   };
 
-  // Llamada correcta al hook (sin el tercer parámetro)
-  useClickOutside(
-    emojiPickerRef,
-    () => setShowEmojiPicker(false)
-  );
+// Llamada correcta al hook (sin el tercer parámetro)
+useClickOutside(
+  emojiPickerRef, 
+  () => setShowEmojiPicker(false)
+);
+
+  // Nueva función para borrar una variable específica
+  const deleteVariable = (variableToDelete) => {
+    // Eliminar la variable del texto
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+    // Eliminar la variable de la lista de variables
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+    // Renumerar las variables restantes para mantener el orden secuencial
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
+    });
+
+    // Actualizar el texto con las variables renumeradas
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
+
+    // Crear nuevos objetos para descripciones y ejemplos de variables
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+    // Eliminar la variable eliminada de los errores
+    delete newVariableErrors[variableToDelete];
+
+    // Copiar las descripciones y ejemplos con las nuevas claves
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+    // Actualizar todos los estados
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+    // Actualizar las referencias
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+  // Nueva función para borrar todas las variables
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+
+    // Limpiar todos los estados relacionados con variables
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
 
   // Función para previsualizar el mensaje con ejemplos aplicados
   const previewMessage = () => {
@@ -946,6 +1049,23 @@ const TemplateForm = () => {
       previewText = previewText.replaceAll(variable, example);
     });
   }
+  //
+
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+      
+      return updatedExamples;
+    });
+  };
+
+  const handleUpdateDescriptions = (variable, event) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+  };
 
   // Función para generar el ejemplo combinando el mensaje y los valores de las variables
   const generateExample = () => {
@@ -963,7 +1083,7 @@ const TemplateForm = () => {
       // Remover las llaves de la clave para crear el regex correcto
       const cleanVariable = variable.replace(/[{}]/g, '');
       const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-
+      
       result = result.replace(regex, variables[variable]);
     });
 
@@ -1049,9 +1169,9 @@ const TemplateForm = () => {
       }, 800); // Esperar 800ms después de que el usuario deje de escribir
     } else {
       // Si está vacío, limpiar mensajes de validación de existencia
-      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
-        templateNameHelperText === "Nombre disponible" ||
-        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" || 
+          templateNameHelperText === "Nombre disponible" ||
+          templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
         setTemplateNameHelperText("");
       }
     }
@@ -1063,231 +1183,7 @@ const TemplateForm = () => {
       }
     };
   }, [templateName, idBotRedes]);
-  
-  // BOTON AGREGAR VARIABLE
-  const handleAddVariable = () => {
-    const newVariable = `{{${variables.length + 1}}}`;
-
-    if (message.length + newVariable.length > 550) {
-      Swal.fire({
-        title: 'Limite de caracteres',
-        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      return;
-    }
-
-    const cursorPosition = messageRef.current.selectionStart;
-    const textBeforeCursor = message.substring(0, cursorPosition);
-    const textAfterCursor = message.substring(cursorPosition);
-
-    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
-    setMessage(newMessage);
-
-    setVariables([...variables, newVariable]);
-
-    setTimeout(() => {
-      const newPosition = cursorPosition + newVariable.length;
-      messageRef.current.focus();
-      messageRef.current.setSelectionRange(newPosition, newPosition);
-    }, 0);
-  };
-
-  // BOTON BORRAR VARIABLES
-  const deleteAllVariables = () => {
-    let newMessage = message;
-    variables.forEach(variable => {
-      newMessage = newMessage.replaceAll(variable, '');
-    });
-    setMessage(newMessage);
-    setVariables([]);
-    setVariableDescriptions({});
-    setVariableExamples({});
-    setVariableErrors({});
-    exampleRefs.current = {};
-
-    messageRef.current?.focus();
-  };
-
-  // BOTON PARA BORRAR UNA VARIABLE EN ESPECIFICO
-  const deleteVariable = (variableToDelete) => {
-    // Eliminar la variable del texto
-    const newMessage = message.replace(variableToDelete, '');
-    setMessage(newMessage);
-
-    // Eliminar la variable de la lista de variables
-    const updatedVariables = variables.filter(v => v !== variableToDelete);
-
-    // Renumerar las variables restantes para mantener el orden secuencial
-    const renumberedVariables = [];
-    const variableMapping = {}; // Mapeo de variable antigua a nueva
-
-    updatedVariables.forEach((v, index) => {
-      const newVar = `{{${index + 1}}}`;
-      renumberedVariables.push(newVar);
-      variableMapping[v] = newVar;
-    });
-
-    // Actualizar el texto con las variables renumeradas
-    let updatedMessage = newMessage;
-    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
-    });
-
-    // Crear nuevos objetos para descripciones y ejemplos de variables
-    const newVariableDescriptions = {};
-    const newVariableExamples = {};
-    const newVariableErrors = { ...variableErrors };
-
-    // Eliminar la variable eliminada de los errores
-    delete newVariableErrors[variableToDelete];
-
-    // Copiar las descripciones y ejemplos con las nuevas claves
-    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-      if (variableDescriptions[oldVar]) {
-        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
-      }
-      if (variableExamples[oldVar]) {
-        newVariableExamples[newVar] = variableExamples[oldVar];
-      }
-      if (variableErrors[oldVar]) {
-        newVariableErrors[newVar] = variableErrors[oldVar];
-        delete newVariableErrors[oldVar];
-      }
-    });
-
-    // Actualizar todos los estados
-    setMessage(updatedMessage);
-    setVariables(renumberedVariables);
-    setVariableDescriptions(newVariableDescriptions);
-    setVariableExamples(newVariableExamples);
-    setVariableErrors(newVariableErrors);
-
-    // Actualizar las referencias
-    const newExampleRefs = {};
-    renumberedVariables.forEach(v => {
-      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
-    });
-    exampleRefs.current = newExampleRefs;
-
-    messageRef.current?.focus();
-  };
-
-  // ACTUALIZA LA DESCRIPCION DE LA VARIABLE
-  const handleUpdateDescriptions = (variable, event) => {
-    const newValue = event.target.value.replace(/\s+/g, '_');
-    setVariableDescriptions(prevDescriptions => ({
-      ...prevDescriptions,
-      [variable]: newValue
-    }));
-  };
-
-  // ACTUALIZA EL EJEMPLO DE LA VARIABLE
-  const handleUpdateExample = (variable, value) => {
-    setVariableExamples(prevExamples => {
-      const updatedExamples = { ...prevExamples, [variable]: value };
-
-      return updatedExamples;
-    });
-  };
-
-  // Función para actualizar el tipo de variable
-  const handleUpdateVariableType = (variable, type) => {
-    setVariableTypes(prev => ({
-      ...prev,
-      [variable]: type
-    }));
-
-    // Limpiar datos según el tipo
-    if (type === 'list') {
-      setVariableExamples(prev => {
-        const newExamples = { ...prev };
-        delete newExamples[variable];
-        return newExamples;
-      });
-    } else {
-      setVariableLists(prev => {
-        const newLists = { ...prev };
-        delete newLists[variable];
-        return newLists;
-      });
-    }
-  };
-
-  // Función para agregar opción a la lista
-  const handleAddListOption = (variable, option) => {
-    if (!option.trim()) return;
-
-    setVariableLists(prev => ({
-      ...prev,
-      [variable]: [...(prev[variable] || []), option.trim()]
-    }));
-  };
-
-  // Función para eliminar opción de la lista
-  const handleDeleteListOption = (variable, optionIndex) => {
-    setVariableLists(prev => ({
-      ...prev,
-      [variable]: prev[variable].filter((_, index) => index !== optionIndex)
-    }));
-  };
-
-  // Función para iniciar edición de opción
-  const handleStartEditOption = (variable, index, currentValue) => {
-    setEditingOption({
-      variable,
-      index,
-      value: currentValue
-    });
-  };
-
-  // Función para guardar edición de opción
-  const handleSaveOptionEdit = (variable, index) => {
-    if (editingOption && editingOption.value.trim()) {
-      const newLists = { ...variableLists };
-      newLists[variable][index] = editingOption.value.trim();
-      setVariableLists(newLists);
-    }
-    setEditingOption(null);
-  };
-
-  // Funciones para drag & drop
-  const handleDragStart = (e, variable, index) => {
-    setDraggedItem({ variable, index });
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e, variable, targetIndex) => {
-    e.preventDefault();
-
-    if (!draggedItem || draggedItem.variable !== variable) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const sourceIndex = draggedItem.index;
-
-    if (sourceIndex === targetIndex) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const newLists = { ...variableLists };
-    const items = [...newLists[variable]];
-    const [removed] = items.splice(sourceIndex, 1);
-    items.splice(targetIndex, 0, removed);
-
-    newLists[variable] = items;
-    setVariableLists(newLists);
-    setDraggedItem(null);
-  };
+  //
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
@@ -1462,7 +1358,7 @@ const TemplateForm = () => {
 
 
             {/* Componente para subir archivos */}
-            { }
+            {}
             {/*<FileUploadComponent
               templateType={templateType}
               onUploadSuccess={(mediaId, uploadedUrl) => {
@@ -1480,9 +1376,9 @@ const TemplateForm = () => {
               onUploadSuccess={(uploadData) => {
                 setMediaId(uploadData.mediaId);
                 setUploadedUrl(uploadData.url);
-
-
-
+                
+                
+                
               }}
               onImagePreview={(preview) => setImagePreview(preview)}
               onHeaderChange={(newHeader) => setHeader(newHeader)}
@@ -1667,7 +1563,7 @@ const TemplateForm = () => {
                     key={index}
                     sx={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'center',
                       flexWrap: 'wrap',
                       gap: 2,
                       mb: 2,
@@ -1680,7 +1576,7 @@ const TemplateForm = () => {
                     <Chip
                       label={variable}
                       color="primary"
-                      sx={{ fontWeight: "500", mt: 1 }}
+                      sx={{ fontWeight: "500" }}
                       deleteIcon={
                         <Tooltip title="Borrar variable">
                           <DeleteIcon />
@@ -1689,20 +1585,7 @@ const TemplateForm = () => {
                       onDelete={() => deleteVariable(variable)}
                     />
 
-                    <Stack sx={{ flexGrow: 1, gap: 1.5 }}>
-                      {/* Selector de tipo de variable */}
-                      <FormControl size="small" fullWidth>
-                        <InputLabel>Tipo de variable</InputLabel>
-                        <Select
-                          value={variableTypes[variable] || 'normal'}
-                          label="Tipo de variable"
-                          onChange={(e) => handleUpdateVariableType(variable, e.target.value)}
-                        >
-                          <MenuItem value="normal">Variable normal</MenuItem>
-                          <MenuItem value="list">Lista de opciones</MenuItem>
-                        </Select>
-                      </FormControl>
-
+                    <Stack sx={{ flexGrow: 1, gap: 1 }}>
                       <TextField
                         size="small"
                         label="Descripción"
@@ -1715,149 +1598,20 @@ const TemplateForm = () => {
                             ? "Esta descripción ya existe en otra variable"
                             : ""
                         }
-                        fullWidth
+                        sx={{ flexGrow: 1 }}
                       />
 
-                      {/* Mostrar campo diferente según el tipo */}
-                      {variableTypes[variable] === 'list' ? (
-                        <Box>
-                          {/* Campo de entrada con botón de agregar */}
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <TextField
-                              size="small"
-                              label="Agregar opción a la lista"
-                              placeholder="Escribe una opción"
-                              inputRef={(el) => (listInputRefs.current[variable] = el)}
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddListOption(variable, e.target.value);
-                                  e.target.value = '';
-                                }
-                              }}
-                              fullWidth
-                            />
-                            <Tooltip title="Agregar opción">
-                              <IconButton
-                                color="primary"
-                                onClick={() => {
-                                  const inputEl = listInputRefs.current[variable];
-                                  if (inputEl && inputEl.value.trim()) {
-                                    handleAddListOption(variable, inputEl.value);
-                                    inputEl.value = '';
-                                  }
-                                }}
-                                sx={{
-                                  border: '1px solid',
-                                  borderColor: 'primary.main',
-                                  borderRadius: 1
-                                }}
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
+                      <TextField
+                        size="small"
+                        label="Texto de ejemplo"
+                        value={variableExamples[variable] || ''}
+                        onChange={(e) => handleUpdateExample(variable, e.target.value)}
+                        sx={{ flexGrow: 1 }}
+                        inputRef={(el) => (exampleRefs.current[variable] = el)}
+                        error={!!variableErrors[variable]}
+                        helperText={variableErrors[variable]}
+                      />
 
-                          {/* Mostrar las opciones agregadas con numeración y drag & drop */}
-                          {variableLists[variable]?.length > 0 && (
-                            <Box sx={{ mt: 1.5 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-                                Opciones (arrastra para reordenar):
-                              </Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {variableLists[variable].map((option, optIndex) => (
-                                  <Box
-                                    key={optIndex}
-                                    draggable
-                                    onDragStart={(e) => handleDragStart(e, variable, optIndex)}
-                                    onDragOver={(e) => handleDragOver(e)}
-                                    onDrop={(e) => handleDrop(e, variable, optIndex)}
-                                    sx={{
-                                      cursor: 'move',
-                                      transition: 'transform 0.2s',
-                                      '&:hover': {
-                                        transform: 'scale(1.02)'
-                                      }
-                                    }}
-                                  >
-                                    {editingOption?.variable === variable && editingOption?.index === optIndex ? (
-                                      // Modo edición
-                                      <TextField
-                                        size="small"
-                                        autoFocus
-                                        value={editingOption.value}
-                                        onChange={(e) => setEditingOption({
-                                          ...editingOption,
-                                          value: e.target.value
-                                        })}
-                                        onBlur={() => handleSaveOptionEdit(variable, optIndex)}
-                                        onKeyPress={(e) => {
-                                          if (e.key === 'Enter') {
-                                            handleSaveOptionEdit(variable, optIndex);
-                                          } else if (e.key === 'Escape') {
-                                            setEditingOption(null);
-                                          }
-                                        }}
-                                        sx={{ width: '150px' }}
-                                      />
-                                    ) : (
-                                      // Modo visualización
-                                      <Chip
-                                        icon={
-                                          <Box
-                                            component="span"
-                                            sx={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              justifyContent: 'center',
-                                              minWidth: '20px',
-                                              height: '20px',
-                                              borderRadius: '50%',
-                                              backgroundColor: 'primary.main',
-                                              color: 'white',
-                                              fontSize: '0.7rem',
-                                              fontWeight: 'bold',
-                                              mr: 0.5
-                                            }}
-                                          >
-                                            {optIndex + 1}
-                                          </Box>
-                                        }
-                                        label={option}
-                                        size="small"
-                                        onClick={() => handleStartEditOption(variable, optIndex, option)}
-                                        onDelete={() => handleDeleteListOption(variable, optIndex)}
-                                        variant="outlined"
-                                        deleteIcon={
-                                          <Tooltip title="Eliminar">
-                                            <DeleteIcon fontSize="small" />
-                                          </Tooltip>
-                                        }
-                                        sx={{
-                                          '& .MuiChip-icon': {
-                                            ml: 0.5
-                                          }
-                                        }}
-                                      />
-                                    )}
-                                  </Box>
-                                ))}
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
-                      ) : (
-                        <TextField
-                          size="small"
-                          label="Texto de ejemplo"
-                          value={variableExamples[variable] || ''}
-                          onChange={(e) => handleUpdateExample(variable, e.target.value)}
-                          fullWidth
-                          inputRef={(el) => (exampleRefs.current[variable] = el)}
-                          error={!!variableErrors[variable]}
-                          helperText={variableErrors[variable]}
-                        />
-                      )}
                     </Stack>
                   </Box>
                 ))}
