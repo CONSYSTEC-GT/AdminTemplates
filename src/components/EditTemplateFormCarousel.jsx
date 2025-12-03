@@ -513,6 +513,7 @@ const EditTemplateFormCarousel = () => {
       const cardsToSendArray = [...cards];
       const cardsToSend = JSON.stringify([...cards]);
 
+      //
       const result = await editTemplateCarouselGupshup(
         appId,
         authCode,
@@ -537,7 +538,7 @@ const EditTemplateFormCarousel = () => {
       /*const result = {
         status: "success",
         template: {
-          id: "e885dbea-06e5-433d-82b6-6391e6d76ae9" // Puedes poner cualquier ID de prueba aquí
+          id: "f763d147-29d3-462d-8751-d25152fd8e6a" // Puedes poner cualquier ID de prueba aquí
         }
       };*/
 
@@ -557,7 +558,10 @@ const EditTemplateFormCarousel = () => {
           variableDescriptions,
           cardsToSendArray,
           urlTemplatesGS,
-          idBotRedes
+          idBotRedes,
+          variableTypes,
+          variableExamples,
+          variableLists
         );
 
 
