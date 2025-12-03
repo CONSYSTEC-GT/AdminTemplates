@@ -37,7 +37,7 @@ import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
 import { editTemplateCarouselGupshup } from '../api/gupshupApi';
 import { saveTemplateToTalkMe } from '../api/templatesGSApi';
 import { editTemplateToTalkMe } from '../api/templatesGSApi';
-import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, obtenerOpcionesParametro, saveTemplateParams } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
 
 import { CustomDialog } from '../utils/CustomDialog';
@@ -174,6 +174,12 @@ const EditTemplateFormCarousel = () => {
 
   const [emojiCount, setEmojiCount] = useState(0);
 
+  const [variableTypes, setVariableTypes] = useState({});
+  const [variableLists, setVariableLists] = useState({});
+  const [editingOption, setEditingOption] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const listInputRefs = useRef({});
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -261,8 +267,9 @@ const EditTemplateFormCarousel = () => {
 
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
-        if (infoParametros === null || infoParametros.length === 0) {
 
+        if (infoParametros === null || infoParametros.length === 0) {
+          // Sin parámetros
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -271,24 +278,63 @@ const EditTemplateFormCarousel = () => {
 
           const descripcionesIniciales = {};
           const ejemplosIniciales = {};
+          const tiposIniciales = {};
+          const listasIniciales = {};
 
-          parametrosOrdenados.forEach((param, index) => {
+          // Procesar cada parámetro
+          for (let index = 0; index < parametrosOrdenados.length; index++) {
+            const param = parametrosOrdenados[index];
             const variableKey = `{{${index + 1}}}`;
+
             descripcionesIniciales[variableKey] = param.NOMBRE;
-            ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-          });
+            tiposIniciales[variableKey] = 'normal';
+
+            // Verificar si es una lista de opciones
+            if (esListaOpciones(param.ID_PLANTILLA_TIPO_DATO)) {
+              try {
+                const opciones = await obtenerOpcionesParametro(
+                  urlTemplatesGS,
+                  param.ID_PLANTILLA_PARAMETRO
+                );
+
+                if (opciones && opciones.length > 0) {
+                  // Establecer tipo como 'list'
+                  tiposIniciales[variableKey] = 'list';
+
+                  // Ordenar opciones por ORDEN y extraer los nombres
+                  const opcionesOrdenadas = opciones
+                    .sort((a, b) => a.ORDEN - b.ORDEN)
+                    .map(opcion => opcion.NOMBRE);
+
+                  listasIniciales[variableKey] = opcionesOrdenadas;
+                } else {
+                  ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+                }
+              } catch (error) {
+                console.error(`Error cargando opciones para ${variableKey}:`, error);
+                ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+              }
+            } else {
+              ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+            }
+          }
 
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
-
+          setVariableTypes(tiposIniciales);
+          setVariableLists(listasIniciales);
         }
       } catch (error) {
-
+        console.error("Error en loadParametros:", error);
       }
     };
 
     loadParametros();
   }, [idPlantilla, urlTemplatesGS]);
+
+  const esListaOpciones = (tipoData) => {
+    return tipoData === 5;
+  };
 
   const resetForm = () => {
     setTemplateName("");
@@ -414,7 +460,7 @@ const EditTemplateFormCarousel = () => {
     if (variables.length > 0) {
       const newErrors = {};
       for (const variable of variables) {
-        if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
+        if (variableTypes[variable] !== 'list' && !variableExamples[variable]?.trim()) {
           isValid = false;
           newErrors[variable] = "Este campo es requerido";
           if (exampleRefs.current[variable]) {
@@ -898,33 +944,6 @@ const EditTemplateFormCarousel = () => {
     );
   };
 
-
-
-  const handleAddVariable = () => {
-    const newVariable = `{{${variables.length + 1}}}`;
-
-
-    const cursorPosition = messageRef.current.selectionStart;
-
-
-    const textBeforeCursor = message.substring(0, cursorPosition);
-    const textAfterCursor = message.substring(cursorPosition);
-
-
-    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
-    setMessage(newMessage);
-
-
-    setVariables([...variables, newVariable]);
-
-
-    setTimeout(() => {
-      const newPosition = cursorPosition + newVariable.length;
-      messageRef.current.focus();
-      messageRef.current.setSelectionRange(newPosition, newPosition);
-    }, 0);
-  };
-
   const handleAddVariableCard = (cardId) => {
     setCards(prevCards =>
       prevCards.map(card => {
@@ -954,8 +973,6 @@ const EditTemplateFormCarousel = () => {
       })
     );
   };
-
-
 
   const handleEmojiClick = (emojiObject) => {
     const cursor = messageRef.current.selectionStart;
@@ -1032,75 +1049,6 @@ const EditTemplateFormCarousel = () => {
     }, 100);
   };
 
-
-
-
-
-  const deleteVariable = (variableToDelete) => {
-
-    const newMessage = message.replace(variableToDelete, '');
-    setMessage(newMessage);
-
-
-    const updatedVariables = variables.filter(v => v !== variableToDelete);
-
-
-    const renumberedVariables = [];
-    const variableMapping = {};
-
-    updatedVariables.forEach((v, index) => {
-      const newVar = `{{${index + 1}}}`;
-      renumberedVariables.push(newVar);
-      variableMapping[v] = newVar;
-    });
-
-
-    let updatedMessage = newMessage;
-    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
-    });
-
-
-    const newVariableDescriptions = {};
-    const newVariableExamples = {};
-    const newVariableErrors = { ...variableErrors };
-
-
-    delete newVariableErrors[variableToDelete];
-
-
-    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-      if (variableDescriptions[oldVar]) {
-        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
-      }
-      if (variableExamples[oldVar]) {
-        newVariableExamples[newVar] = variableExamples[oldVar];
-      }
-      if (variableErrors[oldVar]) {
-        newVariableErrors[newVar] = variableErrors[oldVar];
-        delete newVariableErrors[oldVar];
-      }
-    });
-
-
-    setMessage(updatedMessage);
-    setVariables(renumberedVariables);
-    setVariableDescriptions(newVariableDescriptions);
-    setVariableExamples(newVariableExamples);
-    setVariableErrors(newVariableErrors);
-
-
-    const newExampleRefs = {};
-    renumberedVariables.forEach(v => {
-      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
-    });
-    exampleRefs.current = newExampleRefs;
-
-    messageRef.current?.focus();
-  };
-
-
-
   const deleteVariableCard = (cardId, variableToDelete) => {
     setCards(prevCards =>
       prevCards.map(card => {
@@ -1166,26 +1114,6 @@ const EditTemplateFormCarousel = () => {
     );
   };
 
-
-
-  const deleteAllVariables = () => {
-    let newMessage = message;
-    variables.forEach(variable => {
-      newMessage = newMessage.replaceAll(variable, '');
-    });
-    setMessage(newMessage);
-    setVariables([]);
-
-
-    setVariableDescriptions({});
-    setVariableExamples({});
-    setVariableErrors({});
-    exampleRefs.current = {};
-
-    messageRef.current?.focus();
-  };
-
-
   const deleteAllVariablesCard = (cardId) => {
     setCards(prevCards =>
       prevCards.map(card => {
@@ -1209,8 +1137,6 @@ const EditTemplateFormCarousel = () => {
     messageCardRef.current?.focus();
   };
 
-
-
   const previewMessage = () => {
     let previewHeader = header;
     let previewFooter = footer;
@@ -1221,22 +1147,6 @@ const EditTemplateFormCarousel = () => {
       previewText = previewText.replaceAll(variable, example);
     });
   }
-
-  const handleUpdateExample = (variable, value) => {
-    setVariableExamples(prevExamples => {
-      const updatedExamples = { ...prevExamples, [variable]: value };
-
-      return updatedExamples;
-    });
-  };
-
-  const handleUpdateDescriptions = (variable, value) => {
-    const newValue = event.target.value.replace(/\s+/g, '_');
-    setVariableDescriptions(prevDescriptions => ({
-      ...prevDescriptions,
-      [variable]: newValue
-    }));
-  };
 
   const handleUpdateDescriptionsCard = (cardId, variable, value) => {
     setCards(prevCards =>
@@ -1443,30 +1353,20 @@ const EditTemplateFormCarousel = () => {
     });
   };
 
-
-
-
-
-
-
   const [accordions, setAccordions] = useState([
   ]);
 
-
   const [expanded, setExpanded] = useState(false);
-
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
-
 
   const handleFormChange = (id, field, value) => {
     setAccordions(accordions.map(accordion =>
       accordion.id === id ? { ...accordion, [field]: value } : accordion
     ));
   };
-
 
   const addAccordion = () => {
 
@@ -1484,13 +1384,10 @@ const EditTemplateFormCarousel = () => {
     setCards([...cards, nuevaCard]);
   };
 
-
-
   const deleteAccordion = (id, e) => {
     e.stopPropagation();
     setCards(cards.filter(card => card.id !== id));
   };
-
 
   const updateCardField = (cardId, field, value) => {
     setCards(cards.map(card =>
@@ -1611,6 +1508,261 @@ const EditTemplateFormCarousel = () => {
     });
 
     return displayValues;
+  };
+
+  const getDuplicateDescriptions = (descriptions) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
+
+
+    Object.entries(descriptions).forEach(([variable, description]) => {
+      if (description && description.trim()) {
+        const cleanDesc = description.trim().toLowerCase();
+        if (descriptionCounts[cleanDesc]) {
+          descriptionCounts[cleanDesc].push(variable);
+          duplicates.add(cleanDesc);
+        } else {
+          descriptionCounts[cleanDesc] = [variable];
+        }
+      }
+    });
+
+
+    const duplicateVariables = new Set();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(variable => {
+        duplicateVariables.add(variable);
+      });
+    });
+
+    return duplicateVariables;
+  };
+
+  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+  // BOTON AGREGAR VARIABLE
+  const handleAddVariable = () => {
+    const newVariable = `{{${variables.length + 1}}}`;
+
+    if (message.length + newVariable.length > 550) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+    const cursorPosition = messageRef.current.selectionStart;
+    const textBeforeCursor = message.substring(0, cursorPosition);
+    const textAfterCursor = message.substring(cursorPosition);
+
+    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
+    setMessage(newMessage);
+
+    setVariables([...variables, newVariable]);
+
+    setTimeout(() => {
+      const newPosition = cursorPosition + newVariable.length;
+      messageRef.current.focus();
+      messageRef.current.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
+
+  // BOTON BORRAR VARIABLES
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
+
+  // BOTON PARA BORRAR UNA VARIABLE EN ESPECIFICO
+  const deleteVariable = (variableToDelete) => {
+    // Eliminar la variable del texto
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+    // Eliminar la variable de la lista de variables
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+    // Renumerar las variables restantes para mantener el orden secuencial
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
+    });
+
+    // Actualizar el texto con las variables renumeradas
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
+
+    // Crear nuevos objetos para descripciones y ejemplos de variables
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+    // Eliminar la variable eliminada de los errores
+    delete newVariableErrors[variableToDelete];
+
+    // Copiar las descripciones y ejemplos con las nuevas claves
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+    // Actualizar todos los estados
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+    // Actualizar las referencias
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+  // ACTUALIZA LA DESCRIPCION DE LA VARIABLE
+  const handleUpdateDescriptions = (variable, event) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+  };
+
+  // ACTUALIZA EL EJEMPLO DE LA VARIABLE
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+
+      return updatedExamples;
+    });
+  };
+
+  // Función para actualizar el tipo de variable
+  const handleUpdateVariableType = (variable, type) => {
+    setVariableTypes(prev => ({
+      ...prev,
+      [variable]: type
+    }));
+
+    // Limpiar datos según el tipo
+    if (type === 'list') {
+      setVariableExamples(prev => {
+        const newExamples = { ...prev };
+        delete newExamples[variable];
+        return newExamples;
+      });
+    } else {
+      setVariableLists(prev => {
+        const newLists = { ...prev };
+        delete newLists[variable];
+        return newLists;
+      });
+    }
+  };
+
+  // Función para agregar opción a la lista
+  const handleAddListOption = (variable, option) => {
+    if (!option.trim()) return;
+
+    setVariableLists(prev => ({
+      ...prev,
+      [variable]: [...(prev[variable] || []), option.trim()]
+    }));
+  };
+
+  // Función para eliminar opción de la lista
+  const handleDeleteListOption = (variable, optionIndex) => {
+    setVariableLists(prev => ({
+      ...prev,
+      [variable]: prev[variable].filter((_, index) => index !== optionIndex)
+    }));
+  };
+
+  // Función para iniciar edición de opción
+  const handleStartEditOption = (variable, index, currentValue) => {
+    setEditingOption({
+      variable,
+      index,
+      value: currentValue
+    });
+  };
+
+  // Función para guardar edición de opción
+  const handleSaveOptionEdit = (variable, index) => {
+    if (editingOption && editingOption.value.trim()) {
+      const newLists = { ...variableLists };
+      newLists[variable][index] = editingOption.value.trim();
+      setVariableLists(newLists);
+    }
+    setEditingOption(null);
+  };
+
+  // Funciones para drag & drop
+  const handleDragStart = (e, variable, index) => {
+    setDraggedItem({ variable, index });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, variable, targetIndex) => {
+    e.preventDefault();
+
+    if (!draggedItem || draggedItem.variable !== variable) {
+      setDraggedItem(null);
+      return;
+    }
+
+    const sourceIndex = draggedItem.index;
+
+    if (sourceIndex === targetIndex) {
+      setDraggedItem(null);
+      return;
+    }
+
+    const newLists = { ...variableLists };
+    const items = [...newLists[variable]];
+    const [removed] = items.splice(sourceIndex, 1);
+    items.splice(targetIndex, 0, removed);
+
+    newLists[variable] = items;
+    setVariableLists(newLists);
+    setDraggedItem(null);
   };
 
 
@@ -1934,7 +2086,7 @@ const EditTemplateFormCarousel = () => {
                       key={index}
                       sx={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         flexWrap: 'wrap',
                         gap: 2,
                         mb: 2,
@@ -1947,7 +2099,7 @@ const EditTemplateFormCarousel = () => {
                       <Chip
                         label={variable}
                         color="primary"
-                        sx={{ fontWeight: "500" }}
+                        sx={{ fontWeight: "500", mt: 1 }}
                         deleteIcon={
                           <Tooltip title="Borrar variable">
                             <DeleteIcon />
@@ -1956,27 +2108,175 @@ const EditTemplateFormCarousel = () => {
                         onDelete={() => deleteVariable(variable)}
                       />
 
-                      <Stack sx={{ flexGrow: 1, gap: 1 }}>
+                      <Stack sx={{ flexGrow: 1, gap: 1.5 }}>
+                        {/* Selector de tipo de variable */}
+                        <FormControl size="small" fullWidth>
+                          <InputLabel>Tipo de variable</InputLabel>
+                          <Select
+                            value={variableTypes[variable] || 'normal'}
+                            label="Tipo de variable"
+                            onChange={(e) => handleUpdateVariableType(variable, e.target.value)}
+                          >
+                            <MenuItem value="normal">Variable normal</MenuItem>
+                            <MenuItem value="list">Lista de opciones</MenuItem>
+                          </Select>
+                        </FormControl>
+
                         <TextField
                           size="small"
                           label="Descripción"
                           placeholder="¿Para qué sirve esta variable?"
                           value={variableDescriptions[variable] || ''}
-                          onChange={(e) => handleUpdateDescriptions(variable, e.target.value)}
-                          sx={{ flexGrow: 1 }}
+                          onChange={(e) => handleUpdateDescriptions(variable, e)}
+                          error={duplicateVariables.has(variable)}
+                          helperText={
+                            duplicateVariables.has(variable)
+                              ? "Esta descripción ya existe en otra variable"
+                              : ""
+                          }
+                          fullWidth
                         />
 
-                        <TextField
-                          size="small"
-                          label="Texto de ejemplo"
-                          value={variableExamples[variable] || ''}
-                          onChange={(e) => handleUpdateExample(variable, e.target.value)}
-                          sx={{ flexGrow: 1 }}
-                          inputRef={(el) => (exampleRefs.current[variable] = el)}
-                          error={!!variableErrors[variable]}
-                          helperText={variableErrors[variable]}
-                        />
+                        {/* Mostrar campo diferente según el tipo */}
+                        {variableTypes[variable] === 'list' ? (
+                          <Box>
+                            {/* Campo de entrada con botón de agregar */}
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <TextField
+                                size="small"
+                                label="Agregar opción a la lista"
+                                placeholder="Escribe una opción"
+                                inputRef={(el) => (listInputRefs.current[variable] = el)}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddListOption(variable, e.target.value);
+                                    e.target.value = '';
+                                  }
+                                }}
+                                fullWidth
+                              />
+                              <Tooltip title="Agregar opción">
+                                <IconButton
+                                  color="primary"
+                                  onClick={() => {
+                                    const inputEl = listInputRefs.current[variable];
+                                    if (inputEl && inputEl.value.trim()) {
+                                      handleAddListOption(variable, inputEl.value);
+                                      inputEl.value = '';
+                                    }
+                                  }}
+                                  sx={{
+                                    border: '1px solid',
+                                    borderColor: 'primary.main',
+                                    borderRadius: 1
+                                  }}
+                                >
+                                  <AddIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
 
+                            {/* Mostrar las opciones agregadas con numeración y drag & drop */}
+                            {variableLists[variable]?.length > 0 && (
+                              <Box sx={{ mt: 1.5 }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                                  Opciones (arrastra para reordenar):
+                                </Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                  {variableLists[variable].map((option, optIndex) => (
+                                    <Box
+                                      key={optIndex}
+                                      draggable
+                                      onDragStart={(e) => handleDragStart(e, variable, optIndex)}
+                                      onDragOver={(e) => handleDragOver(e)}
+                                      onDrop={(e) => handleDrop(e, variable, optIndex)}
+                                      sx={{
+                                        cursor: 'move',
+                                        transition: 'transform 0.2s',
+                                        '&:hover': {
+                                          transform: 'scale(1.02)'
+                                        }
+                                      }}
+                                    >
+                                      {editingOption?.variable === variable && editingOption?.index === optIndex ? (
+                                        // Modo edición
+                                        <TextField
+                                          size="small"
+                                          autoFocus
+                                          value={editingOption.value}
+                                          onChange={(e) => setEditingOption({
+                                            ...editingOption,
+                                            value: e.target.value
+                                          })}
+                                          onBlur={() => handleSaveOptionEdit(variable, optIndex)}
+                                          onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                              handleSaveOptionEdit(variable, optIndex);
+                                            } else if (e.key === 'Escape') {
+                                              setEditingOption(null);
+                                            }
+                                          }}
+                                          sx={{ width: '150px' }}
+                                        />
+                                      ) : (
+                                        // Modo visualización
+                                        <Chip
+                                          icon={
+                                            <Box
+                                              component="span"
+                                              sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minWidth: '20px',
+                                                height: '20px',
+                                                borderRadius: '50%',
+                                                backgroundColor: 'primary.main',
+                                                color: 'white',
+                                                fontSize: '0.7rem',
+                                                fontWeight: 'bold',
+                                                mr: 0.5
+                                              }}
+                                            >
+                                              {optIndex + 1}
+                                            </Box>
+                                          }
+                                          label={option}
+                                          size="small"
+                                          onClick={() => handleStartEditOption(variable, optIndex, option)}
+                                          onDelete={() => handleDeleteListOption(variable, optIndex)}
+                                          variant="outlined"
+                                          deleteIcon={
+                                            <Tooltip title="Eliminar">
+                                              <DeleteIcon fontSize="small" />
+                                            </Tooltip>
+                                          }
+                                          sx={{
+                                            '& .MuiChip-icon': {
+                                              ml: 0.5
+                                            }
+                                          }}
+                                        />
+                                      )}
+                                    </Box>
+                                  ))}
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
+                        ) : (
+                          <TextField
+                            size="small"
+                            label="Texto de ejemplo"
+                            value={variableExamples[variable] || ''}
+                            onChange={(e) => handleUpdateExample(variable, e.target.value)}
+                            fullWidth
+                            inputRef={(el) => (exampleRefs.current[variable] = el)}
+                            error={!!variableErrors[variable]}
+                            helperText={variableErrors[variable]}
+                          />
+                        )}
                       </Stack>
                     </Box>
                   ))}

@@ -3,14 +3,9 @@ import { Accordion, AccordionSummary, AccordionDetails, Alert, Box, Button, Chec
 import { jwtDecode } from 'jwt-decode';
 import { v4 as uuidv4 } from 'uuid';
 import Swal from 'sweetalert2';
+import { Smile } from "react-feather";
+import EmojiPicker from "emoji-picker-react";
 
-
-
-
-import { Smile } from "react-feather"; // Icono para emojis
-import EmojiPicker from "emoji-picker-react"; // Selector de emojis
-
-// Import Swiper styles
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -62,8 +57,6 @@ const TemplateFormCarousel = () => {
   const [vertical, setVertical] = useState("");
   const [message, setMessage] = useState("");
 
-
-  //carousel
   const [messageCard, setMessageCard] = useState("");
   const messageCardRefs = useRef({});
   const [cantidadBotones, setCantidadBotones] = useState("1");
@@ -79,11 +72,9 @@ const TemplateFormCarousel = () => {
   const [example, setExample] = useState("");
   const [exampleMedia, setExampleMedia] = useState("");
 
-
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
 
   const [languageCode, setLanguageCode] = useState("es"); // Valor predeterminado: español
   const [languageTypeError, setLanguageTypeError] = useState(false);
@@ -105,13 +96,11 @@ const TemplateFormCarousel = () => {
   const [ejemploPlantillaError, setejemploPlantillaError] = useState(false);
   const [ejemploPlantillaHelperText, setejemploPlantillaHelperText] = useState("");
 
-  //const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showEmojiPickerCards, setShowEmojiPickerCards] = useState(false);
   const [variables, setVariables] = useState([]);
   const [variablesCard, setVariablesCard] = useState([]);
 
-  // Estado para almacenar ejemplos de variables
   const [variableExamples, setVariableExamples] = useState({});
   const [variableExamplesError, setvariableExamplesError] = useState(false);
   const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
@@ -121,13 +110,11 @@ const TemplateFormCarousel = () => {
 
   const [cardErrors, setCardErrors] = useState({});
 
-  // Estado para almacenar ejemplos de variables
   const [variableExamplesCard, setVariableExamplesCard] = useState({});
   const [variableExamplesErrorCard, setvariableExamplesErrorCard] = useState(false);
   const [variableExamplesHelperTextCard, setvariableExamplesHelperTextCard] = useState("");
   const [variableErrorsCard, setVariableErrorsCard] = useState({});
 
-  // Estado para almacenar descripciones de variables
   const [variableDescriptions, setVariableDescriptions] = useState({});
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
@@ -136,7 +123,6 @@ const TemplateFormCarousel = () => {
   const [variableDescriptionsErrorCard, setvariableDescriptionsErrorCard] = useState(false);
   const [variableDescriptionsHelperTextCard, setvariableDescriptionsHelperTextCard] = useState("");
 
-  //ESTE ES PARA EL EXAMPLE MEDIA
   const [mediaId, setMediaId] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
@@ -160,6 +146,11 @@ const TemplateFormCarousel = () => {
   const descriptionRefs = useRef({});
   const debounceTimeout = useRef(null);
 
+  const [variableTypes, setVariableTypes] = useState({});
+  const [variableLists, setVariableLists] = useState({});
+  const [editingOption, setEditingOption] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const listInputRefs = useRef({});
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
@@ -182,7 +173,6 @@ const TemplateFormCarousel = () => {
     setVariables([]);
     setVariableDescriptions([]);
     setDisplayPantallas([]);
-    // Agrega cualquier otro estado relacionado
   };
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -190,14 +180,12 @@ const TemplateFormCarousel = () => {
   const [showErrorModalTarjetas, setShowErrorModalTarjetas] = useState(false);
   const [errorMessageGupshup, setErrorMessageGupshup] = useState("La plantilla no pudo ser creada.");
 
-  // Función para mostrar Snackbar
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setOpenSnackbar(true);
   };
 
-  // Función para cerrar Snackbar
   const handleCloseSnackbar = (_, reason) => {
     if (reason === "clickaway") return;
     setOpenSnackbar(false);
@@ -207,9 +195,6 @@ const TemplateFormCarousel = () => {
     let isValid = true;
     let firstErrorFieldRef = null;
 
-
-
-    // Validación de templateName
     if (!templateName || templateName.trim() === "") {
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
@@ -220,7 +205,6 @@ const TemplateFormCarousel = () => {
 
       await validateTemplateName(templateName);
 
-      // Verificar el resultado después de validar
       if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
         templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
         setTemplateNameError(true);
@@ -231,7 +215,6 @@ const TemplateFormCarousel = () => {
       }
       }
 
-    // Validación de templateType
     if (!templateType || templateType.trim() === "") {
 
       setTemplateTypeError(true);
@@ -247,14 +230,12 @@ const TemplateFormCarousel = () => {
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
-      // No hay focus directo porque es un select con múltiples opciones
     } else {
 
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
-    // Validación de languageCode
     if (!languageCode || languageCode.trim() === "") {
 
       setLanguageTypeError(true);
@@ -265,7 +246,6 @@ const TemplateFormCarousel = () => {
       }
     }
 
-    // Validación de vertical
     if (!vertical || vertical.trim() === "") {
 
       setetiquetaPlantillaError(true);
@@ -275,7 +255,6 @@ const TemplateFormCarousel = () => {
       }
     }
 
-    // Validación de message
     if (!message || message.trim() === "") {
 
       setcontenidoPlantillaTypeError(true);
@@ -286,7 +265,6 @@ const TemplateFormCarousel = () => {
       }
     }
 
-    // Validación de example
     if (!example || example.trim() === "") {
 
       setejemploPlantillaError(true);
@@ -297,7 +275,6 @@ const TemplateFormCarousel = () => {
       }
     }
 
-    // Validación de selectedCategory
     if (!selectedCategory || selectedCategory.trim() === "") {
 
       setcategoriaPlantillaError(true);
@@ -308,100 +285,81 @@ const TemplateFormCarousel = () => {
       }
     }
 
-    // Validación de variables
     if (variables.length > 0) {
+    const newErrors = {};
+    const newDescriptionErrors = {};
 
-      const newErrors = {};
-      const newDescriptionErrors = {};
+    for (const variable of variables) {
+      const variableType = variableTypes[variable] || 'normal';
+      
+      // Validar descripción (requerida para todos los tipos)
+      if (!variableDescriptions[variable]?.trim()) {
+        isValid = false;
+        newDescriptionErrors[variable] = "El campo Descripción es requerido";
+      } else {
+        newDescriptionErrors[variable] = "";
+      }
 
-      for (const variable of variables) {
-        // Validar ejemplo
+      // Validar según el tipo de variable
+      if (variableType === 'normal') {
+        // Para variables normales: validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-
           isValid = false;
-          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+          newErrors[variable] = "El campo Texto de ejemplo es requerido";
         } else {
           newErrors[variable] = "";
         }
-
-        // Validar descripción
-        if (!variableDescriptions[variable]?.trim()) {
-
+      } else if (variableType === 'list') {
+        // Para listas: validar que tenga al menos una opción
+        if (!variableLists[variable] || variableLists[variable].length === 0) {
           isValid = false;
-          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+          newErrors[variable] = "Debe agregar al menos una opción a la lista";
         } else {
-          newDescriptionErrors[variable] = "";
+          newErrors[variable] = "";
         }
       }
-
-      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
-      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-
-      if (duplicateVariables.size > 0) {
-
-        isValid = false;
-
-        // Marcar todas las variables con descripciones duplicadas
-        duplicateVariables.forEach(variable => {
-          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
-        });
-
-        // Enfocar la primera variable con descripción duplicada
-        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
-        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
-          descriptionRefs.current[firstDuplicateVariable].focus();
-        }
-      } else {
-
-        // Limpiar errores de descripción
-        variables.forEach(variable => {
-          newDescriptionErrors[variable] = "";
-        });
-      }
-
-      // 3. Validar que todas las variables tengan descripción (opcional)
-      for (const variable of variables) {
-        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-
-          isValid = false;
-          newDescriptionErrors[variable] = "La descripción es requerida";
-
-          // Enfocar el campo de descripción vacío
-          if (descriptionRefs.current && descriptionRefs.current[variable]) {
-            descriptionRefs.current[variable].focus();
-          }
-        }
-      }
-
-      setVariableErrors(newErrors);
     }
 
-    // Validación de selectedCategory
-    if (!cantidadBotones || cantidadBotones.trim() === "") {
-
-      setcantidadBotonesError(true);
+    // Validar descripciones duplicadas
+    const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+    if (duplicateVariables.size > 0) {
       isValid = false;
-      if (cantidadBotonesRefs.current && !firstErrorFieldRef) {
-        firstErrorFieldRef = cantidadBotonesRefs;
+      
+      duplicateVariables.forEach(variable => {
+        newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+      });
+
+      // Enfocar la primera variable con descripción duplicada
+      const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+      if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+        descriptionRefs.current[firstDuplicateVariable].focus();
       }
+    } else {
+      // Limpiar errores de descripción duplicada
+      variables.forEach(variable => {
+        if (!newDescriptionErrors[variable]) {
+          newDescriptionErrors[variable] = "";
+        }
+      });
     }
 
-    // Enfocar el primer campo con error encontrado
-    if (!isValid && firstErrorFieldRef && firstErrorFieldRef.current) {
+    // Actualizar estados de errores
+    setVariableErrors(newErrors);
+    // Si tienes un estado para errores de descripción, actualízalo también
+    // setDescriptionErrors(newDescriptionErrors);
 
-      firstErrorFieldRef.current.focus();
-    }
+  } else {
+    // No hay variables - considerar si esto es válido o no según tu caso
+    // isValid = false; // Descomenta si necesitas al menos una variable
+  }
 
 
-    return isValid;
+    return isValid; // Retornar el valor final de isValid
   };
 
-  // Función para determinar el tipo de archivo basado en la extensión
   const getMediaType = (url) => {
-    // Extraer la extensión del archivo de la URL
     const extension = url.split('.').pop().toLowerCase();
 
-    // Determinar el tipo de archivo basado en la extensión
     if (['png', 'jpeg', 'jpg', 'gif'].includes(extension)) {
       return 'IMAGE';
     } else if (['mp4', '3gp', 'mov', 'avi'].includes(extension)) {
@@ -409,7 +367,7 @@ const TemplateFormCarousel = () => {
     } else if (['txt', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf'].includes(extension)) {
       return 'DOCUMENT';
     } else {
-      return 'null'; // En caso de que la extensión no sea reconocida
+      return 'null';
     }
   };
 
@@ -474,7 +432,7 @@ const TemplateFormCarousel = () => {
           confirmButtonColor: '#00c3ff'
         });
         setLoading(false);
-        return; // Detener si hay errores
+        return; 
       }
 
       const result = await createTemplateCarouselGupshup(
@@ -492,7 +450,7 @@ const TemplateFormCarousel = () => {
           mediaId,
           buttons,
           example,
-          carousel: JSON.stringify(formattedCards) // Enviar como string JSON
+          carousel: JSON.stringify(formattedCards)
         },
         idNombreUsuarioTalkMe,
         urlTemplatesGS,
@@ -530,8 +488,11 @@ const TemplateFormCarousel = () => {
             uploadedUrl
           },
           idNombreUsuarioTalkMe || "Sistema.TalkMe",
+          variableTypes,
           variables,
           variableDescriptions,
+          variableExamples,
+          variableLists,
           cardsToSendArray,
           idBotRedes,
           urlTemplatesGS
@@ -571,8 +532,6 @@ const TemplateFormCarousel = () => {
     '4 - Broadcast'
   ];
 
-
-  // CATEGORIAS
   const categories = [
     {
       id: 'MARKETING',
@@ -599,7 +558,6 @@ const TemplateFormCarousel = () => {
     setSelectedCategory(event.target.value);
   };
 
-  //NOMBRE PLANTILLA
   const handleTemplateNameChange = (event) => {
     const inputValue = event.target.value;
     const hasUpperCase = /[A-Z]/.test(inputValue);
@@ -618,10 +576,8 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  // Función para validar el nombre de la plantilla
   const validateTemplateName = async (nombre) => {
-    // Reemplazar _ por espacios
-    const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
+    const nombreFormateado = nombre.replace(/_/g, ' ');  
 
     if (!nombreFormateado.trim() || !idBotRedes) return;
 
@@ -635,13 +591,11 @@ const TemplateFormCarousel = () => {
         setTemplateNameError(true);
         setTemplateNameHelperText("Ya existe una plantilla con este nombre");
       } else if (existe === false) {
-        // Solo limpiar el error si no hay otros errores
         if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
           setTemplateNameError(false);
           setTemplateNameHelperText("Nombre disponible");
         }
       } else {
-        // Error en la validación (existe === null)
         setTemplateNameError(true);
         setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
       }
@@ -654,10 +608,9 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
-    const selectedLanguage = event.target.value; // Esto ya es el código de idioma ("es", "en", "fr")
-    setLanguageCode(selectedLanguage); // Actualiza el estado directamente con el código
+    const selectedLanguage = event.target.value; 
+    setLanguageCode(selectedLanguage); 
 
     if (selectedLanguage.trim() === "") {
       setLanguageTypeError(true);
@@ -668,7 +621,6 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  // Mapeo de idiomas (código -> nombre)
   const languageMap = {
     es: "Español",
     en: "Inglés",
@@ -685,7 +637,6 @@ const TemplateFormCarousel = () => {
     const newValue = event.target.value;
     setVertical(newValue);
 
-    // Validación en tiempo real mientras escribe
     if (newValue.trim() === "") {
       setetiquetaPlantillaError(true);
     } else {
@@ -693,12 +644,10 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  //TIPO PLANTILLA
   const handleTemplateTypeChange = (event) => {
     const newType = event.target.value;
     setTemplateType(newType);
 
-    // Solo limpiar header si el nuevo tipo NO es "TEXT"
     if (newType !== "TEXT") {
       setHeader("");
     }
@@ -715,14 +664,13 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  //CAROUSEL PLANTILLA
   const handleCarouselTypeChange = (event) => {
     setcarouselType(event.target.value)
   }
 
   const handleHeaderTemplateTypeChange = (event) => {
     setTemplateType(event.target.value);
-    setHeader(''); // Resetear el header al cambiar el tipo
+    setHeader(''); 
   };
 
   const handleHeaderTypeChange = (event) => {
@@ -732,38 +680,11 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  //HEADER PLANTILLA
-  const [mediaType, setMediaType] = useState(""); // Tipo de media (image, video, etc.)
-  const [mediaURL, setMediaURL] = useState(""); // URL del media
+  const [mediaType, setMediaType] = useState(""); 
+  const [mediaURL, setMediaURL] = useState(""); 
   const [selectedFile, setSelectedFile] = useState(null);
-  const MAX_IMG_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
-  const [error, setError] = useState(''); // Estado para manejar errores
-
-  const handleMediaTypeChange = (event) => {
-    setMediaType(event.target.value);
-  };
-
-  const handleCloseError = () => {
-    setError(''); // Cerrar el mensaje de error
-  };
-
-  const handleMediaURLChange = (event) => {
-    setMediaURL(event.target.value);
-  };
-
-  const [file, setFile] = useState(null);
-
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.size > MAX_IMG_SIZE) {
-      setError('El archivo es demasiado grande. El tamaño máximo permitido es 5 MB.');
-      setSelectedFile(null);//Limpiar el archivo seleccionado
-    } else {
-      setError(''); //Limpio el mensaje de error
-      setSelectedFile(selectedFile);
-
-    }
-  };
+  const MAX_IMG_SIZE = 5 * 1024 * 1024; 
+  const [error, setError] = useState(''); 
 
   const handleHeaderChange = (e) => {
     if (e.target.value.length <= charLimit) {
@@ -772,7 +693,6 @@ const TemplateFormCarousel = () => {
 
   };
 
-  //FOOTER PLANTILLA
   const handleFooterChange = (e) => {
     if (e.target.value.length <= charLimit) {
       setFooter(e.target.value);
@@ -782,7 +702,6 @@ const TemplateFormCarousel = () => {
   const charLimit = 60;
   const maxButtons = 3;
 
-  //BOTONES PLANTILLA
   const addButton = () => {
     if (buttons.length < maxButtons) {
       setButtons([
@@ -792,16 +711,14 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  // Función para actualizar botones en todas las cards
   const updateButtonsInAllCards = (newButtons) => {
     setCards(prevCards =>
       prevCards.map(card => ({
         ...card,
-        buttons: [...newButtons] // Copia los nuevos botones a todas las cards
+        buttons: [...newButtons] 
       })))
   };
 
-  // Función para actualizar un botón específico
   const updateButton = (id, key, value) => {
     setCards(prevCards => {
       return prevCards.map(card => ({
@@ -813,111 +730,17 @@ const TemplateFormCarousel = () => {
     });
   };
 
-
-
   const removeButton = (id) => {
     setButtons(buttons.filter((button) => button.id !== id));
   };
 
-  // VARIABLES DEL BODY MESSAGE
-  const handleBodyMessageChange = (e) => {
-    const newValue = event.target.value;
-    setMessage(newValue);
-
-
-    // Validar si el campo está vacío
-    if (newValue.trim() === "") {
-      setcontenidoPlantillaTypeError(true);
-      setcontenidoPlantillaTypeHelperText("Este campo es requerido");
-    } else {
-      setcontenidoPlantillaTypeError(false);
-      setcontenidoPlantillaTypeHelperText("");
-    }
-
-
-    const newText = e.target.value;
-    const maxLength = 549;
-    const emojiCount = countEmojis(newText);
-    const maxEmojis = 10;
-
-    // Verificar si se excede el límite de emojis
-    if (emojiCount > maxEmojis) {
-      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
-      if (countEmojis(message) <= maxEmojis) {
-        Swal.fire({
-          title: 'Límite de emojis',
-          text: 'Solo puedes incluir un máximo de 10 emojis',
-          icon: 'warning',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#00c3ff'
-        });
-      }
-      return; // No actualizar el texto si excede el límite de emojis
-    }
-
-    if (newText.length > maxLength) {
-      Swal.fire({
-        title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 550 caracteres',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      return;
-    }
-
-    if (newText.length <= maxLength) {
-      // Guardar el nuevo texto
-      setMessage(newText);
-      // Actualizar el contador de emojis (necesitas agregar este estado)
-      setEmojiCount(emojiCount);
-
-      // Verificar qué variables se han eliminado del texto
-      const deletedVariables = [];
-      variables.forEach(variable => {
-        if (!newText.includes(variable)) {
-          deletedVariables.push(variable);
-        }
-      });
-
-      // Si se eliminaron variables, actualiza el estado
-      if (deletedVariables.length > 0) {
-        // Filtrar las variables eliminadas
-        const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
-
-        // Actualizar el estado de las variables
-        setVariables(remainingVariables);
-
-        // Actualizar las descripciones y ejemplos
-        const newDescriptions = { ...variableDescriptions };
-        const newExamples = { ...variableExamples };
-        const newErrors = { ...variableErrors };
-
-        deletedVariables.forEach(v => {
-          delete newDescriptions[v];
-          delete newExamples[v];
-          delete newErrors[v];
-        });
-
-        setVariableDescriptions(newDescriptions);
-        setVariableExamples(newExamples);
-        setVariableErrors(newErrors);
-      }
-    }
-  };
-
   const handleBodyMessageCardChange = (e, cardId) => {
-
-
-
     const newText = e.target.value;
     const maxLength = 280;
     const newEmojiCount = countEmojis(newText);
     const maxEmojis = 10;
 
-    // Verificar si se excede el límite de emojis
     if (newEmojiCount > maxEmojis) {
-      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
       if (countEmojis(message) > maxEmojis) {
         Swal.fire({
           title: 'Límite de emojis',
@@ -927,7 +750,7 @@ const TemplateFormCarousel = () => {
           confirmButtonColor: '#00c3ff'
         });
       }
-      return; // No actualizar el texto si excede el límite de emojis
+      return; 
     }
 
     if (newText.length > maxLength) {
@@ -945,10 +768,8 @@ const TemplateFormCarousel = () => {
       prevCards.map(card => {
         if (card.id !== cardId) return card;
 
-        // Variables actuales del mensaje
         const currentVariables = card.variablesCard || [];
 
-        // Identificar variables eliminadas
         const deletedVariables = currentVariables.filter(
           variable => !newText.includes(variable)
         );
@@ -957,7 +778,6 @@ const TemplateFormCarousel = () => {
           v => !deletedVariables.includes(v)
         );
 
-        // Actualizar descripciones y ejemplos
         const updatedDescriptions = { ...card.variableDescriptionsCard };
         const updatedExamples = { ...card.variableExamples };
 
@@ -978,45 +798,6 @@ const TemplateFormCarousel = () => {
     );
   };
 
-
-  // VARIABLES DEL BODY MESSAGE
-  const handleAddVariable = () => {
-    const newVariable = `{{${variables.length + 1}}}`;
-
-    // Verificar si al añadir la variable se superaría el límite de caracteres
-    if (message.length + newVariable.length > 550) {
-      // Puedes mostrar un mensaje de error o simplemente no hacer nada
-      Swal.fire({
-        title: 'Limite de caracteres',
-        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      return;
-    }
-    // Obtener la posición actual del cursor
-    const cursorPosition = messageRef.current.selectionStart;
-
-    // Dividir el texto en dos partes: antes y después del cursor
-    const textBeforeCursor = message.substring(0, cursorPosition);
-    const textAfterCursor = message.substring(cursorPosition);
-
-    // Insertar la variable en la posición del cursor
-    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
-    setMessage(newMessage);
-
-    // Actualizar el array de variables
-    setVariables([...variables, newVariable]);
-
-    // OPCIONAL: Colocar el cursor después de la variable insertada
-    setTimeout(() => {
-      const newPosition = cursorPosition + newVariable.length;
-      messageRef.current.focus();
-      messageRef.current.setSelectionRange(newPosition, newPosition);
-    }, 0);
-  };
-
   const handleAddVariableCard = (cardId) => {
     setCards(prevCards =>
       prevCards.map(card => {
@@ -1024,9 +805,7 @@ const TemplateFormCarousel = () => {
 
         const newVariable = `{{${card.variablesCard.length + 1}}}`;
 
-        // Verificar si al añadir la variable se superaría el límite de caracteres
         if (card.messageCard.length + newVariable.length > 280) {
-          // Mostrar alerta de límite excedido
           Swal.fire({
             title: 'Limite de caracteres',
             text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
@@ -1034,10 +813,9 @@ const TemplateFormCarousel = () => {
             confirmButtonText: 'Entendido',
             confirmButtonColor: '#00c3ff'
           });
-          return card; // Retornar la tarjeta sin cambios
+          return card; 
         }
 
-        // Usa la referencia específica de esta tarjeta
         const textFieldRef = messageCardRefs.current[cardId];
         const cursorPosition = textFieldRef?.selectionStart || 0;
 
@@ -1046,11 +824,9 @@ const TemplateFormCarousel = () => {
 
         const newMessageCard = `${textBefore}${newVariable}${textAfter}`;
 
-        // OPCIONAL: Actualizar descripción y ejemplos también
         const updatedDescriptions = { ...card.variableDescriptionsCard, [newVariable]: "" };
         const updatedExamples = { ...card.variableExamples, [newVariable]: "" };
 
-        // OPCIONAL: Colocar el cursor después de la variable insertada
         setTimeout(() => {
           if (textFieldRef) {
             const newPosition = cursorPosition + newVariable.length;
@@ -1070,18 +846,13 @@ const TemplateFormCarousel = () => {
     );
   };
 
-
-
   const handleEmojiClick = (emojiObject) => {
     const cursor = messageRef.current.selectionStart;
     const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
 
-    // Contar los emojis en el nuevo texto
     const newEmojiCount = countEmojis(newText);
 
-    // Verificar si excedería el límite de 10 emojis
     if (newEmojiCount > 10) {
-      // Mostrar alerta
       Swal.fire({
         title: 'Límite de emojis',
         text: 'Solo puedes incluir un máximo de 10 emojis',
@@ -1091,7 +862,6 @@ const TemplateFormCarousel = () => {
       });
       setShowEmojiPicker(false);
 
-      // Mantener el foco en el campo de texto
       setTimeout(() => {
         if (messageRef.current) {
           messageRef.current.focus();
@@ -1099,16 +869,13 @@ const TemplateFormCarousel = () => {
         }
       }, 100);
 
-      return; // No actualizar el texto
+      return; 
     }
 
-    // Si está dentro del límite, actualizar el mensaje
     setMessage(newText);
-    // Actualizar el contador de emojis
     setEmojiCount(newEmojiCount);
     setShowEmojiPicker(false);
 
-    // Mantener el foco y posicionar el cursor después del emoji insertado
     setTimeout(() => {
       if (messageRef.current) {
         messageRef.current.focus();
@@ -1116,7 +883,6 @@ const TemplateFormCarousel = () => {
       }
     }, 100);
   };
-
 
   const handleEmojiClickCarousel = (emojiObject, cardId) => {
     const input = messageCardRefs.current[cardId];
@@ -1131,12 +897,9 @@ const TemplateFormCarousel = () => {
           emojiObject.emoji +
           card.messageCard.slice(cursor);
 
-        // Contar los emojis en el nuevo texto
         const newEmojiCountCard = countEmojis(newText);
 
-        // Verificar si excedería el límite de 10 emojis
         if (newEmojiCountCard > 10) {
-          // Mostrar alerta
           Swal.fire({
             title: 'Límite de emojis',
             text: 'Solo puedes incluir un máximo de 10 emojis',
@@ -1145,7 +908,6 @@ const TemplateFormCarousel = () => {
           });
           setShowEmojiPickerCards(false);
 
-          // Mantener el foco en el campo de texto
           setTimeout(() => {
             if (input) {
               input.focus();
@@ -1153,14 +915,13 @@ const TemplateFormCarousel = () => {
             }
           }, 100);
 
-          return card; // No actualizar el texto
+          return card; 
         }
 
-        // Si está dentro del límite, actualizar el mensaje
         return {
           ...card,
           messageCard: newText,
-          emojiCountCard: newEmojiCountCard // Asumiendo que tienes este campo en el objeto card
+          emojiCountCard: newEmojiCountCard 
         };
       })
     );
@@ -1176,14 +937,680 @@ const TemplateFormCarousel = () => {
     }, 100);
   };
 
-  // Llamada correcta al hook (sin el tercer parámetro)
   useClickOutside(
     emojiPickerRef,
     () => setShowEmojiPicker(false)
   );
 
+  const deleteVariableCard = (cardId, variableToDelete) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id !== cardId) return card;
 
-  // Función para borrar una variable específica
+        const newMessage = card.messageCard.replace(variableToDelete, '');
+
+        const updatedVariables = card.variablesCard.filter(v => v !== variableToDelete);
+
+        const renumberedVariables = [];
+        const variableMapping = {};
+
+        updatedVariables.forEach((v, index) => {
+          const newVar = `{{${index + 1}}}`;
+          renumberedVariables.push(newVar);
+          variableMapping[v] = newVar;
+        });
+
+        let updatedMessage = newMessage;
+        Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+          updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+        });
+
+        const newVariableDescriptions = { ...card.variableDescriptions };
+        const newVariableExamples = { ...card.variableExamples };
+        const newVariableErrors = { ...card.variableErrors };
+
+        delete newVariableDescriptions[variableToDelete];
+        delete newVariableExamples[variableToDelete];
+        delete newVariableErrors[variableToDelete];
+
+        Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+          if (newVariableDescriptions[oldVar]) {
+            newVariableDescriptions[newVar] = newVariableDescriptions[oldVar];
+            delete newVariableDescriptions[oldVar];
+          }
+          if (newVariableExamples[oldVar]) {
+            newVariableExamples[newVar] = newVariableExamples[oldVar];
+            delete newVariableExamples[oldVar];
+          }
+          if (newVariableErrors[oldVar]) {
+            newVariableErrors[newVar] = newVariableErrors[oldVar];
+            delete newVariableErrors[oldVar];
+          }
+        });
+
+        return {
+          ...card,
+          messageCard: updatedMessage,
+          variablesCard: renumberedVariables,
+          variableDescriptions: newVariableDescriptions,
+          variableExamples: newVariableExamples,
+          variableErrors: newVariableErrors
+        };
+      })
+    );
+  };
+
+  const deleteAllVariablesCard = (cardId) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id !== cardId) return card;
+
+        let newMessage = card.messageCard;
+        card.variablesCard.forEach(variable => {
+          newMessage = newMessage.replaceAll(variable, '');
+        });
+
+        return {
+          ...card,
+          messageCard: newMessage,
+          variablesCard: [],
+          variableDescriptionsCard: {},
+          variableExamples: {}
+        };
+      })
+    );
+
+    messageCardRef.current?.focus();
+  };
+
+
+  const previewMessage = () => {
+    let previewHeader = header;
+    let previewFooter = footer;
+    let previewText = message;
+    Object.entries(variableExamples).forEach(([variable, example]) => {
+      previewHeader = previewHeader.replaceAll(variable, example);
+      previewFooter = previewFooter.replaceAll(variable, example);
+      previewText = previewText.replaceAll(variable, example);
+    });
+  }
+
+  const handleUpdateDescriptionsCard = (cardId, variable, value) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id !== cardId) return card;
+
+        return {
+          ...card,
+          variableDescriptions: {
+            ...card.variableDescriptions,
+            [variable]: value
+          }
+        };
+      })
+    );
+  };
+
+  const handleUpdateExampleCard = (cardId, variable, value) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id !== cardId) return card;
+
+        return {
+          ...card,
+          variableExamples: {
+            ...card.variableExamples,
+            [variable]: value
+          }
+        };
+      })
+    );
+  };
+
+  const generateExample = () => {
+    let generatedExample = message;
+    Object.keys(variableExamples).forEach(variable => {
+      generatedExample = generatedExample.replace(new RegExp(variable, 'g'), variableExamples[variable]);
+    });
+    return generatedExample;
+  };
+
+  const replaceVariables = (text, variables) => {
+    let result = text;
+
+    Object.keys(variables).forEach(variable => {
+      const cleanVariable = variable.replace(/[{}]/g, '');
+      const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
+
+      result = result.replace(regex, variables[variable]);
+    });
+
+    return result;
+  };
+
+  const generateId = () => Math.random().toString(36).substr(2, 9);
+
+  const handlePantallas = (event) => {
+    const { target: { value } } = event;
+
+    const selectedOptions = typeof value === 'string' ? value.split(',') : value;
+
+    const numericValues = selectedOptions.map(option => {
+      return option.split(' - ')[0].trim();
+    });
+
+    setPantallas(numericValues.join(','));
+
+    setDisplayPantallas(selectedOptions);
+  };
+
+
+
+  useEffect(() => {
+    const newExample = replaceVariables(message, variableExamples);
+    setExample(newExample);
+  }, [message, variableExamples]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showEmojiPicker &&
+        emojiPickerButtonRef.current &&
+        emojiPickerComponentRef.current &&
+        !emojiPickerButtonRef.current.contains(event.target) &&
+        !emojiPickerComponentRef.current.contains(event.target)
+      ) {
+        setShowEmojiPicker(false);
+      }
+
+      if (
+        showEmojiPickerCards &&
+        emojiPickerCardRef.current &&
+        !emojiPickerCardRef.current.contains(event.target)
+      ) {
+        setShowEmojiPickerCards(false);
+      }
+    }
+  }
+  )
+
+  useEffect(() => {
+    const count = parseInt(cantidadBotones, 10);
+    setCards(prevCards => {
+      return prevCards.map(card => {
+        const newButtons = [];
+        if (count >= 1) {
+          newButtons.push({
+            id: generateId(),
+            title: `Botón 1`,
+            type: tipoBoton,
+            ...(tipoBoton === 'URL' && { url: '' }),
+            ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
+          });
+        }
+
+        if (count === 2) {
+          newButtons.push({
+            id: generateId(),
+            title: `Botón 2`,
+            type: tipoBoton2,
+            ...(tipoBoton2 === 'URL' && { url: '' }),
+            ...(tipoBoton2 === 'PHONE_NUMBER' && { phoneNumber: '' })
+          });
+        }
+
+
+        return {
+          ...card,
+          buttons: newButtons
+        };
+      });
+    });
+  }, [cantidadBotones, tipoBoton, tipoBoton2]);
+
+  useEffect(() => {
+    const newExample = replaceVariables(message, variableExamples);
+    setExample(newExample);
+  }, [message, variableExamples]);
+
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    if (templateName.trim()) {
+      debounceTimeout.current = setTimeout(() => {
+        validateTemplateName(templateName);
+      }, 800); 
+    } else {
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
+        templateNameHelperText === "Nombre disponible" ||
+        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+        setTemplateNameHelperText("");
+      }
+    }
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [templateName, idBotRedes]); 
+  //
+
+  const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, setValidationErrors) => {
+
+    setCards(prevCards => {
+      return prevCards.map(card => {
+        if (card.id !== cardId) return card;
+
+        const updatedButtons = card.buttons.map(button =>
+          button.id === buttonId ? { ...button, [field]: value } : button
+        );
+
+        return {
+          ...card,
+          buttons: updatedButtons
+        };
+      });
+    });
+
+    if (field === "url") {
+      if (value.trim() === '') {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[buttonId];
+          return newErrors;
+        });
+      } else if (value.length > 5) {
+        const isValid = /^(ftp|http|https):\/\/[^ "]+$/.test(value);
+
+        if (!isValid) {
+          setValidationErrors(prev => ({
+            ...prev,
+            [buttonId]: 'URL no válida. Debe comenzar con http://, https:// o ftp://'
+          }));
+        } else {
+          setValidationErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[buttonId];
+            return newErrors;
+          });
+        }
+      }
+    }
+  };
+
+
+  const formatCardsForGupshup = (cards) => {
+    return cards.map(card => {
+      const transformedButtons = card.buttons.map(button => {
+        if (button.type === "URL") {
+          return {
+            type: "URL",
+            text: button.title,
+            url: button.url,
+            buttonValue: button.url.split("{{")[0] || button.url,
+            suffix: "",
+            example: [button.url]
+          };
+        } else if (button.type === "QUICK_REPLY") {
+          return {
+            type: "QUICK_REPLY",
+            text: button.title
+          };
+        } else if (button.type === "PHONE_NUMBER") {
+          return {
+            type: "PHONE_NUMBER",
+            text: button.title,
+            phoneNumber: button.phoneNumber
+          };
+        }
+        return null;
+      }).filter(button => button !== null);
+
+      let mediaUrl = '';
+      if (card.fileData && card.fileData.url) {
+        mediaUrl = card.fileData.url;
+      }
+
+      return {
+        headerType: "IMAGE",
+        mediaUrl: mediaUrl,
+        mediaId: card.fileData?.mediaId || null,  // Usa el mediaId si existe
+        exampleMedia: null,
+        body: card.messageCard || "",
+        sampleText: card.variableExamples?.messageCard || card.messageCard || "",
+        buttons: transformedButtons
+      };
+    });
+  };
+
+  const [accordions, setAccordions] = useState([
+  ]);
+
+  const [expanded, setExpanded] = useState(false);
+
+  const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+
+  const handleFormChange = (id, field, value) => {
+    setAccordions(accordions.map(accordion =>
+      accordion.id === id ? { ...accordion, [field]: value } : accordion
+    ));
+  };
+
+  const addAccordion = () => {
+    if (cards.length >= 10) {
+      alert("No puedes tener más de 10 acordeones");
+      return;
+    }
+
+    const cantidad = parseInt(cantidadBotones, 10);
+
+    const generarBotones = (cantidad) => {
+      const botones = [];
+
+      if (cantidad >= 1) {
+        botones.push({
+          id: uuidv4(),
+          title: "Botón 1",
+          type: tipoBoton,
+          ...(tipoBoton === 'URL' && { url: '' }),
+          ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
+        });
+      }
+
+      if (cantidad === 2) {
+        botones.push({
+          id: uuidv4(),
+          title: "Botón 2",
+          type: tipoBoton2,
+          ...(tipoBoton2 === 'URL' && { url: '' }),
+          ...(tipoBoton2 === 'PHONE_NUMBER' && { phoneNumber: '' })
+        });
+      }
+
+      return botones;
+    };
+
+    const nuevaCard = {
+      ...initialCardState,
+      id: uuidv4(),
+      buttons: generarBotones(cantidad)
+    };
+
+    setCards([...cards, nuevaCard]);
+  };
+
+
+  const deleteAccordion = (id, e) => {
+    e.stopPropagation();
+    setCards(cards.filter(card => card.id !== id));
+  };
+
+  const updateCardField = (cardId, field, value) => {
+    setCards(cards.map(card =>
+      card.id === cardId ? { ...card, [field]: value } : card
+    ));
+  };
+
+  const generarBotones = (cantidad, tipo) => {
+    const botones = [];
+    for (let i = 0; i < cantidad; i++) {
+      botones.push({
+        id: generateId(), 
+        title: `Botón ${i + 1}`,
+        type: tipo,
+        ...(tipo === 'URL' && { url: '' }),
+        ...(tipo === 'PHONE_NUMBER' && { phoneNumber: '' })
+      });
+    }
+    return botones;
+  };
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(accordions);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setAccordions(items);
+  };
+
+  const initialCardState = {
+    id: uuidv4(), 
+    carouselType: "IMAGEN",
+    messageCard: "",
+    variablesCard: [],
+    variableDescriptionsCard: {},
+    variableExamples: {},
+    buttons: [],
+    file: null, 
+  };
+
+  const [cards, setCards] = useState([initialCardState]);
+
+  const currentCardId = cards[0].id;
+
+  const handleFileUpload = (cardId, uploadResponse) => {
+
+
+    if (uploadResponse) {
+      const fileData = {
+        url: uploadResponse.url,
+        mediaId: uploadResponse.mediaId || null
+      };
+
+      setCards(prevCards => prevCards.map(card => {
+        if (card.id === cardId) {
+          return {
+            ...card,
+            fileData: fileData 
+          };
+        }
+        return card;
+      }));
+    } else {
+      console.error("No se recibió respuesta de subida válida");
+    }
+  };
+
+  const countEmojis = (text) => {
+    const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
+    const matches = text.match(emojiRegex);
+    return matches ? matches.length : 0;
+  };
+
+  const getDuplicateDescriptions = (descriptions) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
+
+    Object.entries(descriptions).forEach(([variable, description]) => {
+      if (description && description.trim()) {
+        const cleanDesc = description.trim().toLowerCase();
+        if (descriptionCounts[cleanDesc]) {
+          descriptionCounts[cleanDesc].push(variable);
+          duplicates.add(cleanDesc);
+        } else {
+          descriptionCounts[cleanDesc] = [variable];
+        }
+      }
+    });
+
+    const duplicateVariables = new Set();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(variable => {
+        duplicateVariables.add(variable);
+      });
+    });
+
+    return duplicateVariables;
+  };
+
+  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+  const getDuplicateDescriptionsInCards = (cards) => {
+    const descriptionCounts = {};
+    const duplicates = new Set();
+
+    cards.forEach(card => {
+      if (card.variableDescriptions) {
+        Object.entries(card.variableDescriptions).forEach(([variable, description]) => {
+          if (description && description.trim()) {
+            const cleanDesc = description.trim().toLowerCase();
+            if (descriptionCounts[cleanDesc]) {
+              descriptionCounts[cleanDesc].push({ cardId: card.id, variable });
+              duplicates.add(cleanDesc);
+            } else {
+              descriptionCounts[cleanDesc] = [{ cardId: card.id, variable }];
+            }
+          }
+        });
+      }
+    });
+
+    const duplicateEntries = new Map();
+    duplicates.forEach(desc => {
+      descriptionCounts[desc].forEach(entry => {
+        if (!duplicateEntries.has(entry.cardId)) {
+          duplicateEntries.set(entry.cardId, new Set());
+        }
+        duplicateEntries.get(entry.cardId).add(entry.variable);
+      });
+    });
+
+    return duplicateEntries;
+  };
+
+  const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
+
+  const handleBodyMessageChange = (e) => {
+    const newValue = event.target.value;
+    setMessage(newValue);
+
+    if (newValue.trim() === "") {
+      setcontenidoPlantillaTypeError(true);
+      setcontenidoPlantillaTypeHelperText("Este campo es requerido");
+    } else {
+      setcontenidoPlantillaTypeError(false);
+      setcontenidoPlantillaTypeHelperText("");
+    }
+
+
+    const newText = e.target.value;
+    const maxLength = 549;
+    const emojiCount = countEmojis(newText);
+    const maxEmojis = 10;
+
+    if (emojiCount > maxEmojis) {
+      if (countEmojis(message) <= maxEmojis) {
+        Swal.fire({
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+      return; 
+    }
+
+    if (newText.length > maxLength) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+    if (newText.length <= maxLength) {
+      setMessage(newText);
+      setEmojiCount(emojiCount);
+
+      const deletedVariables = [];
+      variables.forEach(variable => {
+        if (!newText.includes(variable)) {
+          deletedVariables.push(variable);
+        }
+      });
+
+      if (deletedVariables.length > 0) {
+
+        const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
+
+        setVariables(remainingVariables);
+
+        const newDescriptions = { ...variableDescriptions };
+        const newExamples = { ...variableExamples };
+        const newErrors = { ...variableErrors };
+
+        deletedVariables.forEach(v => {
+          delete newDescriptions[v];
+          delete newExamples[v];
+          delete newErrors[v];
+        });
+
+        setVariableDescriptions(newDescriptions);
+        setVariableExamples(newExamples);
+        setVariableErrors(newErrors);
+      }
+    }
+  };
+
+  // BOTON AGREGAR VARIABLE
+  const handleAddVariable = () => {
+    const newVariable = `{{${variables.length + 1}}}`;
+
+    if (message.length + newVariable.length > 550) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+    const cursorPosition = messageRef.current.selectionStart;
+    const textBeforeCursor = message.substring(0, cursorPosition);
+    const textAfterCursor = message.substring(cursorPosition);
+
+    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
+    setMessage(newMessage);
+
+    setVariables([...variables, newVariable]);
+
+    setTimeout(() => {
+      const newPosition = cursorPosition + newVariable.length;
+      messageRef.current.focus();
+      messageRef.current.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
+
+  // BOTON BORRAR VARIABLES
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
+
+  // BOTON PARA BORRAR UNA VARIABLE EN ESPECIFICO
   const deleteVariable = (variableToDelete) => {
     // Eliminar la variable del texto
     const newMessage = message.replace(variableToDelete, '');
@@ -1247,137 +1674,7 @@ const TemplateFormCarousel = () => {
     messageRef.current?.focus();
   };
 
-
-  // Función para borrar una variable específica de la tarjeta
-  const deleteVariableCard = (cardId, variableToDelete) => {
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.id !== cardId) return card;
-
-        // 1. Eliminar la variable del mensaje
-        const newMessage = card.messageCard.replace(variableToDelete, '');
-
-        // 2. Filtrar la variable a eliminar
-        const updatedVariables = card.variablesCard.filter(v => v !== variableToDelete);
-
-        // 3. Renumerar variables restantes
-        const renumberedVariables = [];
-        const variableMapping = {};
-
-        updatedVariables.forEach((v, index) => {
-          const newVar = `{{${index + 1}}}`;
-          renumberedVariables.push(newVar);
-          variableMapping[v] = newVar;
-        });
-
-        // 4. Actualizar el mensaje con nuevas variables
-        let updatedMessage = newMessage;
-        Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-          updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
-        });
-
-        // 5. Actualizar descripciones, ejemplos y errores
-        const newVariableDescriptions = { ...card.variableDescriptions };
-        const newVariableExamples = { ...card.variableExamples };
-        const newVariableErrors = { ...card.variableErrors };
-
-        // Eliminar la variable que se está borrando
-        delete newVariableDescriptions[variableToDelete];
-        delete newVariableExamples[variableToDelete];
-        delete newVariableErrors[variableToDelete];
-
-        // Actualizar las demás variables con nueva numeración
-        Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-          if (newVariableDescriptions[oldVar]) {
-            newVariableDescriptions[newVar] = newVariableDescriptions[oldVar];
-            delete newVariableDescriptions[oldVar];
-          }
-          if (newVariableExamples[oldVar]) {
-            newVariableExamples[newVar] = newVariableExamples[oldVar];
-            delete newVariableExamples[oldVar];
-          }
-          if (newVariableErrors[oldVar]) {
-            newVariableErrors[newVar] = newVariableErrors[oldVar];
-            delete newVariableErrors[oldVar];
-          }
-        });
-
-        return {
-          ...card,
-          messageCard: updatedMessage,
-          variablesCard: renumberedVariables,
-          variableDescriptions: newVariableDescriptions,
-          variableExamples: newVariableExamples,
-          variableErrors: newVariableErrors
-        };
-      })
-    );
-  };
-
-
-  // Función para borrar todas las variables
-  const deleteAllVariables = () => {
-    let newMessage = message;
-    variables.forEach(variable => {
-      newMessage = newMessage.replaceAll(variable, '');
-    });
-    setMessage(newMessage);
-    setVariables([]);
-
-    // Limpiar todos los estados relacionados con variables
-    setVariableDescriptions({});
-    setVariableExamples({});
-    setVariableErrors({});
-    exampleRefs.current = {};
-
-    messageRef.current?.focus();
-  };
-
-  // Nueva función para borrar todas las variables
-  const deleteAllVariablesCard = (cardId) => {
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.id !== cardId) return card;
-
-        let newMessage = card.messageCard;
-        card.variablesCard.forEach(variable => {
-          newMessage = newMessage.replaceAll(variable, '');
-        });
-
-        return {
-          ...card,
-          messageCard: newMessage,
-          variablesCard: [],
-          variableDescriptionsCard: {},
-          variableExamples: {}
-        };
-      })
-    );
-
-    messageCardRef.current?.focus();
-  };
-
-
-  // Función para previsualizar el mensaje con ejemplos aplicados
-  const previewMessage = () => {
-    let previewHeader = header;
-    let previewFooter = footer;
-    let previewText = message;
-    Object.entries(variableExamples).forEach(([variable, example]) => {
-      previewHeader = previewHeader.replaceAll(variable, example);
-      previewFooter = previewFooter.replaceAll(variable, example);
-      previewText = previewText.replaceAll(variable, example);
-    });
-  }
-
-  const handleUpdateExample = (variable, value) => {
-    setVariableExamples(prevExamples => {
-      const updatedExamples = { ...prevExamples, [variable]: value };
-
-      return updatedExamples;
-    });
-  };
-
+  // ACTUALIZA LA DESCRIPCION DE LA VARIABLE
   const handleUpdateDescriptions = (variable, event) => {
     const newValue = event.target.value.replace(/\s+/g, '_');
     setVariableDescriptions(prevDescriptions => ({
@@ -1386,556 +1683,113 @@ const TemplateFormCarousel = () => {
     }));
   };
 
-  const handleUpdateDescriptionsCard = (cardId, variable, value) => {
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.id !== cardId) return card;
+  // ACTUALIZA EL EJEMPLO DE LA VARIABLE
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
 
-        return {
-          ...card,
-          variableDescriptions: {
-            ...card.variableDescriptions,
-            [variable]: value
-          }
-        };
-      })
-    );
-  };
-
-  const handleUpdateExampleCard = (cardId, variable, value) => {
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.id !== cardId) return card;
-
-        return {
-          ...card,
-          variableExamples: {
-            ...card.variableExamples,
-            [variable]: value
-          }
-        };
-      })
-    );
-  };
-
-  // Función para generar el ejemplo combinando el mensaje y los valores de las variables
-  const generateExample = () => {
-    let generatedExample = message;
-    Object.keys(variableExamples).forEach(variable => {
-      generatedExample = generatedExample.replace(new RegExp(variable, 'g'), variableExamples[variable]);
+      return updatedExamples;
     });
-    return generatedExample;
   };
 
-  // Función para reemplazar las variables en el mensaje con sus ejemplos
-  const replaceVariables = (text, variables) => {
-    let result = text;
+  // Función para actualizar el tipo de variable
+  const handleUpdateVariableType = (variable, type) => {
+    setVariableTypes(prev => ({
+      ...prev,
+      [variable]: type
+    }));
 
-    Object.keys(variables).forEach(variable => {
-      // Remover las llaves de la clave para crear el regex correcto
-      const cleanVariable = variable.replace(/[{}]/g, '');
-      const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-
-      result = result.replace(regex, variables[variable]);
-    });
-
-    return result;
-  };
-
-  // Generar IDs únicos para los botones
-  const generateId = () => Math.random().toString(36).substr(2, 9);
-
-  const handlePantallas = (event) => {
-    const { target: { value } } = event;
-
-    // Procesar los valores seleccionados
-    const selectedOptions = typeof value === 'string' ? value.split(',') : value;
-
-    // Extraer solo los números
-    const numericValues = selectedOptions.map(option => {
-      return option.split(' - ')[0].trim();
-    });
-
-    // Guardar como string con comas para la API
-    setPantallas(numericValues.join(','));
-
-    // Guardar el texto completo para mostrar (displayPantallas)
-    setDisplayPantallas(selectedOptions);
-  };
-
-
-
-  // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
-  useEffect(() => {
-
-
-
-    const newExample = replaceVariables(message, variableExamples);
-
-
-
-    setExample(newExample);
-  }, [message, variableExamples]);
-
-  useEffect(() => {
-    // Función que maneja los clics fuera del componente
-    const handleClickOutside = (event) => {
-      // Verificar si el clic fue fuera tanto del botón como del picker
-      if (
-        showEmojiPicker &&
-        emojiPickerButtonRef.current &&
-        emojiPickerComponentRef.current &&
-        !emojiPickerButtonRef.current.contains(event.target) &&
-        !emojiPickerComponentRef.current.contains(event.target)
-      ) {
-        setShowEmojiPicker(false);
-      }
-
-      if (
-        showEmojiPickerCards &&
-        emojiPickerCardRef.current &&
-        !emojiPickerCardRef.current.contains(event.target)
-      ) {
-        setShowEmojiPickerCards(false);
-      }
-    }
-  }
-  )
-
-  // Inicializar botones basado en la cantidad seleccionada
-  // Efecto para inicializar botones
-  useEffect(() => {
-
-    const count = parseInt(cantidadBotones, 10);
-
-    setCards(prevCards => {
-      return prevCards.map(card => {
-        const newButtons = [];
-
-        // Primer botón
-        if (count >= 1) {
-          newButtons.push({
-            id: generateId(),
-            title: `Botón 1`,
-            type: tipoBoton,
-            ...(tipoBoton === 'URL' && { url: '' }),
-            ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
-          });
-        }
-
-        // Segundo botón
-        if (count === 2) {
-          newButtons.push({
-            id: generateId(),
-            title: `Botón 2`,
-            type: tipoBoton2,
-            ...(tipoBoton2 === 'URL' && { url: '' }),
-            ...(tipoBoton2 === 'PHONE_NUMBER' && { phoneNumber: '' })
-          });
-        }
-
-
-        return {
-          ...card,
-          buttons: newButtons
-        };
+    // Limpiar datos según el tipo
+    if (type === 'list') {
+      setVariableExamples(prev => {
+        const newExamples = { ...prev };
+        delete newExamples[variable];
+        return newExamples;
       });
-    });
-  }, [cantidadBotones, tipoBoton, tipoBoton2]);
-
-  // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
-  useEffect(() => {
-    const newExample = replaceVariables(message, variableExamples);
-    setExample(newExample);
-  }, [message, variableExamples]);
-
-  // useEffect para validación con debounce
-  useEffect(() => {
-    // Limpiar timeout anterior
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
-    // Solo validar si hay un nombre y no está vacío
-    if (templateName.trim()) {
-      debounceTimeout.current = setTimeout(() => {
-        validateTemplateName(templateName);
-      }, 800); // Esperar 800ms después de que el usuario deje de escribir
     } else {
-      // Si está vacío, limpiar mensajes de validación de existencia
-      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
-        templateNameHelperText === "Nombre disponible" ||
-        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
-        setTemplateNameHelperText("");
-      }
-    }
-
-    // Cleanup function
-    return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-    };
-  }, [templateName, idBotRedes]); // Dependencias: templateName e idBotRedes
-  //
-
-
-  // Validación mejorada para URLs
-  const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, setValidationErrors) => {
-
-
-    // Actualiza la tarjeta y sus botones
-    setCards(prevCards => {
-      return prevCards.map(card => {
-        // Si no es la tarjeta que queremos actualizar, la dejamos igual
-        if (card.id !== cardId) return card;
-
-        // Es la tarjeta correcta, actualizamos el botón específico
-        const updatedButtons = card.buttons.map(button =>
-          button.id === buttonId ? { ...button, [field]: value } : button
-        );
-
-
-        return {
-          ...card,
-          buttons: updatedButtons
-        };
+      setVariableLists(prev => {
+        const newLists = { ...prev };
+        delete newLists[variable];
+        return newLists;
       });
-    });
-
-    // Lógica de validación
-    if (field === "url") {
-      if (value.trim() === '') {
-        setValidationErrors(prev => {
-          const newErrors = { ...prev };
-          delete newErrors[buttonId];
-          return newErrors;
-        });
-      } else if (value.length > 5) {
-        const isValid = /^(ftp|http|https):\/\/[^ "]+$/.test(value);
-
-        if (!isValid) {
-          setValidationErrors(prev => ({
-            ...prev,
-            [buttonId]: 'URL no válida. Debe comenzar con http://, https:// o ftp://'
-          }));
-        } else {
-          setValidationErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[buttonId];
-            return newErrors;
-          });
-        }
-      }
     }
   };
 
+  // Función para agregar opción a la lista
+  const handleAddListOption = (variable, option) => {
+    if (!option.trim()) return;
 
-  const formatCardsForGupshup = (cards) => {
-    return cards.map(card => {
-      // Transformar botones al formato requerido por Gupshup
-      const transformedButtons = card.buttons.map(button => {
-        if (button.type === "URL") {
-          return {
-            type: "URL",
-            text: button.title,
-            url: button.url,
-            buttonValue: button.url.split("{{")[0] || button.url,
-            suffix: "",
-            example: [button.url]
-          };
-        } else if (button.type === "QUICK_REPLY") {
-          return {
-            type: "QUICK_REPLY",
-            text: button.title
-          };
-        } else if (button.type === "PHONE_NUMBER") {
-          return {
-            type: "PHONE_NUMBER",
-            text: button.title,
-            phoneNumber: button.phoneNumber
-          };
-        }
-        return null;
-      }).filter(button => button !== null);
+    setVariableLists(prev => ({
+      ...prev,
+      [variable]: [...(prev[variable] || []), option.trim()]
+    }));
+  };
 
-      // Obtener la URL independientemente de la estructura de file
-      // Obtener la URL de manera más robusta
-      let mediaUrl = '';
-      if (card.fileData && card.fileData.url) {
-        mediaUrl = card.fileData.url;
-      }
+  // Función para eliminar opción de la lista
+  const handleDeleteListOption = (variable, optionIndex) => {
+    setVariableLists(prev => ({
+      ...prev,
+      [variable]: prev[variable].filter((_, index) => index !== optionIndex)
+    }));
+  };
 
-
-
-
-      // Crear el formato requerido por Gupshup
-      return {
-        headerType: "IMAGE",
-        mediaUrl: mediaUrl,
-        mediaId: card.fileData?.mediaId || null,  // Usa el mediaId si existe
-        exampleMedia: null,
-        body: card.messageCard || "",
-        sampleText: card.variableExamples?.messageCard || card.messageCard || "",
-        buttons: transformedButtons
-      };
+  // Función para iniciar edición de opción
+  const handleStartEditOption = (variable, index, currentValue) => {
+    setEditingOption({
+      variable,
+      index,
+      value: currentValue
     });
   };
 
-  // Uso de la función
-  //const formattedCardsForGupshup = formatCardsForGupshup(cards);
-  //
-
-
-  // Estado para los acordeones - solo guardamos el ID único y el contenido del formulario
-  const [accordions, setAccordions] = useState([
-  ]);
-
-  // Estado para controlar qué acordeón está expandido
-  const [expanded, setExpanded] = useState(false);
-
-  // Manejar cambios en la expansión del acordeón
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
+  // Función para guardar edición de opción
+  const handleSaveOptionEdit = (variable, index) => {
+    if (editingOption && editingOption.value.trim()) {
+      const newLists = { ...variableLists };
+      newLists[variable][index] = editingOption.value.trim();
+      setVariableLists(newLists);
+    }
+    setEditingOption(null);
   };
 
-  // Manejar cambios en los formularios
-  const handleFormChange = (id, field, value) => {
-    setAccordions(accordions.map(accordion =>
-      accordion.id === id ? { ...accordion, [field]: value } : accordion
-    ));
+  // Funciones para drag & drop
+  const handleDragStart = (e, variable, index) => {
+    setDraggedItem({ variable, index });
+    e.dataTransfer.effectAllowed = 'move';
   };
 
-  // Agregar nueva tarjeta
-  const addAccordion = () => {
-    // Verificar si ya hay 10 acordeones
-    if (cards.length >= 10) {
-      alert("No puedes tener más de 10 acordeones");
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, variable, targetIndex) => {
+    e.preventDefault();
+
+    if (!draggedItem || draggedItem.variable !== variable) {
+      setDraggedItem(null);
       return;
     }
 
-    const cantidad = parseInt(cantidadBotones, 10);
+    const sourceIndex = draggedItem.index;
 
-    // Función auxiliar para generar los botones según la cantidad
-    const generarBotones = (cantidad) => {
-      const botones = [];
-
-      // Primer botón (siempre que cantidad >= 1)
-      if (cantidad >= 1) {
-        botones.push({
-          id: uuidv4(),
-          title: "Botón 1",
-          type: tipoBoton,
-          ...(tipoBoton === 'URL' && { url: '' }),
-          ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
-        });
-      }
-
-      // Segundo botón (solo si cantidad === 2)
-      if (cantidad === 2) {
-        botones.push({
-          id: uuidv4(),
-          title: "Botón 2",
-          type: tipoBoton2,
-          ...(tipoBoton2 === 'URL' && { url: '' }),
-          ...(tipoBoton2 === 'PHONE_NUMBER' && { phoneNumber: '' })
-        });
-      }
-
-      return botones;
-    };
-
-    const nuevaCard = {
-      ...initialCardState,
-      id: uuidv4(),
-      buttons: generarBotones(cantidad)
-    };
-
-    setCards([...cards, nuevaCard]);
-  };
-
-
-  // Eliminar tarjeta
-  const deleteAccordion = (id, e) => {
-    e.stopPropagation();
-    setCards(cards.filter(card => card.id !== id));
-  };
-
-  // Actualizar cualquier campo de una tarjeta
-  const updateCardField = (cardId, field, value) => {
-    setCards(cards.map(card =>
-      card.id === cardId ? { ...card, [field]: value } : card
-    ));
-  };
-
-  const generarBotones = (cantidad, tipo) => {
-    const botones = [];
-    for (let i = 0; i < cantidad; i++) {
-      botones.push({
-        id: generateId(), // o uuidv4() si preferís
-        title: `Botón ${i + 1}`,
-        type: tipo,
-        ...(tipo === 'URL' && { url: '' }),
-        ...(tipo === 'PHONE_NUMBER' && { phoneNumber: '' })
-      });
+    if (sourceIndex === targetIndex) {
+      setDraggedItem(null);
+      return;
     }
-    return botones;
+
+    const newLists = { ...variableLists };
+    const items = [...newLists[variable]];
+    const [removed] = items.splice(sourceIndex, 1);
+    items.splice(targetIndex, 0, removed);
+
+    newLists[variable] = items;
+    setVariableLists(newLists);
+    setDraggedItem(null);
   };
-
-
-
-
-  // Manejar el fin del arrastre
-  const onDragEnd = (result) => {
-    // Si no hay destino válido, no hacer nada
-    if (!result.destination) return;
-
-    const items = Array.from(accordions);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    setAccordions(items);
-  };
-
-  // Estado inicial para cada tarjeta del carrusel
-  const initialCardState = {
-    id: uuidv4(), // o algún otro método para generar IDs únicos
-    carouselType: "IMAGEN",
-    messageCard: "",
-    variablesCard: [],
-    variableDescriptionsCard: {},
-    variableExamples: {},
-    buttons: [],
-    file: null, // para almacenar el archivo subido
-    // otros campos que necesites
-  };
-
-  // Estado principal que contiene todas las tarjetas
-  const [cards, setCards] = useState([initialCardState]);
-
-  const currentCardId = cards[0].id;
-
-
-
-  // Función para manejar la subida de archivos para una card específica
-  const handleFileUpload = (cardId, uploadResponse) => {
-
-
-    if (uploadResponse) {
-      // Estructura esperada del uploadResponse después de las modificaciones
-      const fileData = {
-        url: uploadResponse.url,
-        mediaId: uploadResponse.mediaId || null
-      };
-
-
-
-      setCards(prevCards => prevCards.map(card => {
-        if (card.id === cardId) {
-          return {
-            ...card,
-            fileData: fileData // Guardar los datos del archivo en la tarjeta
-          };
-        }
-        return card;
-      }));
-    } else {
-      console.error("No se recibió respuesta de subida válida");
-    }
-  };
-
-  // Función para contar emojis en un texto
-  const countEmojis = (text) => {
-    // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
-    const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
-    const matches = text.match(emojiRegex);
-    return matches ? matches.length : 0;
-  };
-
-  // 1. Función para detectar duplicados
-  const getDuplicateDescriptions = (descriptions) => {
-    const descriptionCounts = {};
-    const duplicates = new Set();
-
-    // Contar ocurrencias de cada descripción (ignorando vacías)
-    Object.entries(descriptions).forEach(([variable, description]) => {
-      if (description && description.trim()) {
-        const cleanDesc = description.trim().toLowerCase();
-        if (descriptionCounts[cleanDesc]) {
-          descriptionCounts[cleanDesc].push(variable);
-          duplicates.add(cleanDesc);
-        } else {
-          descriptionCounts[cleanDesc] = [variable];
-        }
-      }
-    });
-
-    // Retornar variables que tienen descripciones duplicadas
-    const duplicateVariables = new Set();
-    duplicates.forEach(desc => {
-      descriptionCounts[desc].forEach(variable => {
-        duplicateVariables.add(variable);
-      });
-    });
-
-    return duplicateVariables;
-  };
-
-  // 3. En tu componente, calcular duplicados
-  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-
-  // Función para detectar descripciones duplicadas entre tarjetas
-  const getDuplicateDescriptionsInCards = (cards) => {
-    const descriptionCounts = {};
-    const duplicates = new Set();
-
-    // Recorrer todas las tarjetas y sus descripciones
-    cards.forEach(card => {
-      if (card.variableDescriptions) {
-        Object.entries(card.variableDescriptions).forEach(([variable, description]) => {
-          if (description && description.trim()) {
-            const cleanDesc = description.trim().toLowerCase();
-            if (descriptionCounts[cleanDesc]) {
-              descriptionCounts[cleanDesc].push({ cardId: card.id, variable });
-              duplicates.add(cleanDesc);
-            } else {
-              descriptionCounts[cleanDesc] = [{ cardId: card.id, variable }];
-            }
-          }
-        });
-      }
-    });
-
-    // Crear un mapa de tarjetas y variables con descripciones duplicadas
-    const duplicateEntries = new Map();
-    duplicates.forEach(desc => {
-      descriptionCounts[desc].forEach(entry => {
-        if (!duplicateEntries.has(entry.cardId)) {
-          duplicateEntries.set(entry.cardId, new Set());
-        }
-        duplicateEntries.get(entry.cardId).add(entry.variable);
-      });
-    });
-
-    return duplicateEntries;
-  };
-
-  // Uso en tu componente:
-  const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
 
   return (
     <Grid container sx={{ height: 'calc(100vh - 16px)' }}>
-
-      {/* Notificaciones */}<Snackbar
-        open={openSnackbar}
-        autoHideDuration={10000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
 
       {/* Formulario (70%) */}
       <Grid item xs={8} sx={{ height: '100%' }}>
@@ -2162,7 +2016,6 @@ const TemplateFormCarousel = () => {
                 }}
               />
 
-
               {/* Botones de emojis y acciones en una barra de herramientas mejor diseñada */}
               <Stack
                 direction="row"
@@ -2229,75 +2082,217 @@ const TemplateFormCarousel = () => {
               {/* Variables disponibles como chips con campos de texto para ejemplos y descripción */}
               {variables.length > 0 && (
                 <Paper
-                  sx={{
-                    my: 2,
-                    p: 2,
-                    borderRadius: 2,
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
-                    Agrega una descripción y un ejemplo a tu variable:
-                  </Typography>
+                sx={{
+                  my: 2,
+                  p: 2,
+                  borderRadius: 2,
+                  border: "1px solid #ddd",
+                }}
+              >
+                <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
+                  Agrega una descripción y un ejemplo a tu variable:
+                </Typography>
 
-                  {variables.map((variable, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: 2,
-                        mb: 2,
-                        p: 1.5,
-                        backgroundColor: "#fff",
-                        borderRadius: 1,
-                        border: "1px solid #e0e0e0"
-                      }}
-                    >
-                      <Chip
-                        label={variable}
-                        color="primary"
-                        sx={{ fontWeight: "500" }}
-                        deleteIcon={
-                          <Tooltip title="Borrar variable">
-                            <DeleteIcon />
-                          </Tooltip>
+                {variables.map((variable, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      flexWrap: 'wrap',
+                      gap: 2,
+                      mb: 2,
+                      p: 1.5,
+                      backgroundColor: "#fff",
+                      borderRadius: 1,
+                      border: "1px solid #e0e0e0"
+                    }}
+                  >
+                    <Chip
+                      label={variable}
+                      color="primary"
+                      sx={{ fontWeight: "500", mt: 1 }}
+                      deleteIcon={
+                        <Tooltip title="Borrar variable">
+                          <DeleteIcon />
+                        </Tooltip>
+                      }
+                      onDelete={() => deleteVariable(variable)}
+                    />
+
+                    <Stack sx={{ flexGrow: 1, gap: 1.5 }}>
+                      {/* Selector de tipo de variable */}
+                      <FormControl size="small" fullWidth>
+                        <InputLabel>Tipo de variable</InputLabel>
+                        <Select
+                          value={variableTypes[variable] || 'normal'}
+                          label="Tipo de variable"
+                          onChange={(e) => handleUpdateVariableType(variable, e.target.value)}
+                        >
+                          <MenuItem value="normal">Variable normal</MenuItem>
+                          <MenuItem value="list">Lista de opciones</MenuItem>
+                        </Select>
+                      </FormControl>
+
+                      <TextField
+                        size="small"
+                        label="Descripción"
+                        placeholder="¿Para qué sirve esta variable?"
+                        value={variableDescriptions[variable] || ''}
+                        onChange={(e) => handleUpdateDescriptions(variable, e)}
+                        error={duplicateVariables.has(variable)}
+                        helperText={
+                          duplicateVariables.has(variable)
+                            ? "Esta descripción ya existe en otra variable"
+                            : ""
                         }
-                        onDelete={() => deleteVariable(variable)}
+                        fullWidth
                       />
 
-                      <Stack sx={{ flexGrow: 1, gap: 1 }}>
-                        <TextField
-                          size="small"
-                          label="Descripción"
-                          placeholder="¿Para qué sirve esta variable?"
-                          value={variableDescriptions[variable] || ''}
-                          onChange={(e) => handleUpdateDescriptions(variable, e)}
-                          error={duplicateVariables.has(variable)}
-                          helperText={
-                            duplicateVariables.has(variable)
-                              ? "Esta descripción ya existe en otra variable"
-                              : ""
-                          }
-                          sx={{ flexGrow: 1 }}
-                        />
+                      {/* Mostrar campo diferente según el tipo */}
+                      {variableTypes[variable] === 'list' ? (
+                        <Box>
+                          {/* Campo de entrada con botón de agregar */}
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <TextField
+                              size="small"
+                              label="Agregar opción a la lista"
+                              placeholder="Escribe una opción"
+                              inputRef={(el) => (listInputRefs.current[variable] = el)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddListOption(variable, e.target.value);
+                                  e.target.value = '';
+                                }
+                              }}
+                              fullWidth
+                            />
+                            <Tooltip title="Agregar opción">
+                              <IconButton
+                                color="primary"
+                                onClick={() => {
+                                  const inputEl = listInputRefs.current[variable];
+                                  if (inputEl && inputEl.value.trim()) {
+                                    handleAddListOption(variable, inputEl.value);
+                                    inputEl.value = '';
+                                  }
+                                }}
+                                sx={{
+                                  border: '1px solid',
+                                  borderColor: 'primary.main',
+                                  borderRadius: 1
+                                }}
+                              >
+                                <AddIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
 
+                          {/* Mostrar las opciones agregadas con numeración y drag & drop */}
+                          {variableLists[variable]?.length > 0 && (
+                            <Box sx={{ mt: 1.5 }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                                Opciones (arrastra para reordenar):
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {variableLists[variable].map((option, optIndex) => (
+                                  <Box
+                                    key={optIndex}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, variable, optIndex)}
+                                    onDragOver={(e) => handleDragOver(e)}
+                                    onDrop={(e) => handleDrop(e, variable, optIndex)}
+                                    sx={{
+                                      cursor: 'move',
+                                      transition: 'transform 0.2s',
+                                      '&:hover': {
+                                        transform: 'scale(1.02)'
+                                      }
+                                    }}
+                                  >
+                                    {editingOption?.variable === variable && editingOption?.index === optIndex ? (
+                                      // Modo edición
+                                      <TextField
+                                        size="small"
+                                        autoFocus
+                                        value={editingOption.value}
+                                        onChange={(e) => setEditingOption({
+                                          ...editingOption,
+                                          value: e.target.value
+                                        })}
+                                        onBlur={() => handleSaveOptionEdit(variable, optIndex)}
+                                        onKeyPress={(e) => {
+                                          if (e.key === 'Enter') {
+                                            handleSaveOptionEdit(variable, optIndex);
+                                          } else if (e.key === 'Escape') {
+                                            setEditingOption(null);
+                                          }
+                                        }}
+                                        sx={{ width: '150px' }}
+                                      />
+                                    ) : (
+                                      // Modo visualización
+                                      <Chip
+                                        icon={
+                                          <Box
+                                            component="span"
+                                            sx={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              minWidth: '20px',
+                                              height: '20px',
+                                              borderRadius: '50%',
+                                              backgroundColor: 'primary.main',
+                                              color: 'white',
+                                              fontSize: '0.7rem',
+                                              fontWeight: 'bold',
+                                              mr: 0.5
+                                            }}
+                                          >
+                                            {optIndex + 1}
+                                          </Box>
+                                        }
+                                        label={option}
+                                        size="small"
+                                        onClick={() => handleStartEditOption(variable, optIndex, option)}
+                                        onDelete={() => handleDeleteListOption(variable, optIndex)}
+                                        variant="outlined"
+                                        deleteIcon={
+                                          <Tooltip title="Eliminar">
+                                            <DeleteIcon fontSize="small" />
+                                          </Tooltip>
+                                        }
+                                        sx={{
+                                          '& .MuiChip-icon': {
+                                            ml: 0.5
+                                          }
+                                        }}
+                                      />
+                                    )}
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+                      ) : (
                         <TextField
                           size="small"
                           label="Texto de ejemplo"
                           value={variableExamples[variable] || ''}
                           onChange={(e) => handleUpdateExample(variable, e.target.value)}
-                          sx={{ flexGrow: 1 }}
+                          fullWidth
                           inputRef={(el) => (exampleRefs.current[variable] = el)}
                           error={!!variableErrors[variable]}
                           helperText={variableErrors[variable]}
                         />
-
-                      </Stack>
-                    </Box>
-                  ))}
-                </Paper>
+                      )}
+                    </Stack>
+                  </Box>
+                ))}
+              </Paper>
               )}
             </Box>
           </Box>

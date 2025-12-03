@@ -345,7 +345,7 @@ const TemplateForm = () => {
 
   const token = sessionStorage.getItem('authToken');
 
-  /*
+  //
   let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
   if (token) {
     try {
@@ -367,7 +367,7 @@ const TemplateForm = () => {
     }
   }
 
-  */
+  /*
   let appId, appName, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken, urlWsFTP;
 
   appId = '1fbd9a1e-074c-4e1e-801c-b25a0fcc9487';
@@ -381,6 +381,7 @@ const TemplateForm = () => {
   idBotRedes= 721;
   idBot = 257;
   apiToken = 'TFneZr222V896T9756578476n9J52mK9d95434K573jaKx29jq';
+  */
 
   const iniciarRequest = async () => {
     if (loading) return;
@@ -401,7 +402,6 @@ const TemplateForm = () => {
     }
 
     try {
-      /*
       // Hacer el primer request a GupShup API
       const result = await createTemplateGupshup(
         appId,
@@ -425,14 +425,10 @@ const TemplateForm = () => {
         urlTemplatesGS,
         validateFields
       );
-      //
-
-      //
-      // Verificar si el primer request fue exitoso
+      
       if (result && result.status === "success" && result.template && result.template.id) {
-        // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
-        */
+        /*
       // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
       const mockResult = {
         status: "success",
@@ -441,12 +437,30 @@ const TemplateForm = () => {
         }
       };
 
+      
       // Verificar si el primer request fue exitoso (ahora usando el mock)
       if (mockResult && mockResult.status === "success") {
         // Extraer el valor de `id` del objeto `template`
         const templateId = mockResult.template.id;
 
-        //
+        console.log({
+  templateId,
+  templateName,
+  templateType,
+  pantallas,
+  selectedCategory,
+  message,
+  uploadedUrl,
+  idNombreUsuarioTalkMe: idNombreUsuarioTalkMe || "Sistema.TalkMe",
+  variableTypes,
+  variables,
+  variableDescriptions,
+  variableExamples,
+  variableLists,
+  idBotRedes,
+  urlTemplatesGS
+});
+*/
 
         // Hacer el segundo request a TalkMe API
         const result2 = await saveTemplateToTalkMe(
@@ -463,6 +477,7 @@ const TemplateForm = () => {
           variableTypes,
           variables,
           variableDescriptions,
+          variableExamples,
           variableLists,
           [],
           idBotRedes,
