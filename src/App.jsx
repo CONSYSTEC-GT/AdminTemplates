@@ -26,7 +26,7 @@ function App() {
         const token = searchParams.get('token');
 
         if (token) {
-          console.log("Token recibido en URL:", token);
+          //console.log("Token recibido en URL:", token);
 
           try {
             const decoded = jwtDecode(token);
@@ -42,7 +42,7 @@ function App() {
             }
 
             sessionStorage.setItem('authToken', token);
-            console.log("Token guardado en sessionStorage");
+            //console.log("Token guardado en sessionStorage");
 
             const remainingTimeInSeconds = decoded.exp - currentTime;
             const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
