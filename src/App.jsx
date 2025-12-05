@@ -20,59 +20,58 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const searchParams = new URLSearchParams(location.search);
-        const token = searchParams.get('token');
+  const checkToken = async () => {
+    const searchParams = new URLSearchParams(location.search);
+    const urlToken = searchParams.get('token');
+    const storedToken = sessionStorage.getItem('authToken');
+    
+    // Si no hay token en absoluto
+    if (!urlToken && !storedToken) {
+      navigate('/login-required');
+      return;
+    }
 
-        if (token) {
-          console.log("Token recibido en URL:", token);
+    try {
+      // Usar token de URL si existe, sino el almacenado
+      const tokenToValidate = urlToken || storedToken;
+      const decoded = jwtDecode(tokenToValidate);
+      const currentTime = Date.now() / 1000;
 
-          try {
-            const decoded = jwtDecode(token);
-            const currentTime = Date.now() / 1000;
-
-            if (decoded.exp < currentTime) {
-              console.error('Token expirado');
-              sessionStorage.removeItem('authToken');
-              sessionStorage.removeItem('initialRemainingMinutes');
-              navigate('/login-required');
-              setIsLoading(false);
-              return;
-            }
-
-            sessionStorage.setItem('authToken', token);
-            console.log("Token guardado en sessionStorage");
-
-            const remainingTimeInSeconds = decoded.exp - currentTime;
-            const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
-
-            if (!sessionStorage.getItem('initialRemainingMinutes')) {
-              sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
-            }
-
-            window.history.replaceState({}, document.title, window.location.pathname);
-
-          } catch (error) {
-            console.error('Token inválido', error);
-            sessionStorage.removeItem('authToken');
-            sessionStorage.removeItem('initialRemainingMinutes');
-            navigate('/login-required');
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        setIsLoading(false);
-
-      } catch (error) {
-        console.error('Error al procesar el token:', error);
-        setIsLoading(false);
+      // Token expirado
+      if (decoded.exp < currentTime) {
+        cleanStorageAndRedirect();
+        return;
       }
-    };
 
-    checkToken();
-  }, [location.search, navigate]);
+      // Si hay nuevo token de URL, actualizar storage
+      if (urlToken && urlToken !== storedToken) {
+        sessionStorage.setItem('authToken', urlToken);
+        
+        const remainingTimeInSeconds = decoded.exp - currentTime;
+        const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
+        
+        sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly.toString());
+        
+        // Limpiar token de la URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      setIsLoading(false);
+      
+    } catch (error) {
+      console.error('Error procesando token:', error);
+      cleanStorageAndRedirect();
+    }
+  };
+
+  const cleanStorageAndRedirect = () => {
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('initialRemainingMinutes');
+    navigate('/login-required');
+  };
+
+  checkToken();
+}, [location.search, navigate]);
 
 
   const theme = useMemo(() =>
