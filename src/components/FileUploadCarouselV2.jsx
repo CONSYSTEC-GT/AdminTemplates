@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Button, CircularProgress, Typography, Alert, Chip } from '@mui/material';
 import { CloudUpload, CheckCircle, Error as ErrorIcon, Close } from '@mui/icons-material';
 import axios from 'axios';
@@ -6,26 +6,6 @@ import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 import { obtenerApiToken } from '../api/templatesGSApi';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
-
-const token = sessionStorage.getItem('authToken');
-
-let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-if (token) {
-  try {
-    const decoded = jwtDecode(token);
-    appId = decoded.app_id;
-    authCode = decoded.auth_code;
-    idUsuarioTalkMe = decoded.id_usuario;
-    idNombreUsuarioTalkMe = decoded.nombre_usuario;
-    empresaTalkMe = decoded.empresa;
-    idBotRedes = decoded.id_bot_redes;
-    idBot = decoded.id_bot;
-    urlTemplatesGS = decoded.urlTemplatesGS;
-    urlWsFTP = decoded.urlWsFTP;
-  } catch (error) {
-    console.error('Error decodificando el token:', error);
-  }
-}
 
 const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
@@ -35,6 +15,73 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
+  const [imagePreview, setImagePreview] = useState(null);
+  const [tokenData, setTokenData] = useState(null);
+  const [tokenError, setTokenError] = useState(false);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('authToken');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setTokenData({
+          appId: decoded.app_id,
+          appName: decoded.app_name,
+          authCode: decoded.auth_code,
+          idUsuarioTalkMe: decoded.id_usuario,
+          idNombreUsuarioTalkMe: decoded.nombre_usuario,
+          empresaTalkMe: decoded.empresa,
+          idBotRedes: decoded.id_bot_redes,
+          idBot: decoded.id_bot,
+          urlTemplatesGS: decoded.urlTemplatesGS,
+          urlWsFTP: decoded.urlWsFTP
+        });
+      } catch (error) {
+        console.error('Error decodificando el token:', error);
+        setTokenError(true);
+      }
+    } else {
+      setTokenError(true);
+    }
+  }, []);
+
+  // 👇 Función helper para validar datos del token
+  const validarTokenData = () => {
+    if (!tokenData) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No hay datos de autenticación disponibles. Por favor, inicia sesión nuevamente.',
+      });
+      return false;
+    }
+
+    // Validar campos críticos
+    const camposCriticos = {
+      'App ID': tokenData.appId,
+      'Empresa': tokenData.empresaTalkMe,
+      'ID Bot': tokenData.idBot,
+      'ID Bot Redes': tokenData.idBotRedes,
+      'ID Usuario': tokenData.idUsuarioTalkMe,
+      'URL Templates': tokenData.urlTemplatesGS,
+      'URL wsFTP': tokenData.urlWsFTP
+    };
+
+    const camposFaltantes = Object.entries(camposCriticos)
+      .filter(([_, valor]) => !valor)
+      .map(([nombre, _]) => nombre);
+
+    if (camposFaltantes.length > 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Datos incompletos',
+        text: `Faltan los siguientes datos: ${camposFaltantes.join(', ')}`,
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const showResponseAlert = (status, data = null, context = 'operación') => {
     let config = {};
@@ -224,8 +271,17 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
   };
 
   const realUpload = async (file) => {
-    let gupshupSuccess = false;
-    let mediaId = null;
+
+    if (!validarTokenData()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No hay datos de autenticación disponibles. Por favor, inicia sesión nuevamente.',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
     let logWsftp = null;
 
     const crearLogBase = (nombreEvento, urlPeticion) => ({
@@ -242,7 +298,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
       FIN_PETICION: new Date().toISOString(),
       LOCAL_PAYMENT_HASH: null,
       NOTIFICACION_PAYMENT_HASH: null,
-      CREADO_POR: idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
+      CREADO_POR: tokenData.idNombreUsuarioTalkMe || "USUARIO_DESCONOCIDO"
     });
 
     try {
@@ -250,14 +306,14 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
       const base64Content = await convertToBase64(file);
 
       // Inicializar log para WSFTP
-      logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP_CAROUSEL", urlWsFTP);
+      logWsftp = crearLogBase("SUBIDA_ARCHIVO_WSFTP_CAROUSEL", tokenData.urlWsFTP);
       logWsftp.INICIO_PETICION = wsftpStartTime.toISOString();
 
       const payload = {
-        idEmpresa: empresaTalkMe,
-        idBot: idBot,
-        idBotRedes: idBotRedes,
-        idUsuario: idUsuarioTalkMe,
+        idEmpresa: tokenData.empresaTalkMe,
+        idBot: tokenData.idBot,
+        idBotRedes: tokenData.idBotRedes,
+        idUsuario: tokenData.idUsuarioTalkMe,
         tipoCarga: 3,
         nombreArchivo: file.name,
         contenidoArchivo: base64Content.split(',')[1],
@@ -267,11 +323,10 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
       // Primer request - Obtener token de GupShup
       try {
-        apiToken = await obtenerApiToken(urlTemplatesGS, empresaTalkMe);
+        apiToken = await obtenerApiToken(tokenData.urlTemplatesGS, tokenData.empresaTalkMe);
       } catch (error) {
         console.error('Error al obtener token de GupShup:', error);
 
-        // SweetAlert para error de servicio GupShup
         Swal.fire({
           icon: 'error',
           title: 'Error de Autenticación',
@@ -291,10 +346,10 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
           'Content-Type': 'application/json'
         },
         payload: {
-          idEmpresa: empresaTalkMe,
-          idBot: idBot,
-          idBotRedes: idBotRedes,
-          idUsuario: idUsuarioTalkMe,
+          idEmpresa: tokenData.empresaTalkMe,
+          idBot: tokenData.idBot,
+          idBotRedes: tokenData.idBotRedes,
+          idUsuario: tokenData.idUsuarioTalkMe,
           tipoCarga: 3,
           nombreArchivo: file.name,
           contenidoArchivo: '***BASE64_CONTENT***',
@@ -302,7 +357,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
           tipoArchivo: file.type
         },
         metadata: {
-          gupshupMediaId: mediaId,
           procesoCompleto: true
         }
       };
@@ -313,7 +367,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
       let response;
       try {
         response = await axios.post(
-          urlWsFTP,
+          tokenData.urlWsFTP,
           payload,
           {
             headers: {
@@ -323,10 +377,10 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
           }
         );
 
-        // ✅ RESPUESTA EXITOSA - ACTUALIZAR LOG
+        // ✅ RESPUESTA EXITOSA
         const wsftpEndTime = new Date();
         logWsftp.FIN_PETICION = wsftpEndTime.toISOString();
-        logWsftp.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_WSFTP__CAROUSEL_EXITOSO";
+        logWsftp.NOMBRE_EVENTO = "SUBIDA_ARCHIVO_WSFTP_CAROUSEL_EXITOSO";
 
         const respuestaWsftp = {
           status: response.status,
@@ -343,12 +397,10 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
         logWsftp.RESPUESTA = JSON.stringify(respuestaWsftp);
 
-        // Guardar log exitoso de WSFTP
         try {
-          await guardarLogArchivos(logWsftp, urlTemplatesGS);
-          
+          await guardarLogArchivos(logWsftp, tokenData.urlTemplatesGS);
         } catch (logError) {
-          console.error('❌ Error al guardar log de WSFTP (no afecta el proceso):', logError);
+          console.error('❌ Error al guardar log de WSFTP:', logError);
         }
 
       } catch (error) {
@@ -375,15 +427,12 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 
         logWsftp.RESPUESTA = JSON.stringify(respuestaErrorWsftp);
 
-        // Guardar log de error de WSFTP
         try {
-          await guardarLogArchivos(logWsftp, urlTemplatesGS);
-          
+          await guardarLogArchivos(logWsftp, tokenData.urlTemplatesGS);
         } catch (logError) {
           console.error('❌ Error al guardar log de error de WSFTP:', logError);
         }
 
-        // SweetAlert para error de servicio WSFTP
         Swal.fire({
           icon: 'error',
           title: 'Error de Carga',
@@ -421,7 +470,7 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
         });
       }
 
-      // SweetAlert de éxito (opcional)
+      // SweetAlert de éxito
       Swal.fire({
         icon: 'success',
         title: 'Archivo Cargado',
@@ -438,7 +487,6 @@ const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
     } catch (error) {
       console.error('Error general en realUpload:', error);
 
-      // Si no es un error específico que ya manejamos, mostrar error genérico
       if (!error.message.includes('GUPSHUP_SERVICE_ERROR') &&
         !error.message.includes('WSFTP_SERVICE_ERROR') &&
         !error.message.includes('WSFTP_INVALID_RESPONSE')) {
