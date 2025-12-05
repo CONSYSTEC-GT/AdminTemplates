@@ -24,49 +24,56 @@ function App() {
       try {
         const searchParams = new URLSearchParams(location.search);
         const token = searchParams.get('token');
-        
+
         if (token) {
+          //console.log("Token recibido en URL:", token);
+
           try {
             const decoded = jwtDecode(token);
             const currentTime = Date.now() / 1000;
-            
+
             if (decoded.exp < currentTime) {
               console.error('Token expirado');
               sessionStorage.removeItem('authToken');
               sessionStorage.removeItem('initialRemainingMinutes');
-              setIsLoading(false);
               navigate('/login-required');
+              setIsLoading(false);
               return;
             }
-            
+
             sessionStorage.setItem('authToken', token);
-            
+            //console.log("Token guardado en sessionStorage");
+
             const remainingTimeInSeconds = decoded.exp - currentTime;
             const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
-            
+
             if (!sessionStorage.getItem('initialRemainingMinutes')) {
               sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly);
             }
-            
-            const { app_id, auth_code, app_name } = decoded;
+
             window.history.replaceState({}, document.title, window.location.pathname);
-            
+
           } catch (error) {
             console.error('Token inválido', error);
             sessionStorage.removeItem('authToken');
             sessionStorage.removeItem('initialRemainingMinutes');
             navigate('/login-required');
+            setIsLoading(false);
+            return;
           }
         }
+
+        setIsLoading(false);
+
       } catch (error) {
         console.error('Error al procesar el token:', error);
-      } finally {
         setIsLoading(false);
       }
     };
 
     checkToken();
   }, [location.search, navigate]);
+
 
   const theme = useMemo(() =>
     createTheme({
