@@ -577,6 +577,37 @@ export const validarNombrePlantillas = async (urlTemplatesGS, nombre, idBotRedes
   }
 };
 
+export const getFlowScreenName = async (urlTemplatesGS, appId, authCode, flowId) => {
+  const url = `${urlTemplatesGS}flow-webhook/${appId}/flows/${flowId}/pantallas`;
+  
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authCode
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener las pantallas del flow: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Verifica que la respuesta sea exitosa y contenga screens
+    if (data.success && data.data?.screens && data.data.screens.length > 0) {
+      return data.data.screens[0].id;
+    }
+
+    throw new Error('No se encontraron pantallas en el flow');
+    
+  } catch (error) {
+    console.error('Error al obtener el nombre de la pantalla:', error);
+    return null;
+  }
+};
+
 
 //utils
 

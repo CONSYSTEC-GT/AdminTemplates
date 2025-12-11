@@ -30,6 +30,7 @@ import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import ReplyIcon from '@mui/icons-material/Reply';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import FechaModificacion from '../utils/FechaModificacion';
 
@@ -365,6 +366,12 @@ const TemplateCard = ({
                     backgroundColor: '#ffffff',
                     color: '#297c86',
                   };
+                } else if (button.type === 'FLOW') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86',
+                  }
                 }
 
                 return (
@@ -373,6 +380,7 @@ const TemplateCard = ({
                     {button.type === 'URL' && <Link size={14} />}
                     {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
                     {button.type === 'CATALOG' && <ProductionQuantityLimitsIcon size={14} />}
+                    {button.type === 'FLOW' && <AccountTreeIcon size={14} />}
                     {button.text}
                   </Box>
                 );
