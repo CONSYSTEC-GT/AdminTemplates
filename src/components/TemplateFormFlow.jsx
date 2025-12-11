@@ -328,7 +328,7 @@ const TemplateForm = () => {
         }
 
         try {
-            /*
+            //
             const result = await createTemplateFlowGupshup(
                 appId,
                 authCode,
@@ -354,7 +354,7 @@ const TemplateForm = () => {
 
             if (result && result.status === "success" && result.template && result.template.id) {
                 const templateId = result.template.id;
-                */
+                /*
                // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
               const mockResult = {
                 status: "success",
@@ -368,7 +368,7 @@ const TemplateForm = () => {
                 // Extraer el valor de `id` del objeto `template`
                 const templateId = mockResult.template.id;
         
-                //
+                */
                 // Hacer el segundo request a TalkMe API
                 const result2 = await saveTemplateToTalkMe(
                     templateId,
