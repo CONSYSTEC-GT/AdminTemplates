@@ -381,8 +381,11 @@ const TemplateForm = () => {
                         uploadedUrl
                     },
                     idNombreUsuarioTalkMe || "Sistema.TalkMe",
+                    variableTypes,
                     variables,
                     variableDescriptions,
+                    variableExamples,
+                    variableLists,
                     [],
                     idBotRedes,
                     urlTemplatesGS
