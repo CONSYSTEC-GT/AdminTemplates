@@ -736,7 +736,7 @@ const TemplateFormCarousel = () => {
 
   const handleBodyMessageCardChange = (e, cardId) => {
     const newText = e.target.value;
-    const maxLength = 280;
+    const maxLength = 160;
     const newEmojiCount = countEmojis(newText);
     const maxEmojis = 10;
 
@@ -756,7 +756,7 @@ const TemplateFormCarousel = () => {
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        text: 'Solo puedes incluir un máximo de 160 caracteres',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
@@ -805,7 +805,9 @@ const TemplateFormCarousel = () => {
 
         const newVariable = `{{${card.variablesCard.length + 1}}}`;
 
-        if (card.messageCard.length + newVariable.length > 280) {
+        // Verificar si al añadir la variable se superaría el límite de caracteres
+        if (card.messageCard.length + newVariable.length > 160) {
+          // Mostrar alerta de límite excedido
           Swal.fire({
             title: 'Limite de caracteres',
             text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
@@ -2460,12 +2462,12 @@ const TemplateFormCarousel = () => {
                                       onChange={(e) => handleBodyMessageCardChange(e, card.id)}
                                       inputRef={(el) => (messageCardRefs.current[card.id] = el)}
                                       //inputProps={{ maxLength: 280 }}
-                                      helperText={`${card.messageCard.length}/280 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
+                                      helperText={`${card.messageCard.length}/160 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
                                       error={Boolean(cardErrors[card.id]?.messageCard)}
                                       FormHelperTextProps={{
                                         sx: {
                                           textAlign: 'right',
-                                          color: card.messageCard.length === 280 || emojiCountCard >= 10 ? 'error.main' : 'text.secondary'
+                                          color: card.messageCard.length === 160 || emojiCountCard >= 10 ? 'error.main' : 'text.secondary'
                                         }
                                       }}
                                       sx={{
@@ -2903,7 +2905,7 @@ const TemplateFormCarousel = () => {
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
-                        overflow: 'overflowWrap: "break-word"',
+                        overflowWrap: 'break-word',
                         textOverflow: 'ellipsis'
                       }}>
                         {card.messageCard || "Descripción de la tarjeta"}

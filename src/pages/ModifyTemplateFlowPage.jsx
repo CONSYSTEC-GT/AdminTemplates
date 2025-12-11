@@ -1,20 +1,26 @@
 import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import TemplateFormFlow from '../components/TemplateFormFlow';
+import { useNavigate, useLocation } from 'react-router-dom';
+import EditTemplateFormFlow from '../components/EditTemplateFormFlow';
 
-const CreateTemplateFlowPage = () => {
+
+
+const ModifyTemplatePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const template = location.state?.template || {}; // Si no hay plantilla, usa un objeto vacío
+
+
 
   const handleHome = () => {
-    navigate('/');
+    navigate('/'); // Navega a la página Home
   };
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Crear plantilla
+      {/*Titulo*/}<Typography variant="h4" component="h1" gutterBottom>
+        Modificar Template Flow
       </Typography>
 
       <Tooltip title="Volver al Dashboard">
@@ -29,7 +35,7 @@ const CreateTemplateFlowPage = () => {
         </Button>
       </Tooltip>
 
-      <Box sx={{ backgroundColor: '#fdf3f5', padding: 2, borderRadius: 1, marginTop: 3 }}>
+      {/*Informacion inicial*/}<Box sx={{ backgroundColor: '#fdf3f5', padding: 2, borderRadius: 1, marginTop: 3 }}>
         <Typography variant="body1">
           Tenga en cuenta que ahora es obligatorio proporcionar muestras al crear plantillas de mensajes.
           <br />
@@ -38,9 +44,12 @@ const CreateTemplateFlowPage = () => {
         </Typography>
       </Box>
 
-      <TemplateFormFlow />
+      {/* Pasa el objeto template a TemplateForm */}
+      <EditTemplateFormFlow />
+
+
     </Box>
   );
 };
 
-export default CreateTemplateFlowPage;
+export default ModifyTemplatePage;

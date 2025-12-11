@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, FormControl, Typography, Alert, Radio, RadioGroup } from '@mui/material';
 import Swal from 'sweetalert2';
-import { viewFlows, getFlowScreenName } from '../api/gupshupApi';
+import { viewFlows } from '../api/gupshupApi';
+import { getFlowScreenName } from '../api/templatesGSApi';
 
-const FlowSelector = ({ onClose, appId, authCode, onFlowSelect }) => {
+const FlowSelector = ({ onClose, urlTemplatesGS, appId, authCode, onFlowSelect }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [flows, setFlows] = useState([]);
@@ -36,7 +37,7 @@ const FlowSelector = ({ onClose, appId, authCode, onFlowSelect }) => {
     setScreenError(null);
 
     setLoadingScreen(true);
-    getFlowScreenName(appId, authCode, flowId)
+    getFlowScreenName(urlTemplatesGS, appId, authCode, flowId)
       .then(name => setScreenName(name))
       .catch(() => setScreenError('Error al obtener la pantalla del flow'))
       .finally(() => setLoadingScreen(false));

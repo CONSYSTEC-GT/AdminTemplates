@@ -18,15 +18,12 @@ import Phone from "@mui/icons-material/Phone";
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
-import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, obtenerOpcionesParametro, eliminarOpcionesParametro, saveTemplateParams, saveTemplateParamsOptions, obtenerParametrosPorPlantilla, eliminarParametrosYOpciones   } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
-import { editTemplateFlowGupshup } from '../api/gupshupApi';
-import FlowSelector from './FlowSelector';
 
 const SAMPLE_MEDIA_REGEX = /^\d+::[A-Za-z0-9+/._=-]+(?::[A-Za-z0-9+/._=-]+)+$/;
 
@@ -141,101 +138,36 @@ const EditTemplateForm = () => {
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
 
-const [selectedFlow, setSelectedFlow] = useState(null);
-const [isFlowSelectorVisible, setIsFlowSelectorVisible] = useState(false);
-const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-
-const [buttonTextError, setButtonTextError] = useState(false);
-const [buttonTextHelperText, setButtonTextHelperText] = useState("");
-const [flowError, setFlowError] = useState(false);
-const [flowHelperText, setFlowHelperText] = useState("");
-
-const [isFlowTemplate, setIsFlowTemplate] = useState(false);
-
   useEffect(() => {
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType((templateData.templateType || ""));
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-      // ✅ DETECTAR SI ES PLANTILLA FLOW
-      // Primero intentar con buttonSupported, si no existe, revisar los botones
-      let isFlow = templateData.buttonSupported === "FLOW";
-      
-      // Si buttonSupported no está definido, verificar en containerMeta
-      if (!isFlow && templateData.containerMeta) {
-        try {
-          const metaPreview = JSON.parse(templateData.containerMeta);
-          if (metaPreview.buttons && Array.isArray(metaPreview.buttons) && metaPreview.buttons.length > 0) {
-            // Si el primer botón es de tipo FLOW, es una plantilla Flow
-            isFlow = metaPreview.buttons[0].type === "FLOW";
-          }
-        } catch (e) {
-          console.error("Error al pre-verificar tipo:", e);
-        }
-      }
-      
-      setIsFlowTemplate(isFlow);
-      
-      console.log("🔍 Tipo de plantilla detectado:", {
-        buttonSupported: templateData.buttonSupported,
-        detectedFromButtons: isFlow,
-        isFlowTemplate: isFlow
-      });
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
+            setMessage(meta.data || "");
+            setHeader(meta.header || "");
+            setFooter(meta.footer || "");
+            setExample(meta.sampleText || "");
+            //setMediaId(meta.sampleMedia || "");
 
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          setMessage(meta.data || "");
-          setHeader(meta.header || "");
-          setFooter(meta.footer || "");
-          setExample(meta.sampleText || "");
-
-          if (meta.sampleMedia) {
-            if (isValidSampleMedia(meta.sampleMedia)) {
-              setMediaId(meta.sampleMedia);
+            if (meta.sampleMedia) {
+              if (isValidSampleMedia(meta.sampleMedia)) {
+                setMediaId(meta.sampleMedia);
+              } else {
+                setMediaId("");
+              }
             } else {
               setMediaId("");
             }
-          } else {
-            setMediaId("");
-          }
 
-          // ✅ CARGAR BOTONES SEGÚN EL TIPO
-          if (meta.buttons && Array.isArray(meta.buttons)) {
-            if (isFlow) {
-              // Cargar botón FLOW
-              const flowButton = meta.buttons[0];
-              
-              console.log("✅ Cargando botón FLOW:", flowButton);
-              
-              setButtons([
-                {
-                  id: 0,
-                  text: flowButton.text || "",
-                  type: "FLOW",
-                  flow_id: flowButton.flow_id || "",
-                  flow_action: flowButton.flow_action || "NAVIGATE",
-                  navigate_screen: flowButton.navigate_screen || "",
-                }
-              ]);
-
-              // Establecer el flow seleccionado
-              if (flowButton.flow_id) {
-                setSelectedFlow({
-                  id: flowButton.flow_id,
-                  screenName: flowButton.navigate_screen,
-                  name: flowButton.text || "Flow sin nombre"
-                });
-              }
-            } else {
-              // Cargar botones normales
-              console.log("✅ Cargando botones normales:", meta.buttons);
-              
+            if (meta.buttons && Array.isArray(meta.buttons)) {
               setButtons(
                 meta.buttons.map((button, index) => ({
                   id: index,
@@ -246,32 +178,17 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                 }))
               );
             }
-          } else {
-            // No hay botones, inicializar según el tipo
-            if (isFlow) {
-              setButtons([
-                {
-                  id: 0,
-                  text: "",
-                  type: "FLOW",
-                  flow_id: "",
-                  flow_action: "NAVIGATE",
-                  navigate_screen: "",
-                }
-              ]);
-            } else {
-              setButtons([]);
-            }
+          } catch (error) {
+            console.error("Error al parsear containerMeta:", error);
           }
-        } catch (error) {
-          console.error("❌ Error al parsear containerMeta:", error);
         }
       }
 
-      // Cargar pantallas y media
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-        if (info !== null) {
+        if (info === null) {
+
+        } else {
           const pantallasFromAPI = info.pantallas || "";
           setPantallas(pantallasFromAPI);
 
@@ -283,13 +200,12 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
           setIdPlantilla(info.id_plantilla || "");
         }
       } catch (error) {
-        console.error("❌ Error al cargar pantallas/media:", error);
-      }
-    }
-  };
 
-  loadData();
-}, [templateData, urlTemplatesGS]);
+      }
+    };
+
+    loadData();
+  }, [templateData, urlTemplatesGS, templateData.id]);
 
   useEffect(() => {
     const loadParametros = async () => {
@@ -297,9 +213,8 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
 
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
-
         if (infoParametros === null || infoParametros.length === 0) {
-          // Sin parámetros
+
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -308,63 +223,23 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
 
           const descripcionesIniciales = {};
           const ejemplosIniciales = {};
-          const tiposIniciales = {};
-          const listasIniciales = {};
 
-          // Procesar cada parámetro
-          for (let index = 0; index < parametrosOrdenados.length; index++) {
-            const param = parametrosOrdenados[index];
+          parametrosOrdenados.forEach((param, index) => {
             const variableKey = `{{${index + 1}}}`;
-
             descripcionesIniciales[variableKey] = param.NOMBRE;
-            tiposIniciales[variableKey] = 'normal';
-
-            // Verificar si es una lista de opciones
-            if (esListaOpciones(param.ID_PLANTILLA_TIPO_DATO)) {
-              try {
-                const opciones = await obtenerOpcionesParametro(
-                  urlTemplatesGS,
-                  param.ID_PLANTILLA_PARAMETRO
-                );
-
-                if (opciones && opciones.length > 0) {
-                  // Establecer tipo como 'list'
-                  tiposIniciales[variableKey] = 'list';
-
-                  // Ordenar opciones por ORDEN y extraer los nombres
-                  const opcionesOrdenadas = opciones
-                    .sort((a, b) => a.ORDEN - b.ORDEN)
-                    .map(opcion => opcion.NOMBRE);
-
-                  listasIniciales[variableKey] = opcionesOrdenadas;
-                } else {
-                  ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-                }
-              } catch (error) {
-                console.error(`Error cargando opciones para ${variableKey}:`, error);
-                ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-              }
-            } else {
-              ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-            }
-          }
+            ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+          });
 
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
-          setVariableTypes(tiposIniciales);
-          setVariableLists(listasIniciales);
         }
       } catch (error) {
-        console.error("Error en loadParametros:", error);
+
       }
     };
 
     loadParametros();
   }, [idPlantilla, urlTemplatesGS]);
-
-  const esListaOpciones = (tipoData) => {
-    return tipoData === 5;
-  };
 
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
@@ -475,18 +350,23 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
 
 
     if (variables.length > 0) {
+
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
-        if (variableTypes[variable] !== 'list' && !variableExamples[variable]?.trim()) {
+
+        if (!variableExamples[variable]?.trim()) {
+
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
         }
 
+
         if (!variableDescriptions[variable]?.trim()) {
+
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -547,111 +427,87 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
     }
 
     if (!isValid) {
-      Swal.fire({
-        title: 'Error',
-        text: 'Campos incompletos.',
-        icon: 'error',
-        confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#00c3ff'
-      });
-    }
+    Swal.fire({
+      title: 'Error',
+      text: 'Campos incompletos.',
+      icon: 'error',
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#00c3ff'
+    });
+  }
 
 
     return isValid; // Retornar el valor final de isValid
   };
 
   const iniciarRequest = async () => {
-  if (loading) return;
-  setLoading(true);
+    if (loading) return;
+    setLoading(true);
 
-  const isValid = validateFields();
-  if (!isValid) {
-    setLoading(false);
-    return;
-  }
-
-  try {
-    let result;
-    
-    // Validar si es una plantilla de tipo FLOW
-    if (isFlowTemplate) {
-      // Usar la función específica para plantillas FLOW
-      result = await editTemplateFlowGupshup(
-        appId,
-        authCode,
-        {
-          templateName,
-          selectedCategory,
-          languageCode,
-          templateType,
-          vertical,
-          message,
-          header,
-          footer,
-          mediaId,
-          buttons,
-          example,
-          exampleHeader
-        },
-        templateId, // Asegúrate de tener el ID de la plantilla para editar
-        idNombreUsuarioTalkMe,
-        urlTemplatesGS,
-        validateFields
-      );
-    } else {
-      // Usar la función original para otras plantillas
-      result = await sendRequest();
+    const isValid = validateFields();
+    if (!isValid) {
+      //Swal.fire({title: 'Error', text: 'Campos incompletos.', icon: 'error', confirmButtonText: 'Cerrar', confirmButtonColor: '#00c3ff'});
+      setLoading(false);
+      return;
     }
 
-    if (result && result.status === "success") {
-      const templateId = result.template.id;
+    try {
 
-      const result2 = await sendRequest2(templateId);
+      const result = await sendRequest();
 
-      if (result2 && result2.status === "success") {
-        Swal.fire({
-          title: 'Éxito',
-          text: 'La plantilla se actualizó correctamente.',
-          icon: 'success',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#00c3ff'
-        });
 
-        navigate('/Dashboard');
+      if (result && result.status === "success") {
+
+        const templateId = result.template.id;
+
+
+        const result2 = await sendRequest2(templateId);
+
+
+        if (result2 && result2.status === "success") {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La plantilla se actualizó correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+
+          navigate('/Dashboard');
+        } else {
+          console.error("El segundo request no fue exitoso.");
+          Swal.fire({
+            title: 'Error al actualizar',
+            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+          setLoading(false);
+        }
       } else {
-        console.error("El segundo request no fue exitoso.");
+        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         Swal.fire({
-          title: 'Error al actualizar',
-          text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-          icon: 'error',
+          title: 'Error en el primer request',
+          text: `Ocurrió un problema al crear la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+          icon: 'warning',
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
         setLoading(false);
       }
-    } else {
-      console.error("El primer request no fue exitoso o no tiene el formato esperado.");
+    } catch (error) {
+      console.error("Ocurrió un error:", error);
       Swal.fire({
-        title: isFlowTemplate ? 'Error al editar plantilla FLOW' : 'Error en el primer request',
-        text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'crear'} la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-        icon: 'warning',
+        title: 'Error',
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        icon: 'error',
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
       setLoading(false);
     }
-  } catch (error) {
-    console.error("Ocurrió un error:", error);
-    Swal.fire({
-      title: 'Error',
-      text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'actualizar'} la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-      icon: 'error',
-      confirmButtonText: 'Cerrar',
-      confirmButtonColor: '#00c3ff'
-    });
-    setLoading(false);
-  }
-};
+  };
 
 
   const sendRequest = async () => {
@@ -896,46 +752,19 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
 
 
         try {
-          console.log('🟣 === INICIO: Actualizar parámetros de la plantilla', result.ID_PLANTILLA);
 
-          // PASO 1: Eliminar TODOS los parámetros y opciones en UNA sola llamada
-          console.log('📥 PASO 1: Eliminando parámetros y opciones existentes...');
-          await eliminarParametrosYOpciones(urlTemplatesGS, result.ID_PLANTILLA);
-          console.log('✅ PASO 1 completado');
+          await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
 
-          // PASO 2: Guardar nuevos parámetros
-          console.log('📥 PASO 2: Guardando nuevos parámetros...');
-          await saveTemplateParams(
-            result.ID_PLANTILLA,
-            idNombreUsuarioTalkMe,
-            variables,
-            variableDescriptions,
-            variableTypes,
-            variableExamples,
-            urlTemplatesGS
-          );
-          console.log('✅ PASO 2 completado');
+          await new Promise(resolve => setTimeout(resolve, 100));
 
-          // PASO 3: Guardar opciones de los nuevos parámetros
-          console.log('📥 PASO 3: Guardando opciones de los nuevos parámetros...');
-          await saveTemplateParamsOptions(
-            result.ID_PLANTILLA,
-            idNombreUsuarioTalkMe,
-            variables,
-            variableDescriptions,
-            variableTypes,
-            variableLists,
-            urlTemplatesGS
-          );
-          console.log('✅ PASO 3 completado');
-
-          console.log('🟣 === FIN: Parámetros actualizados correctamente');
-          showSnackbar("✅ Plantilla actualizada correctamente", "success");
+          await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
 
         } catch (error) {
-          console.error("❌ Error gestionando parámetros:", error);
-          showSnackbar("❌ Error al actualizar los parámetros de la plantilla", "error");
+
+          console.error("Error gestionando parámetros:", error);
+
           return { status: "error", message: "No se pudieron actualizar los parámetros de la plantilla." };
+
         }
       }
 
@@ -1213,6 +1042,44 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
     setButtons(buttons.filter((button) => button.id !== id));
   };
 
+  const handleAddVariable = () => {
+    const newVariable = `{{${variables.length + 1}}}`;
+
+
+    if (message.length + newVariable.length > 550) {
+
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+
+    const cursorPosition = messageRef.current.selectionStart;
+
+
+    const textBeforeCursor = message.substring(0, cursorPosition);
+    const textAfterCursor = message.substring(cursorPosition);
+
+
+    const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
+    setMessage(newMessage);
+
+
+    setVariables([...variables, newVariable]);
+
+
+    setTimeout(() => {
+      const newPosition = cursorPosition + newVariable.length;
+      messageRef.current.focus();
+      messageRef.current.setSelectionRange(newPosition, newPosition);
+    }, 0);
+  };
+
   const handleEmojiClick = (emojiObject) => {
     setMessage((prev) => `${prev} ${emojiObject.emoji}`);
     setShowEmojiPicker(false);
@@ -1333,6 +1200,104 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
     });
   };
 
+
+  const deleteVariable = (variableToDelete) => {
+
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
+    });
+
+
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
+
+
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+
+    delete newVariableErrors[variableToDelete];
+
+
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+
+
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
+
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+
+      return updatedExamples;
+    });
+  };
+
+  const handleUpdateDescriptions = (variable, event) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+  };
+
   const replaceVariables = (text, variables) => {
     let result = text;
 
@@ -1445,12 +1410,6 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
     const newExample = replaceVariables(message, variableExamples);
     setExample(newExample);
   }, [message, variableExamples]);
-
-
-  const handleFlowClose = () => {
-        setIsSelectorOpen(false);
-    };
-
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
@@ -1723,7 +1682,7 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
               placeholder="Ingresa el contenido de tu mensaje aquí..."
               value={message}
               onChange={handleBodyMessageChange}
-              //onChange={(e) => setMessage(e.target.value)}
+
               sx={{
                 mb: 3,
                 mt: 4,
@@ -1825,7 +1784,7 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                     key={index}
                     sx={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'center',
                       flexWrap: 'wrap',
                       gap: 2,
                       mb: 2,
@@ -1838,7 +1797,7 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                     <Chip
                       label={variable}
                       color="primary"
-                      sx={{ fontWeight: "500", mt: 1 }}
+                      sx={{ fontWeight: "500" }}
                       deleteIcon={
                         <Tooltip title="Borrar variable">
                           <DeleteIcon />
@@ -1847,20 +1806,7 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                       onDelete={() => deleteVariable(variable)}
                     />
 
-                    <Stack sx={{ flexGrow: 1, gap: 1.5 }}>
-                      {/* Selector de tipo de variable */}
-                      <FormControl size="small" fullWidth>
-                        <InputLabel>Tipo de variable</InputLabel>
-                        <Select
-                          value={variableTypes[variable] || 'normal'}
-                          label="Tipo de variable"
-                          onChange={(e) => handleUpdateVariableType(variable, e.target.value)}
-                        >
-                          <MenuItem value="normal">Variable normal</MenuItem>
-                          <MenuItem value="list">Lista de opciones</MenuItem>
-                        </Select>
-                      </FormControl>
-
+                    <Stack sx={{ flexGrow: 1, gap: 1 }}>
                       <TextField
                         size="small"
                         label="Descripción"
@@ -1873,149 +1819,20 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                             ? "Esta descripción ya existe en otra variable"
                             : ""
                         }
-                        fullWidth
+                        sx={{ flexGrow: 1 }}
                       />
 
-                      {/* Mostrar campo diferente según el tipo */}
-                      {variableTypes[variable] === 'list' ? (
-                        <Box>
-                          {/* Campo de entrada con botón de agregar */}
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <TextField
-                              size="small"
-                              label="Agregar opción a la lista"
-                              placeholder="Escribe una opción"
-                              inputRef={(el) => (listInputRefs.current[variable] = el)}
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddListOption(variable, e.target.value);
-                                  e.target.value = '';
-                                }
-                              }}
-                              fullWidth
-                            />
-                            <Tooltip title="Agregar opción">
-                              <IconButton
-                                color="primary"
-                                onClick={() => {
-                                  const inputEl = listInputRefs.current[variable];
-                                  if (inputEl && inputEl.value.trim()) {
-                                    handleAddListOption(variable, inputEl.value);
-                                    inputEl.value = '';
-                                  }
-                                }}
-                                sx={{
-                                  border: '1px solid',
-                                  borderColor: 'primary.main',
-                                  borderRadius: 1
-                                }}
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
+                      <TextField
+                        size="small"
+                        label="Texto de ejemplo"
+                        value={variableExamples[variable] || ''}
+                        onChange={(e) => handleUpdateExample(variable, e.target.value)}
+                        sx={{ flexGrow: 1 }}
+                        inputRef={(el) => (exampleRefs.current[variable] = el)}
+                        error={!!variableErrors[variable]}
+                        helperText={variableErrors[variable]}
+                      />
 
-                          {/* Mostrar las opciones agregadas con numeración y drag & drop */}
-                          {variableLists[variable]?.length > 0 && (
-                            <Box sx={{ mt: 1.5 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-                                Opciones (arrastra para reordenar):
-                              </Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {variableLists[variable].map((option, optIndex) => (
-                                  <Box
-                                    key={optIndex}
-                                    draggable
-                                    onDragStart={(e) => handleDragStart(e, variable, optIndex)}
-                                    onDragOver={(e) => handleDragOver(e)}
-                                    onDrop={(e) => handleDrop(e, variable, optIndex)}
-                                    sx={{
-                                      cursor: 'move',
-                                      transition: 'transform 0.2s',
-                                      '&:hover': {
-                                        transform: 'scale(1.02)'
-                                      }
-                                    }}
-                                  >
-                                    {editingOption?.variable === variable && editingOption?.index === optIndex ? (
-                                      // Modo edición
-                                      <TextField
-                                        size="small"
-                                        autoFocus
-                                        value={editingOption.value}
-                                        onChange={(e) => setEditingOption({
-                                          ...editingOption,
-                                          value: e.target.value
-                                        })}
-                                        onBlur={() => handleSaveOptionEdit(variable, optIndex)}
-                                        onKeyPress={(e) => {
-                                          if (e.key === 'Enter') {
-                                            handleSaveOptionEdit(variable, optIndex);
-                                          } else if (e.key === 'Escape') {
-                                            setEditingOption(null);
-                                          }
-                                        }}
-                                        sx={{ width: '150px' }}
-                                      />
-                                    ) : (
-                                      // Modo visualización
-                                      <Chip
-                                        icon={
-                                          <Box
-                                            component="span"
-                                            sx={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              justifyContent: 'center',
-                                              minWidth: '20px',
-                                              height: '20px',
-                                              borderRadius: '50%',
-                                              backgroundColor: 'primary.main',
-                                              color: 'white',
-                                              fontSize: '0.7rem',
-                                              fontWeight: 'bold',
-                                              mr: 0.5
-                                            }}
-                                          >
-                                            {optIndex + 1}
-                                          </Box>
-                                        }
-                                        label={option}
-                                        size="small"
-                                        onClick={() => handleStartEditOption(variable, optIndex, option)}
-                                        onDelete={() => handleDeleteListOption(variable, optIndex)}
-                                        variant="outlined"
-                                        deleteIcon={
-                                          <Tooltip title="Eliminar">
-                                            <DeleteIcon fontSize="small" />
-                                          </Tooltip>
-                                        }
-                                        sx={{
-                                          '& .MuiChip-icon': {
-                                            ml: 0.5
-                                          }
-                                        }}
-                                      />
-                                    )}
-                                  </Box>
-                                ))}
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
-                      ) : (
-                        <TextField
-                          size="small"
-                          label="Texto de ejemplo"
-                          value={variableExamples[variable] || ''}
-                          onChange={(e) => handleUpdateExample(variable, e.target.value)}
-                          fullWidth
-                          inputRef={(el) => (exampleRefs.current[variable] = el)}
-                          error={!!variableErrors[variable]}
-                          helperText={variableErrors[variable]}
-                        />
-                      )}
                     </Stack>
                   </Box>
                 ))}
@@ -2042,232 +1859,90 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
           </FormHelperText>
         </Box>
 
-        {/* Botones --data-urlencode 'buttons*/}
-        
-        {isFlowTemplate ? (
-          // 🎯 INTERFAZ PARA PLANTILLAS FLOW
-          <Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel>Botones (Flow)</FormLabel>
-              <FormHelperText>Esta plantilla utiliza un botón de tipo Flow</FormHelperText>
-            </FormControl>
+        {/* Botones --data-urlencode 'buttons*/}<Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
+          <FormControl fullWidth>
+            <FormLabel>
+              Botones
+            </FormLabel>
+          </FormControl>
 
-            <Stack spacing={2}>
+          <FormHelperText>
+            Elija los botones que se agregarán a la plantilla. Puede elegir hasta 10 botones.
+          </FormHelperText>
+
+          <Button variant="contained" onClick={addButton} disabled={buttons.length >= maxButtons} sx={{ mt: 3, mb: 3 }}>
+            + Agregar botón
+          </Button>
+
+          <Stack spacing={2}>
+            {buttons.map((button, index) => (
               <Box
+                key={button.id}
                 sx={{
                   display: "flex",
-                  alignItems: "flex-start",
+                  alignItems: "center",
                   gap: 2,
                   border: "1px solid #ccc",
                   borderRadius: 2,
                   p: 2,
                   backgroundColor: "#f9f9f9",
-                  mt: 3,
-                  mb: 3,
                 }}
               >
+                {/* Campo de texto para el título del botón */}
                 <TextField
-                  label="Texto del botón"
-                  value={buttons[0]?.text || ""}
-                  onChange={(e) => updateButton(0, { text: e.target.value })}
+                  label="Button Title"
+                  value={button.title}
+                  onChange={(e) => updateButton(button.id, "title", e.target.value)}
                   fullWidth
-                  inputProps={{ maxLength: 25 }}
-                  helperText={`${buttons[0]?.text?.length || 0}/25 caracteres`}
                 />
 
+                {/* Selector de tipo de botón */}
                 <Select
-                  value="FLOW"
+                  value={button.type}
+                  onChange={(e) => updateButton(button.id, "type", e.target.value)}
                   sx={{ minWidth: 150 }}
-                  disabled
                 >
-                  <MenuItem value="FLOW">Flow</MenuItem>
+                  <MenuItem value="QUICK_REPLY">Quick Reply</MenuItem>
+                  <MenuItem value="URL">URL</MenuItem>
+                  <MenuItem value="PHONE_NUMBER">Phone Number</MenuItem>
                 </Select>
-              </Box>
 
-              <Box>
-                <Button
-                  variant="contained"
-                  component="span"
-                  startIcon={<AccountTreeIcon />}
-                  size="large"
-                  onClick={() => setIsSelectorOpen(true)}
-                  sx={{
-                    minHeight: 56,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontSize: '1rem'
-                  }}
-                >
-                  {selectedFlow ? 'Cambiar Flow' : 'Seleccionar Flow'}
-                </Button>
-
-                {isSelectorOpen && (
-                  <FlowSelector
-                    onClose={handleFlowClose}
-                    urlTemplatesGS={urlTemplatesGS}
-                    appId={appId}
-                    authCode={authCode}
-                    onFlowSelect={(flow) => {
-                      console.log("✅ Flow seleccionado:", flow);
-                      setSelectedFlow(flow);
-
-                      const updates = {
-                        flow_id: flow.id,
-                        navigate_screen: flow.screenName,
-                        flow_action: "NAVIGATE"
-                      };
-
-                      updateButton(0, updates);
-                      handleFlowClose();
-                    }}
-                  />
-                )}
-
-                {selectedFlow && (
-                  <Box
-                    sx={{
-                      mt: 2,
-                      p: 2,
-                      border: "1px solid #e0e0e0",
-                      borderRadius: 2,
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Flow seleccionado:
-                    </Typography>
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} md={4}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <AccountTreeIcon color="primary" />
-                          <Box>
-                            <Typography variant="body1">
-                              <strong>{selectedFlow.name || "— sin nombre —"}</strong>
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              ID: {selectedFlow.id ?? "—"}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Grid>
-
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Pantalla inicial:
-                        </Typography>
-                        {selectedFlow.screenName ? (
-                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}>
-                            <Chip label={selectedFlow.screenName} size="small" />
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            No especificada
-                          </Typography>
-                        )}
-                      </Grid>
-
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Acción:
-                        </Typography>
-                        <Chip label={buttons[0]?.flow_action || "NAVIGATE"} size="small" sx={{ mt: 1 }} />
-                      </Grid>
-                    </Grid>
-                  </Box>
-                )}
-              </Box>
-            </Stack>
-          </Box>
-        ) : (
-          // 🔵 INTERFAZ PARA BOTONES NORMALES
-          <Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel>Botones</FormLabel>
-            </FormControl>
-
-            <FormHelperText>
-              Elija los botones que se agregarán a la plantilla. Puede elegir hasta 10 botones.
-            </FormHelperText>
-
-            <Button
-              variant="contained"
-              onClick={addButton}
-              disabled={buttons.length >= maxButtons}
-              sx={{ mt: 3, mb: 3 }}
-            >
-              + Agregar botón
-            </Button>
-
-            <Stack spacing={2}>
-              {buttons.map((button) => (
-                <Box
-                  key={button.id}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    border: "1px solid #ccc",
-                    borderRadius: 2,
-                    p: 2,
-                    backgroundColor: "#f9f9f9",
-                  }}
-                >
+                {/* Campo adicional según el tipo de botón */}
+                {button.type === "URL" && (
                   <TextField
-                    label="Button Title"
-                    value={button.title}
-                    onChange={(e) => updateButton(button.id, "title", e.target.value)}
+                    label="URL"
+                    value={button.url}
+                    onChange={(e) => updateButton(button.id, "url", e.target.value)}
                     fullWidth
                   />
+                )}
 
-                  <Select
-                    value={button.type}
-                    onChange={(e) => updateButton(button.id, "type", e.target.value)}
-                    sx={{ minWidth: 150 }}
-                  >
-                    <MenuItem value="QUICK_REPLY">Quick Reply</MenuItem>
-                    <MenuItem value="URL">URL</MenuItem>
-                    <MenuItem value="PHONE_NUMBER">Phone Number</MenuItem>
-                  </Select>
+                {button.type === "PHONE_NUMBER" && (
+                  <TextField
+                    label="Phone Number"
+                    value={button.phoneNumber}
+                    onChange={(e) => updateButton(button.id, "phoneNumber", e.target.value)}
+                    fullWidth
+                  />
+                )}
 
-                  {button.type === "URL" && (
-                    <TextField
-                      label="URL"
-                      value={button.url}
-                      onChange={(e) => updateButton(button.id, "url", e.target.value)}
-                      fullWidth
-                    />
-                  )}
+                {/* Icono según el tipo de botón */}
+                {button.type === "QUICK_REPLY" && <ArrowForward />}
+                {button.type === "URL" && <Link />}
+                {button.type === "PHONE_NUMBER" && <Phone />}
 
-                  {button.type === "PHONE_NUMBER" && (
-                    <TextField
-                      label="Phone Number"
-                      value={button.phoneNumber}
-                      onChange={(e) => updateButton(button.id, "phoneNumber", e.target.value)}
-                      fullWidth
-                    />
-                  )}
+                {/* Botón para eliminar */}
+                <IconButton color="error" onClick={() => removeButton(button.id)}>
+                  <Delete />
+                </IconButton>
+              </Box>
+            ))}
+          </Stack>
 
-                  {button.type === "QUICK_REPLY" && <ArrowForward />}
-                  {button.type === "URL" && <Link />}
-                  {button.type === "PHONE_NUMBER" && <Phone />}
-
-                  <IconButton color="error" onClick={() => removeButton(button.id)}>
-                    <Delete />
-                  </IconButton>
-                </Box>
-              ))}
-            </Stack>
-
-            <Typography
-              variant="body2"
-              color={buttons.length >= maxButtons ? "error" : "text.secondary"}
-              sx={{ mt: 2 }}
-            >
-              {buttons.length} / {maxButtons} botones agregados
-            </Typography>
-          </Box>
-        )}
+          <Typography variant="body2" color={buttons.length >= maxButtons ? "error" : "text.secondary"} sx={{ mt: 2 }}>
+            {buttons.length} / {maxButtons} botones agregados
+          </Typography>
+        </Box>
 
         {/* Ejemplo --data-urlencode example */}<Box sx={{ width: '100%', marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2, display: 'none' }}>
           <FormControl fullWidth>

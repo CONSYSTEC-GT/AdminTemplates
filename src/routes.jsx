@@ -14,6 +14,7 @@ import TemplateSend from './pages/TemplateSend';
 import ModifyTemplatePage from './pages/ModifyTemplatePage';
 import ModifyTemplateCarouselPage from './pages/ModifyTemplateCarouselPage';
 import ModifyTemplateCatalogPage from './pages/ModifyTemplateCatalogPage';
+import ModifyTemplateFlowPage from './pages/ModifyTemplateFlowPage';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './utils/ProtectedRoute';
 import LoginRequired from './pages/LoginRequired';
@@ -110,6 +111,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <ModifyTemplateCatalogPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/modify-template-flow"
+            element={
+              <ProtectedRoute>
+                <ModifyTemplateFlowPage />
               </ProtectedRoute>
             }
           />
