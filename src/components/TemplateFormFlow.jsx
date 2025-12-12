@@ -120,6 +120,12 @@ const TemplateForm = () => {
     const emojiPickerRef = useRef(null);
     const debounceTimeout = useRef(null);
 
+    const [variableTypes, setVariableTypes] = useState({});
+    const [variableLists, setVariableLists] = useState({});
+    const [editingOption, setEditingOption] = useState(null);
+    const [draggedItem, setDraggedItem] = useState(null);
+    const listInputRefs = useRef({});
+
     const resetForm = () => {
         setTemplateName("");
         setSelectedCategory("");
