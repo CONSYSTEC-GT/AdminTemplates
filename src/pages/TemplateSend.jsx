@@ -84,24 +84,31 @@ const TemplateAproved = () => {
   }, [appId, authCode, urlTemplatesGS]);
 
   useEffect(() => {
-    let filtered = [...templates];
-
-    if (tipoPlantillaFiltro !== 'ALL') {
-      filtered = filtered.filter(template => template.gupshup.templateType === tipoPlantillaFiltro);
-    }
-
-    if (categoriaFiltro && categoriaFiltro !== 'ALL') {
-      filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
-    }
-
-    if (busquedaFiltro.trim() !== '') {
-      filtered = filtered.filter(template =>
-        template.gupshup.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
-      );
-    }
-
-    setFilteredTemplates(filtered);
-  }, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
+        let filtered = [...templates];
+    
+        if (tipoPlantillaFiltro !== 'ALL') {
+          if (tipoPlantillaFiltro === 'FLOW') {
+            filtered = filtered.filter(template => template.gupshup.buttonSupported === 'FLOW');
+          } else {
+            filtered = filtered.filter(template => 
+              template.gupshup.templateType === tipoPlantillaFiltro &&
+              template.gupshup.buttonSupported !== 'FLOW'
+            );
+          }
+        }
+    
+        if (categoriaFiltro && categoriaFiltro !== 'ALL') {
+          filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
+        }
+    
+        if (busquedaFiltro.trim() !== '') {
+          filtered = filtered.filter(template =>
+            template.gupshup.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
+          );
+        }
+    
+        setFilteredTemplates(filtered);
+      }, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
 
   const handleFiltrarTipoPlantilla = (event) => {
     setTipoPlantillaFiltro(event.target.value);
@@ -371,6 +378,7 @@ const TemplateAproved = () => {
                 <MenuItem value='DOCUMENT'>Documento</MenuItem>
                 <MenuItem value='CATALOG'>Cátalogo</MenuItem>
                 <MenuItem value='CAROUSEL'>Carrusel</MenuItem>
+                <MenuItem value='FLOW'>Flow</MenuItem>
               </Select>
             </FormControl>
           </Box>

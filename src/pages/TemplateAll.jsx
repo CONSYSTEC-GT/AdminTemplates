@@ -153,7 +153,14 @@ const TemplateAll = () => {
     let filtered = [...templates];
 
     if (tipoPlantillaFiltro !== 'ALL') {
-      filtered = filtered.filter(template => template.gupshup.templateType === tipoPlantillaFiltro);
+      if (tipoPlantillaFiltro === 'FLOW') {
+        filtered = filtered.filter(template => template.gupshup.buttonSupported === 'FLOW');
+      } else {
+        filtered = filtered.filter(template => 
+          template.gupshup.templateType === tipoPlantillaFiltro &&
+          template.gupshup.buttonSupported !== 'FLOW'
+        );
+      }
     }
 
     if (categoriaFiltro && categoriaFiltro !== 'ALL') {
@@ -439,6 +446,7 @@ const TemplateAll = () => {
                 <MenuItem value='DOCUMENT'>Documento</MenuItem>
                 <MenuItem value='CATALOG'>Cátalogo</MenuItem>
                 <MenuItem value='CAROUSEL'>Carrusel</MenuItem>
+                <MenuItem value='FLOW'>Flow</MenuItem>
               </Select>
             </FormControl>
           </Box>

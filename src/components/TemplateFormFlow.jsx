@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Alert, Box, Button, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormLabel, FormHelperText, Grid, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Radio, RadioGroup, Select, Stack, TextField, Tooltip, Typography, alpha } from '@mui/material';
+import { Alert, Box, Button, Checkbox, Chip, Dialog, DialogTitle, DialogContent, Divider, FormControl, FormControlLabel, FormLabel, FormHelperText, Grid, IconButton, InputLabel, ListItemText, MenuItem, OutlinedInput, Paper, Radio, RadioGroup, Select, Stack, TextField, Tooltip, Typography, alpha } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import { Smile } from "react-feather";
 import EmojiPicker from "emoji-picker-react";
@@ -14,10 +14,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import CloseIcon from '@mui/icons-material/Close';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PreviewIcon from '@mui/icons-material/Preview';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { createTemplateFlowGupshup } from '../api/gupshupApi';
 import { saveTemplateToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
+import { previewFlow } from '../api/gupshupApi';
 import { CustomDialog } from '../utils/CustomDialog';
 import { useClickOutside } from '../utils/emojiClick';
 import FlowSelector from './FlowSelector';
@@ -119,6 +124,17 @@ const TemplateForm = () => {
     const descriptionRefs = useRef({});
     const emojiPickerRef = useRef(null);
     const debounceTimeout = useRef(null);
+
+    const [variableTypes, setVariableTypes] = useState({});
+    const [variableLists, setVariableLists] = useState({});
+    const [editingOption, setEditingOption] = useState(null);
+    const [draggedItem, setDraggedItem] = useState(null);
+    const listInputRefs = useRef({});
+
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+    const [previewData, setPreviewData] = useState(null);
+    const [previewOpen, setPreviewOpen] = useState(false);
 
     const resetForm = () => {
         setTemplateName("");
@@ -944,6 +960,38 @@ const TemplateForm = () => {
         }
     }, [selectedFlow, buttons]);
 
+    // Función para cargar el preview
+    const loadPreview = async () => {
+        if (!selectedFlow?.id) return;
+
+        setIsLoadingPreview(true);
+        try {
+            const previewData = await previewFlow(appId, authCode, selectedFlow.id);
+
+            // Verifica si la respuesta tiene la estructura esperada
+            if (previewData.preview?.preview_url) {
+                // Actualiza el selectedFlow con la información del preview
+                setSelectedFlow(prev => ({
+                    ...prev,
+                    previewUrl: previewData.preview.preview_url,
+                    previewExpires: new Date(previewData.preview.expires_at).toLocaleString(),
+                    previewId: previewData.id,
+                    previewStatus: previewData.status
+                }));
+
+                console.log("Preview cargado:", previewData);
+            } else {
+                console.warn("Estructura de preview inesperada:", previewData);
+                // Muestra un error o maneja la respuesta diferente
+            }
+        } catch (error) {
+            console.error("Error al cargar preview:", error);
+            // Puedes mostrar un snackbar o alerta de error
+        } finally {
+            setIsLoadingPreview(false);
+        }
+    };
+
     return (
         <Grid container spacing={2} sx={{ height: '100vh' }}>
 
@@ -1542,6 +1590,141 @@ const TemplateForm = () => {
                                                 </Typography>
                                             )}
                                         </Grid>
+
+                                        {/* FILA COMPLETA: Vista previa embebida */}
+                                        <Grid item xs={12}>
+                                            <Box sx={{ mt: 2 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                    <Typography variant="subtitle1" color="text.primary">
+                                                        Vista previa del Flow
+                                                    </Typography>
+
+                                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                                        {selectedFlow.previewUrl && (
+                                                            <>
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    size="small"
+                                                                    startIcon={<OpenInNewIcon />}
+                                                                    onClick={() => window.open(selectedFlow.previewUrl, '_blank')}
+                                                                >
+                                                                    Abrir en nueva pestaña
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    size="small"
+                                                                    startIcon={<RefreshIcon />}
+                                                                    onClick={loadPreview}
+                                                                    disabled={isLoadingPreview}
+                                                                >
+                                                                    Actualizar
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                <Box
+                                                    sx={{
+                                                        height: 900,
+                                                        border: "1px solid #e0e0e0",
+                                                        borderRadius: 2,
+                                                        overflow: "hidden",
+                                                        backgroundColor: "white",
+                                                        position: "relative",
+                                                        
+                                                    }}
+                                                >
+                                                    {selectedFlow.previewUrl ? (
+                                                        <>
+                                                            <iframe
+                                                                src={selectedFlow.previewUrl}
+                                                                title="Flow Preview"
+                                                                style={{
+                                                                    width: "100%",
+                                                                    height: "100%",
+                                                                    border: "none",
+                                                                }}
+                                                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                                                                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+                                                            />
+                                                            <Box
+                                                                sx={{
+                                                                    position: "absolute",
+                                                                    top: 28,
+                                                                    right: 188,
+                                                                    backgroundColor: "rgba(255,255,255,0.9)",
+                                                                    borderRadius: 1,
+                                                                    p: 1,
+                                                                    boxShadow: 1,
+                                                                }}
+                                                            >
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    Expira: {selectedFlow.previewExpires}
+                                                                </Typography>
+                                                            </Box>
+                                                        </>
+                                                    ) : (
+                                                        <Box
+                                                            sx={{
+                                                                height: "100%",
+                                                                display: "flex",
+                                                                flexDirection: "column",
+                                                                alignItems: "center",
+                                                                justifyContent: "center",
+                                                                color: "text.secondary",
+                                                                p: 1,
+                                                            }}
+                                                        >
+                                                            <PreviewIcon sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
+                                                            <Typography variant="h6" gutterBottom align="center">
+                                                                Vista previa no cargada
+                                                            </Typography>
+                                                            <Typography variant="body2" align="center" sx={{ mb: 3, maxWidth: 400 }}>
+                                                                {isLoadingPreview
+                                                                    ? "Cargando vista previa del flow..."
+                                                                    : "Carga la vista previa para interactuar con el flow directamente desde aquí"}
+                                                            </Typography>
+                                                            <Button
+                                                                variant="contained"
+                                                                size="medium"
+                                                                startIcon={<PreviewIcon />}
+                                                                onClick={loadPreview}
+                                                                disabled={isLoadingPreview || !selectedFlow.id}
+                                                                sx={{ py: 1, px: 3 }}
+                                                            >
+                                                                {isLoadingPreview ? (
+                                                                    <>
+                                                                        <RefreshIcon size={20} sx={{ mr: 1 }} />
+                                                                        Cargando...
+                                                                    </>
+                                                                ) : (
+                                                                    "Cargar Vista Previa"
+                                                                )}
+                                                            </Button>
+
+                                                            {selectedFlow.id && (
+                                                                <Typography variant="caption" sx={{ mt: 2, textAlign: 'center' }}>
+                                                                    Flow ID: {selectedFlow.id}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </Box>
+
+                                                {/* Información adicional del preview */}
+                                                {selectedFlow.previewUrl && (
+                                                    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            URL: {selectedFlow.previewUrl.substring(0, 80)}...
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            Estado: {selectedFlow.previewStatus || 'Desconocido'}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        </Grid>
                                     </Grid>
                                 </Box>
                             )}
@@ -1602,6 +1785,38 @@ const TemplateForm = () => {
 
             </Box>
             </Grid>
+
+            <Dialog
+                open={previewOpen}
+                onClose={() => setPreviewOpen(false)}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle>
+                    Vista previa del Flow
+                    <IconButton
+                        onClick={() => setPreviewOpen(false)}
+                        sx={{ position: 'absolute', right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    {previewData ? (
+                        <Box component="pre" sx={{
+                            p: 2,
+                            bgcolor: '#f5f5f5',
+                            borderRadius: 1,
+                            overflow: 'auto',
+                            maxHeight: 400
+                        }}>
+                            {JSON.stringify(previewData, null, 2)}
+                        </Box>
+                    ) : (
+                        <Typography>No hay datos de preview disponibles</Typography>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {/* Preview (30%) */}
             <Grid item xs={4}>

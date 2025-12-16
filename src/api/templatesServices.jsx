@@ -66,6 +66,7 @@ export const fetchMergedTemplates = async (appId, authCode, templatesGS) => {
             category: gupshupTemplate.category,
             containerMeta: gupshupTemplate.containerMeta,
             templateType: gupshupTemplate.templateType,
+            buttonSupported: gupshupTemplate.buttonSupported, // ⭐ AGREGAR ESTA LÍNEA
             data: gupshupTemplate.data,
             languageCode: gupshupTemplate.languageCode,
             quality: gupshupTemplate.quality,
