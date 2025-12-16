@@ -1474,3 +1474,31 @@ export const getFlowScreenName = async (appId, authCode, flowId) => {
     throw error;
   }
 };
+
+export const previewFlow = async (appId, authCode, flowId) => {
+  try {
+    const previewResponse = await fetch(
+      `https://partner.gupshup.io/partner/app/${appId}/flows/${flowId}/preview`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': authCode,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!previewResponse.ok) {
+      const errorText = await previewResponse.text();
+      console.error(`Error ${previewResponse.status}: ${errorText}`);
+      throw new Error(`Error al obtener el preview del flow: ${previewResponse.status}`);
+    }
+
+    const previewData = await previewResponse.json();
+    return previewData;
+    
+  } catch (error) {
+    console.error('Error al obtener el preview del flow:', error);
+    throw error;
+  }
+};
