@@ -475,6 +475,152 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   }
 };
 
+export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes= [], variables = [], variableDescriptions = {}, variableExamples = {},variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
+  const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
+
+  //const url = 'https://certificacion.talkme.pro/templatesGS/api/plantillas/';
+  const url = urlTemplatesGS + 'plantillas';
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  //13 y 14 son en certi igual que 149 en bot redes y en dev son 17 y 
+  //10 Y 13 SON EN S1 AL S4
+  let ID_PLANTILLA_CATEGORIA;
+  if (selectedCategory === "MARKETING") {
+    ID_PLANTILLA_CATEGORIA = 10;
+  } else if (selectedCategory === "UTILITY") {
+    ID_PLANTILLA_CATEGORIA = 13;
+  } else {
+    console.error("Categoría no válida:", selectedCategory);
+    Swal.fire({
+      title: '❌ Error',
+      text: 'Categoría no válida.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#00c3ff'
+    });
+    return null; // Retornar null si la categoría no es válida
+  }
+
+  const mediaMap = {
+    image: "image",
+    video: "video",
+    document: "document",
+    CAROUSEL: "image"
+  };
+
+  const MEDIA = mediaMap[templateType] || null;
+
+  const mensajeProcesado = reordenarVariables(message);
+
+  const nombreProcesado = templateName.replace(/_/g, " ");
+
+  const data = {
+    ID_PLANTILLA: null,
+    ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
+    ID_BOT_REDES: idBotRedes,
+    ID_INTERNO: templateId,
+    NOMBRE: nombreProcesado,
+    NOMBRE_PLANTILLA: templateName,
+    MENSAJE: mensajeProcesado,
+    TIPO_PLANTILLA: 2,
+    MEDIA: MEDIA,
+    URL: uploadedUrl,
+    PANTALLAS: pantallas,
+    ESTADO: 0,
+    AUTORIZADO: 0,
+    ELIMINADO: 0,
+    ESTADO_GUPSHUP: 2,
+    SEGUIMIENTO_EDC: 0,
+    CREADO_POR: idNombreUsuarioTalkMe,
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorResponse = await response.json();
+      console.error("Error response:", errorResponse);
+      Swal.fire({
+        title: '❌ Error',
+        text: errorResponse.message || 'Solicitud inválida.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#00c3ff'
+      });
+      return null; // Retornar null en caso de error
+    }
+
+    const result = await response.json();
+    Swal.fire({
+      title: '¡Éxito!',
+      text: 'La plantilla fue creada correctamente.',
+      icon: 'success',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#00c3ff'
+    });
+    
+
+    // Si tenemos variables, hacer el tercer request
+    if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
+      // Guardar variables normales
+      await saveTemplateParams(
+        result.ID_PLANTILLA,
+        idNombreUsuarioTalkMe,
+        variables,
+        variableDescriptions,
+        variableTypes,
+        variableExamples,
+        urlTemplatesGS
+      );
+
+      // Guardar listas de opciones
+      await saveTemplateParamsOptions(
+        result.ID_PLANTILLA,
+        idNombreUsuarioTalkMe ,
+        variables,
+        variableDescriptions,
+        variableTypes,
+        variableLists,
+        urlTemplatesGS
+      );
+    }
+
+    if (result && result.ID_PLANTILLA && cards && cards.length > 0) {
+      try {
+        await saveCardsTemplate(
+          {
+            ID_PLANTILLA: result.ID_PLANTILLA,
+            cards: cards
+          },
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS
+        );
+      } catch (error) {
+        console.error("Error guardando tarjetas:", error);
+        showSnackbar("❌ Error al guardar las tarjetas", "error");
+      }
+    }
+
+    return result; // Retornar el resultado en caso de éxito
+  } catch (error) {
+    console.error("Error en el segundo request:", error);
+    Swal.fire({
+      title: '❌ Error',
+      text: 'Ocurrió un error en el segundo request.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#00c3ff'
+    });
+    return null; // Retornar null en caso de error
+  }
+};
+
 export const editTemplateToTalkMe = async (
   idTemplate, 
   templateData, 

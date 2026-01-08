@@ -21,7 +21,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { createTemplateFlowGupshup } from '../api/gupshupApi';
-import { saveTemplateToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
+import { saveTemplateFlowToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
 import { previewFlow } from '../api/gupshupApi';
 import { CustomDialog } from '../utils/CustomDialog';
 import { useClickOutside } from '../utils/emojiClick';
@@ -152,6 +152,8 @@ const TemplateForm = () => {
         setVariableDescriptions([]);
         setDisplayPantallas([]);
         setImagePreview("");
+        setSelectedFlow(null);
+        setIsSelectorOpen(false);
     };
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -386,7 +388,7 @@ const TemplateForm = () => {
         
                 */
                 // Hacer el segundo request a TalkMe API
-                const result2 = await saveTemplateToTalkMe(
+                const result2 = await saveTemplateFlowToTalkMe(
                     templateId,
                     {
                         templateName,
