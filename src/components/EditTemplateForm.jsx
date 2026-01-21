@@ -162,6 +162,12 @@ const EditTemplateForm = () => {
   const [previewData, setPreviewData] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const [variableTypes, setVariableTypes] = useState({});
+  const [variableLists, setVariableLists] = useState({});
+  const [editingOption, setEditingOption] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const listInputRefs = useRef({});
+
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
@@ -1519,6 +1525,22 @@ const EditTemplateForm = () => {
     } finally {
       setIsLoadingPreview(false);
     }
+  };
+
+  // BOTON BORRAR VARIABLES
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
   };
 
 
