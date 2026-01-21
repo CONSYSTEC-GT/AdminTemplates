@@ -1485,6 +1485,8 @@ const EditTemplateForm = () => {
   const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
 
+
+
   useEffect(() => {
     const newExample = replaceVariables(message, variableExamples);
     setExample(newExample);
@@ -1541,6 +1543,184 @@ const EditTemplateForm = () => {
     exampleRefs.current = {};
 
     messageRef.current?.focus();
+  };
+
+  // BOTON PARA BORRAR UNA VARIABLE EN ESPECIFICO
+  const deleteVariable = (variableToDelete) => {
+    // Eliminar la variable del texto
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+    // Eliminar la variable de la lista de variables
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+    // Renumerar las variables restantes para mantener el orden secuencial
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
+    });
+
+    // Actualizar el texto con las variables renumeradas
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
+
+    // Crear nuevos objetos para descripciones y ejemplos de variables
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+    // Eliminar la variable eliminada de los errores
+    delete newVariableErrors[variableToDelete];
+
+    // Copiar las descripciones y ejemplos con las nuevas claves
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+    // Actualizar todos los estados
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+    // Actualizar las referencias
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+  // ACTUALIZA LA DESCRIPCION DE LA VARIABLE
+  const handleUpdateDescriptions = (variable, event) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+  };
+
+  // ACTUALIZA EL EJEMPLO DE LA VARIABLE
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+
+      return updatedExamples;
+    });
+  };
+
+  // Función para actualizar el tipo de variable
+  const handleUpdateVariableType = (variable, type) => {
+    setVariableTypes(prev => ({
+      ...prev,
+      [variable]: type
+    }));
+
+    // Limpiar datos según el tipo
+    if (type === 'list') {
+      setVariableExamples(prev => {
+        const newExamples = { ...prev };
+        delete newExamples[variable];
+        return newExamples;
+      });
+    } else {
+      setVariableLists(prev => {
+        const newLists = { ...prev };
+        delete newLists[variable];
+        return newLists;
+      });
+    }
+  };
+
+  // Función para agregar opción a la lista
+  const handleAddListOption = (variable, option) => {
+    if (!option.trim()) return;
+
+    setVariableLists(prev => ({
+      ...prev,
+      [variable]: [...(prev[variable] || []), option.trim()]
+    }));
+  };
+
+  // Función para eliminar opción de la lista
+  const handleDeleteListOption = (variable, optionIndex) => {
+    setVariableLists(prev => ({
+      ...prev,
+      [variable]: prev[variable].filter((_, index) => index !== optionIndex)
+    }));
+  };
+
+  // Función para iniciar edición de opción
+  const handleStartEditOption = (variable, index, currentValue) => {
+    setEditingOption({
+      variable,
+      index,
+      value: currentValue
+    });
+  };
+
+  // Función para guardar edición de opción
+  const handleSaveOptionEdit = (variable, index) => {
+    if (editingOption && editingOption.value.trim()) {
+      const newLists = { ...variableLists };
+      newLists[variable][index] = editingOption.value.trim();
+      setVariableLists(newLists);
+    }
+    setEditingOption(null);
+  };
+
+  // Funciones para drag & drop
+  const handleDragStart = (e, variable, index) => {
+    setDraggedItem({ variable, index });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, variable, targetIndex) => {
+    e.preventDefault();
+
+    if (!draggedItem || draggedItem.variable !== variable) {
+      setDraggedItem(null);
+      return;
+    }
+
+    const sourceIndex = draggedItem.index;
+
+    if (sourceIndex === targetIndex) {
+      setDraggedItem(null);
+      return;
+    }
+
+    const newLists = { ...variableLists };
+    const items = [...newLists[variable]];
+    const [removed] = items.splice(sourceIndex, 1);
+    items.splice(targetIndex, 0, removed);
+
+    newLists[variable] = items;
+    setVariableLists(newLists);
+    setDraggedItem(null);
   };
 
 
