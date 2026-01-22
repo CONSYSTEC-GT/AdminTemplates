@@ -562,11 +562,24 @@ const TemplateFormCarousel = () => {
     const inputValue = event.target.value;
     const hasUpperCase = /[A-Z]/.test(inputValue);
 
-    const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
+    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
+
+    const newValue = inputValue
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quita acentos
+      .replace(/ñ/gi, 'n') // Reemplaza ñ
+      .toLowerCase() // Minúsculas
+      .replace(/\s+/g, '_') // Espacios por _
+      .replace(/[^a-z0-9_]/g, ''); // Solo caracteres permitidos
+
     setTemplateName(newValue);
 
-    if (hasUpperCase) {
+    if (hasInvalidChars) {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales");
+    } else if (hasUpperCase) {
       setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
+      setTemplateNameError(false);
     } else if (newValue.trim() === "") {
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
@@ -734,6 +747,93 @@ const TemplateFormCarousel = () => {
     setButtons(buttons.filter((button) => button.id !== id));
   };
 
+  // VARIABLES DEL BODY MESSAGE
+  const handleBodyMessageChange = (e) => {
+    const newValue = event.target.value;
+    setMessage(newValue);
+
+
+    // Validar si el campo está vacío
+    if (newValue.trim() === "") {
+      setcontenidoPlantillaTypeError(true);
+      setcontenidoPlantillaTypeHelperText("Este campo es requerido");
+    } else {
+      setcontenidoPlantillaTypeError(false);
+      setcontenidoPlantillaTypeHelperText("");
+    }
+
+
+    const newText = e.target.value;
+    const maxLength = 549;
+    const emojiCount = countEmojis(newText);
+    const maxEmojis = 10;
+
+    // Verificar si se excede el límite de emojis
+    if (emojiCount > maxEmojis) {
+      // Opcional: Mostrar una alerta solo cuando se supera el límite por primera vez
+      if (countEmojis(message) <= maxEmojis) {
+        Swal.fire({
+          title: 'Límite de emojis',
+          text: 'Solo puedes incluir un máximo de 10 emojis',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+      }
+      return; // No actualizar el texto si excede el límite de emojis
+    }
+
+    if (newText.length > maxLength) {
+      Swal.fire({
+        title: 'Limite de caracteres',
+        text: 'Haz alcanzado el limite máximo de caracteres',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00c3ff'
+      });
+      return;
+    }
+
+    if (newText.length <= maxLength) {
+      // Guardar el nuevo texto
+      setMessage(newText);
+      // Actualizar el contador de emojis (necesitas agregar este estado)
+      setEmojiCount(emojiCount);
+
+      // Verificar qué variables se han eliminado del texto
+      const deletedVariables = [];
+      variables.forEach(variable => {
+        if (!newText.includes(variable)) {
+          deletedVariables.push(variable);
+        }
+      });
+
+      // Si se eliminaron variables, actualiza el estado
+      if (deletedVariables.length > 0) {
+        // Filtrar las variables eliminadas
+        const remainingVariables = variables.filter(v => !deletedVariables.includes(v));
+
+        // Actualizar el estado de las variables
+        setVariables(remainingVariables);
+
+        // Actualizar las descripciones y ejemplos
+        const newDescriptions = { ...variableDescriptions };
+        const newExamples = { ...variableExamples };
+        const newErrors = { ...variableErrors };
+
+        deletedVariables.forEach(v => {
+          delete newDescriptions[v];
+          delete newExamples[v];
+          delete newErrors[v];
+        });
+
+        setVariableDescriptions(newDescriptions);
+        setVariableExamples(newExamples);
+        setVariableErrors(newErrors);
+      }
+    }
+  };
+
   const handleBodyMessageCardChange = (e, cardId) => {
     const newText = e.target.value;
     const maxLength = 160;
@@ -756,7 +856,7 @@ const TemplateFormCarousel = () => {
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 160 caracteres',
+        text: 'Haz alcanzado el limite máximo de caracteres ',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
@@ -2461,7 +2561,7 @@ const TemplateFormCarousel = () => {
                                       value={card.messageCard}
                                       onChange={(e) => handleBodyMessageCardChange(e, card.id)}
                                       inputRef={(el) => (messageCardRefs.current[card.id] = el)}
-                                      //inputProps={{ maxLength: 280 }}
+                                      //inputProps={{ maxLength: 160 }}
                                       helperText={`${card.messageCard.length}/160 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
                                       error={Boolean(cardErrors[card.id]?.messageCard)}
                                       FormHelperTextProps={{

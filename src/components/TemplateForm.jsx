@@ -572,11 +572,24 @@ const TemplateForm = () => {
     const inputValue = event.target.value;
     const hasUpperCase = /[A-Z]/.test(inputValue);
 
-    const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
+    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
+
+    const newValue = inputValue
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quita acentos
+      .replace(/ñ/gi, 'n') // Reemplaza ñ
+      .toLowerCase() // Minúsculas
+      .replace(/\s+/g, '_') // Espacios por _
+      .replace(/[^a-z0-9_]/g, ''); // Solo caracteres permitidos
+
     setTemplateName(newValue);
 
-    if (hasUpperCase) {
+    if (hasInvalidChars) {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales");
+    } else if (hasUpperCase) {
       setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
+      setTemplateNameError(false);
     } else if (newValue.trim() === "") {
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
