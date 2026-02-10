@@ -113,7 +113,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="/plantillas/aprovadas"
+            path="/plantillas/aprobadas"
             element={
               <ProtectedRoute>
                 <TemplateAproved />

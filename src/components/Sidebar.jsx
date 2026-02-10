@@ -40,7 +40,7 @@ const NAVIGATION = [
       },
       {
         segment: 'CreateTemplateCatalog',
-        title: 'Cátalogo',
+        title: 'Catálogo',
         icon: <AutoAwesomeMosaicIcon />,
       },
       {
@@ -63,8 +63,8 @@ const NAVIGATION = [
     icon: <DescriptionIcon />,
   },
   {
-    segment: 'plantillas/aprovadas',
-    title: 'Aprovadas',
+    segment: 'plantillas/aprobadas',
+    title: 'Aprobadas',
     icon: <CheckIcon />,
   },
   {
