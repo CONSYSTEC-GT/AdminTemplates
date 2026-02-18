@@ -604,11 +604,24 @@ const TemplateFormCarousel = () => {
     const inputValue = event.target.value;
     const hasUpperCase = /[A-Z]/.test(inputValue);
 
-    const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
+    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
+
+    const newValue = inputValue
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quita acentos
+      .replace(/ñ/gi, 'n') // Reemplaza ñ
+      .toLowerCase() // Minúsculas
+      .replace(/\s+/g, '_') // Espacios por _
+      .replace(/[^a-z0-9_]/g, ''); // Solo caracteres permitidos
+
     setTemplateName(newValue);
 
-    if (hasUpperCase) {
+    if (hasInvalidChars) {
+      setTemplateNameError(true);
+      setTemplateNameHelperText("Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales");
+    } else if (hasUpperCase) {
       setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
+      setTemplateNameError(false);
     } else if (newValue.trim() === "") {
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
@@ -858,7 +871,7 @@ const TemplateFormCarousel = () => {
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        text: 'Haz alcanzado el limite máximo de caracteres',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
@@ -933,7 +946,7 @@ const TemplateFormCarousel = () => {
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 160 caracteres',
+        text: 'Haz alcanzado el limite máximo de caracteres ',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
@@ -2464,7 +2477,7 @@ const TemplateFormCarousel = () => {
                                       value={card.messageCard}
                                       onChange={(e) => handleBodyMessageCardChange(e, card.id)}
                                       inputRef={(el) => (messageCardRefs.current[card.id] = el)}
-                                      //inputProps={{ maxLength: 280 }}
+                                      //inputProps={{ maxLength: 160 }}
                                       helperText={`${card.messageCard.length}/160 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
                                       error={Boolean(cardErrors[card.id]?.messageCard)}
                                       FormHelperTextProps={{

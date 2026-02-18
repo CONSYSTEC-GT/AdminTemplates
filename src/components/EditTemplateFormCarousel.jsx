@@ -781,7 +781,7 @@ const EditTemplateFormCarousel = () => {
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        text: 'Haz alcanzado el limite máximo de caracteres',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
@@ -831,7 +831,7 @@ const EditTemplateFormCarousel = () => {
 
   const handleBodyMessageCardChange = (e, cardId) => {
     const newText = e.target.value;
-    const maxLength = 280;
+    const maxLength = 160;
     const newEmojiCount = countEmojis(newText);
     const maxEmojis = 10;
 
@@ -853,7 +853,7 @@ const EditTemplateFormCarousel = () => {
     if (newText.length > maxLength) {
       Swal.fire({
         title: 'Limite de caracteres',
-        text: 'Solo puedes incluir un máximo de 550 caracteres',
+        text: 'Haz alcanzado el limite máximo de caracteres',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#00c3ff'
@@ -1840,13 +1840,13 @@ const EditTemplateFormCarousel = () => {
                 }}
                 inputRef={messageRef}
                 inputProps={{
-                  maxLength: 280,
+                  maxLength: 550,
                 }}
                 helperText={`${message.length}/550 caracteres | ${emojiCount}/10 emojis`}
                 FormHelperTextProps={{
                   sx: {
                     textAlign: 'right',
-                    color: message.length === 280 ? 'error.main' : 'text.secondary'
+                    color: message.length === 550 ? 'error.main' : 'text.secondary'
                   }
                 }}
               />
@@ -2134,12 +2134,12 @@ const EditTemplateFormCarousel = () => {
                                       value={card.messageCard}
                                       onChange={(e) => handleBodyMessageCardChange(e, card.id)}
                                       inputRef={(el) => (messageCardRefs.current[card.id] = el)}
-                                      inputProps={{ maxLength: 280 }}
-                                      helperText={`${card.messageCard.length}/280 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
+                                      inputProps={{ maxLength: 160 }}
+                                      helperText={`${card.messageCard.length}/160 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
                                       FormHelperTextProps={{
                                         sx: {
                                           textAlign: 'right',
-                                          color: card.messageCard.length === 280 ? 'error.main' : 'text.secondary'
+                                          color: card.messageCard.length === 160 ? 'error.main' : 'text.secondary'
                                         }
                                       }}
                                       sx={{
@@ -2535,7 +2535,7 @@ const EditTemplateFormCarousel = () => {
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
+                        overflowWrap: 'break-word',
                         textOverflow: 'ellipsis'
                       }}>
                         {card.messageCard || "Descripción de la tarjeta"}
