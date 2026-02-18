@@ -21,7 +21,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { createTemplateFlowGupshup } from '../api/gupshupApi';
-import { saveTemplateToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
+import { saveTemplateFlowToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
 import { previewFlow } from '../api/gupshupApi';
 import { CustomDialog } from '../utils/CustomDialog';
 import { useClickOutside } from '../utils/emojiClick';
@@ -152,6 +152,8 @@ const TemplateForm = () => {
         setVariableDescriptions([]);
         setDisplayPantallas([]);
         setImagePreview("");
+        setSelectedFlow(null);
+        setIsSelectorOpen(false);
     };
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -344,7 +346,7 @@ const TemplateForm = () => {
         }
 
         try {
-            /*
+            //
             const result = await createTemplateFlowGupshup(
                 appId,
                 authCode,
@@ -370,7 +372,7 @@ const TemplateForm = () => {
 
             if (result && result.status === "success" && result.template && result.template.id) {
                 const templateId = result.template.id;
-                */
+                /*
                // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
               const mockResult = {
                 status: "success",
@@ -384,9 +386,9 @@ const TemplateForm = () => {
                 // Extraer el valor de `id` del objeto `template`
                 const templateId = mockResult.template.id;
         
-                //
+                */
                 // Hacer el segundo request a TalkMe API
-                const result2 = await saveTemplateToTalkMe(
+                const result2 = await saveTemplateFlowToTalkMe(
                     templateId,
                     {
                         templateName,
@@ -397,8 +399,11 @@ const TemplateForm = () => {
                         uploadedUrl
                     },
                     idNombreUsuarioTalkMe || "Sistema.TalkMe",
+                    variableTypes,
                     variables,
                     variableDescriptions,
+                    variableExamples,
+                    variableLists,
                     [],
                     idBotRedes,
                     urlTemplatesGS
@@ -955,8 +960,6 @@ const TemplateForm = () => {
 
     useEffect(() => {
         if (selectedFlow) {
-            console.log("✅ selectedFlow actualizado:", selectedFlow);
-            console.log("✅ Buttons después de selección:", buttons);
         }
     }, [selectedFlow, buttons]);
 
@@ -978,15 +981,11 @@ const TemplateForm = () => {
                     previewId: previewData.id,
                     previewStatus: previewData.status
                 }));
-
-                console.log("Preview cargado:", previewData);
             } else {
                 console.warn("Estructura de preview inesperada:", previewData);
-                // Muestra un error o maneja la respuesta diferente
             }
         } catch (error) {
             console.error("Error al cargar preview:", error);
-            // Puedes mostrar un snackbar o alerta de error
         } finally {
             setIsLoadingPreview(false);
         }
@@ -1479,19 +1478,12 @@ const TemplateForm = () => {
                                     appId={appId}
                                     authCode={authCode}
                                     onFlowSelect={(flow) => {
-                                        console.log("✅ Flow recibido con screenName:", flow);
                                         setSelectedFlow(flow);
 
-                                        // Actualizar todos los campos en una sola llamada
                                         const updates = {
                                             flow_id: flow.id,
                                             navigate_screen: flow.screenName,
                                         };
-
-                                        /* Solo actualizar el texto si está vacío
-                                        if (!buttons[0]?.text || buttons[0].text === "") {
-                                          updates.text = flow.name || "Iniciar Flow";
-                                        }*/
 
                                         updateButton(0, updates);
                                         handleFlowClose();

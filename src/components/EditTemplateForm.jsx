@@ -19,6 +19,9 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PreviewIcon from '@mui/icons-material/Preview';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
@@ -26,6 +29,7 @@ import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, 
 import { useClickOutside } from '../utils/emojiClick';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 import { editTemplateFlowGupshup } from '../api/gupshupApi';
+import { previewFlow } from '../api/gupshupApi';
 import FlowSelector from './FlowSelector';
 
 const SAMPLE_MEDIA_REGEX = /^\d+::[A-Za-z0-9+/._=-]+(?::[A-Za-z0-9+/._=-]+)+$/;
@@ -141,16 +145,22 @@ const EditTemplateForm = () => {
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
 
-const [selectedFlow, setSelectedFlow] = useState(null);
-const [isFlowSelectorVisible, setIsFlowSelectorVisible] = useState(false);
-const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [selectedFlow, setSelectedFlow] = useState(null);
+  const [isFlowSelectorVisible, setIsFlowSelectorVisible] = useState(false);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
-const [buttonTextError, setButtonTextError] = useState(false);
-const [buttonTextHelperText, setButtonTextHelperText] = useState("");
-const [flowError, setFlowError] = useState(false);
-const [flowHelperText, setFlowHelperText] = useState("");
+  const [buttonTextError, setButtonTextError] = useState(false);
+  const [buttonTextHelperText, setButtonTextHelperText] = useState("");
+  const [flowError, setFlowError] = useState(false);
+  const [flowHelperText, setFlowHelperText] = useState("");
 
-const [isFlowTemplate, setIsFlowTemplate] = useState(false);
+  const [isFlowTemplate, setIsFlowTemplate] = useState(false);
+
+
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
   const loadData = async () => {
@@ -180,12 +190,6 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
       }
       
       setIsFlowTemplate(isFlow);
-      
-      console.log("🔍 Tipo de plantilla detectado:", {
-        buttonSupported: templateData.buttonSupported,
-        detectedFromButtons: isFlow,
-        isFlowTemplate: isFlow
-      });
 
       if (templateData.containerMeta) {
         try {
@@ -211,8 +215,6 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
               // Cargar botón FLOW
               const flowButton = meta.buttons[0];
               
-              console.log("✅ Cargando botón FLOW:", flowButton);
-              
               setButtons([
                 {
                   id: 0,
@@ -233,8 +235,6 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                 });
               }
             } else {
-              // Cargar botones normales
-              console.log("✅ Cargando botones normales:", meta.buttons);
               
               setButtons(
                 meta.buttons.map((button, index) => ({
@@ -1524,6 +1524,35 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
         setIsSelectorOpen(false);
     };
 
+      // Función para cargar el preview
+  const loadPreview = async () => {
+    if (!selectedFlow?.id) return;
+
+    setIsLoadingPreview(true);
+    try {
+      const previewData = await previewFlow(appId, authCode, selectedFlow.id);
+
+      // Verifica si la respuesta tiene la estructura esperada
+      if (previewData.preview?.preview_url) {
+        // Actualiza el selectedFlow con la información del preview
+        setSelectedFlow(prev => ({
+          ...prev,
+          previewUrl: previewData.preview.preview_url,
+          previewExpires: new Date(previewData.preview.expires_at).toLocaleString(),
+          previewId: previewData.id,
+          previewStatus: previewData.status
+        }));
+
+      } else {
+        console.warn("Estructura de preview inesperada:", previewData);
+      }
+    } catch (error) {
+      console.error("Error al cargar preview:", error);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
 
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
@@ -2039,7 +2068,6 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                     appId={appId}
                     authCode={authCode}
                     onFlowSelect={(flow) => {
-                      console.log("✅ Flow seleccionado:", flow);
                       setSelectedFlow(flow);
 
                       const updates = {
@@ -2069,6 +2097,7 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                     </Typography>
 
                     <Grid container spacing={2}>
+                      {/* COLUMNA 1: Flow */}
                       <Grid item xs={12} md={4}>
                         <Box display="flex" alignItems="center" gap={1}>
                           <AccountTreeIcon color="primary" />
@@ -2081,8 +2110,30 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                             </Typography>
                           </Box>
                         </Box>
+
+                        {/* Log del flow */}
+                        {selectedFlow.log && (
+                          <Box
+                            component="pre"
+                            sx={{
+                              mt: 1,
+                              p: 1,
+                              bgcolor: "background.paper",
+                              borderRadius: 1,
+                              border: "1px solid rgba(0,0,0,0.06)",
+                              fontFamily: "monospace",
+                              fontSize: "0.8rem",
+                              maxHeight: 120,
+                              overflow: "auto",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {selectedFlow.log}
+                          </Box>
+                        )}
                       </Grid>
 
+                      {/* COLUMNA 2: Pantalla inicial */}
                       <Grid item xs={12} md={4}>
                         <Typography variant="subtitle2" color="text.secondary">
                           Pantalla inicial:
@@ -2093,16 +2144,168 @@ const [isFlowTemplate, setIsFlowTemplate] = useState(false);
                           </Box>
                         ) : (
                           <Typography variant="body2" color="text.secondary">
-                            No especificada
+                            No se encontró nombre de pantalla.
+                          </Typography>
+                        )}
+
+                        {selectedFlow.screenError && (
+                          <Alert severity="warning" sx={{ mt: 2 }}>
+                            {selectedFlow.screenError}
+                          </Alert>
+                        )}
+                      </Grid>
+
+                      {/* COLUMNA 3: Categorías */}
+                      <Grid item xs={12} md={4}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Categoría:
+                        </Typography>
+                        {selectedFlow.categories && selectedFlow.categories.length > 0 ? (
+                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}>
+                            {selectedFlow.categories.map((c, i) => (
+                              <Chip key={i} label={c} size="small" />
+                            ))}
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            Sin categorías.
                           </Typography>
                         )}
                       </Grid>
 
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Acción:
-                        </Typography>
-                        <Chip label={buttons[0]?.flow_action || "NAVIGATE"} size="small" sx={{ mt: 1 }} />
+                      {/* FILA COMPLETA: Vista previa embebida */}
+                      <Grid item xs={12}>
+                        <Box sx={{ mt: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle1" color="text.primary">
+                              Vista previa del Flow
+                            </Typography>
+
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              {selectedFlow.previewUrl && (
+                                <>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<OpenInNewIcon />}
+                                    onClick={() => window.open(selectedFlow.previewUrl, '_blank')}
+                                  >
+                                    Abrir en nueva pestaña
+                                  </Button>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<RefreshIcon />}
+                                    onClick={loadPreview}
+                                    disabled={isLoadingPreview}
+                                  >
+                                    Actualizar
+                                  </Button>
+                                </>
+                              )}
+                            </Box>
+                          </Box>
+
+                          <Box
+                            sx={{
+                              height: 900,
+                              border: "1px solid #e0e0e0",
+                              borderRadius: 2,
+                              overflow: "hidden",
+                              backgroundColor: "white",
+                              position: "relative",
+
+                            }}
+                          >
+                            {selectedFlow.previewUrl ? (
+                              <>
+                                <iframe
+                                  src={selectedFlow.previewUrl}
+                                  title="Flow Preview"
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    border: "none",
+                                  }}
+                                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+                                />
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    top: 28,
+                                    right: 188,
+                                    backgroundColor: "rgba(255,255,255,0.9)",
+                                    borderRadius: 1,
+                                    p: 1,
+                                    boxShadow: 1,
+                                  }}
+                                >
+                                  <Typography variant="caption" color="text.secondary">
+                                    Expira: {selectedFlow.previewExpires}
+                                  </Typography>
+                                </Box>
+                              </>
+                            ) : (
+                              <Box
+                                sx={{
+                                  height: "100%",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "text.secondary",
+                                  p: 1,
+                                }}
+                              >
+                                <PreviewIcon sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
+                                <Typography variant="h6" gutterBottom align="center">
+                                  Vista previa no cargada
+                                </Typography>
+                                <Typography variant="body2" align="center" sx={{ mb: 3, maxWidth: 400 }}>
+                                  {isLoadingPreview
+                                    ? "Cargando vista previa del flow..."
+                                    : "Carga la vista previa para interactuar con el flow directamente desde aquí"}
+                                </Typography>
+                                <Button
+                                  variant="contained"
+                                  size="medium"
+                                  startIcon={<PreviewIcon />}
+                                  onClick={loadPreview}
+                                  disabled={isLoadingPreview || !selectedFlow.id}
+                                  sx={{ py: 1, px: 3 }}
+                                >
+                                  {isLoadingPreview ? (
+                                    <>
+                                      <RefreshIcon size={20} sx={{ mr: 1 }} />
+                                      Cargando...
+                                    </>
+                                  ) : (
+                                    "Cargar Vista Previa"
+                                  )}
+                                </Button>
+
+                                {selectedFlow.id && (
+                                  <Typography variant="caption" sx={{ mt: 2, textAlign: 'center' }}>
+                                    Flow ID: {selectedFlow.id}
+                                  </Typography>
+                                )}
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Información adicional del preview */}
+                          {selectedFlow.previewUrl && (
+                            <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
+                              <Typography variant="caption" color="text.secondary">
+                                URL: {selectedFlow.previewUrl.substring(0, 80)}...
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Estado: {selectedFlow.previewStatus || 'Desconocido'}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                       </Grid>
                     </Grid>
                   </Box>
