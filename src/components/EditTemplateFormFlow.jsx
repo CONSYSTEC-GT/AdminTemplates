@@ -18,19 +18,12 @@ import Phone from "@mui/icons-material/Phone";
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import PreviewIcon from '@mui/icons-material/Preview';
-import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
 import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
-import { editTemplateFlowGupshup } from '../api/gupshupApi';
-import { previewFlow } from '../api/gupshupApi';
-import FlowSelector from './FlowSelector';
 
 const SAMPLE_MEDIA_REGEX = /^\d+::[A-Za-z0-9+/._=-]+(?::[A-Za-z0-9+/._=-]+)+$/;
 
@@ -145,97 +138,36 @@ const EditTemplateForm = () => {
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
 
-  const [selectedFlow, setSelectedFlow] = useState(null);
-  const [isFlowSelectorVisible, setIsFlowSelectorVisible] = useState(false);
-  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-
-  const [buttonTextError, setButtonTextError] = useState(false);
-  const [buttonTextHelperText, setButtonTextHelperText] = useState("");
-  const [flowError, setFlowError] = useState(false);
-  const [flowHelperText, setFlowHelperText] = useState("");
-
-  const [isFlowTemplate, setIsFlowTemplate] = useState(false);
-
-
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
-
   useEffect(() => {
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType((templateData.templateType || ""));
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-      // ✅ DETECTAR SI ES PLANTILLA FLOW
-      // Primero intentar con buttonSupported, si no existe, revisar los botones
-      let isFlow = templateData.buttonSupported === "FLOW";
-      
-      // Si buttonSupported no está definido, verificar en containerMeta
-      if (!isFlow && templateData.containerMeta) {
-        try {
-          const metaPreview = JSON.parse(templateData.containerMeta);
-          if (metaPreview.buttons && Array.isArray(metaPreview.buttons) && metaPreview.buttons.length > 0) {
-            // Si el primer botón es de tipo FLOW, es una plantilla Flow
-            isFlow = metaPreview.buttons[0].type === "FLOW";
-          }
-        } catch (e) {
-          console.error("Error al pre-verificar tipo:", e);
-        }
-      }
-      
-      setIsFlowTemplate(isFlow);
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
+            setMessage(meta.data || "");
+            setHeader(meta.header || "");
+            setFooter(meta.footer || "");
+            setExample(meta.sampleText || "");
+            //setMediaId(meta.sampleMedia || "");
 
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          setMessage(meta.data || "");
-          setHeader(meta.header || "");
-          setFooter(meta.footer || "");
-          setExample(meta.sampleText || "");
-
-          if (meta.sampleMedia) {
-            if (isValidSampleMedia(meta.sampleMedia)) {
-              setMediaId(meta.sampleMedia);
+            if (meta.sampleMedia) {
+              if (isValidSampleMedia(meta.sampleMedia)) {
+                setMediaId(meta.sampleMedia);
+              } else {
+                setMediaId("");
+              }
             } else {
               setMediaId("");
             }
-          } else {
-            setMediaId("");
-          }
 
-          // ✅ CARGAR BOTONES SEGÚN EL TIPO
-          if (meta.buttons && Array.isArray(meta.buttons)) {
-            if (isFlow) {
-              // Cargar botón FLOW
-              const flowButton = meta.buttons[0];
-              
-              setButtons([
-                {
-                  id: 0,
-                  text: flowButton.text || "",
-                  type: "FLOW",
-                  flow_id: flowButton.flow_id || "",
-                  flow_action: flowButton.flow_action || "NAVIGATE",
-                  navigate_screen: flowButton.navigate_screen || "",
-                }
-              ]);
-
-              // Establecer el flow seleccionado
-              if (flowButton.flow_id) {
-                setSelectedFlow({
-                  id: flowButton.flow_id,
-                  screenName: flowButton.navigate_screen,
-                  name: flowButton.text || "Flow sin nombre"
-                });
-              }
-            } else {
-              
+            if (meta.buttons && Array.isArray(meta.buttons)) {
               setButtons(
                 meta.buttons.map((button, index) => ({
                   id: index,
@@ -246,32 +178,17 @@ const EditTemplateForm = () => {
                 }))
               );
             }
-          } else {
-            // No hay botones, inicializar según el tipo
-            if (isFlow) {
-              setButtons([
-                {
-                  id: 0,
-                  text: "",
-                  type: "FLOW",
-                  flow_id: "",
-                  flow_action: "NAVIGATE",
-                  navigate_screen: "",
-                }
-              ]);
-            } else {
-              setButtons([]);
-            }
+          } catch (error) {
+            console.error("Error al parsear containerMeta:", error);
           }
-        } catch (error) {
-          console.error("❌ Error al parsear containerMeta:", error);
         }
       }
 
-      // Cargar pantallas y media
       try {
         const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-        if (info !== null) {
+        if (info === null) {
+
+        } else {
           const pantallasFromAPI = info.pantallas || "";
           setPantallas(pantallasFromAPI);
 
@@ -283,13 +200,12 @@ const EditTemplateForm = () => {
           setIdPlantilla(info.id_plantilla || "");
         }
       } catch (error) {
-        console.error("❌ Error al cargar pantallas/media:", error);
-      }
-    }
-  };
 
-  loadData();
-}, [templateData, urlTemplatesGS]);
+      }
+    };
+
+    loadData();
+  }, [templateData, urlTemplatesGS, templateData.id]);
 
   useEffect(() => {
     const loadParametros = async () => {
@@ -511,111 +427,87 @@ const EditTemplateForm = () => {
     }
 
     if (!isValid) {
-      Swal.fire({
-        title: 'Error',
-        text: 'Campos incompletos.',
-        icon: 'error',
-        confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#00c3ff'
-      });
-    }
+    Swal.fire({
+      title: 'Error',
+      text: 'Campos incompletos.',
+      icon: 'error',
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#00c3ff'
+    });
+  }
 
 
     return isValid; // Retornar el valor final de isValid
   };
 
   const iniciarRequest = async () => {
-  if (loading) return;
-  setLoading(true);
+    if (loading) return;
+    setLoading(true);
 
-  const isValid = validateFields();
-  if (!isValid) {
-    setLoading(false);
-    return;
-  }
-
-  try {
-    let result;
-    
-    // Validar si es una plantilla de tipo FLOW
-    if (isFlowTemplate) {
-      // Usar la función específica para plantillas FLOW
-      result = await editTemplateFlowGupshup(
-        appId,
-        authCode,
-        {
-          templateName,
-          selectedCategory,
-          languageCode,
-          templateType,
-          vertical,
-          message,
-          header,
-          footer,
-          mediaId,
-          buttons,
-          example,
-          exampleHeader
-        },
-        templateId, // Asegúrate de tener el ID de la plantilla para editar
-        idNombreUsuarioTalkMe,
-        urlTemplatesGS,
-        validateFields
-      );
-    } else {
-      // Usar la función original para otras plantillas
-      result = await sendRequest();
+    const isValid = validateFields();
+    if (!isValid) {
+      //Swal.fire({title: 'Error', text: 'Campos incompletos.', icon: 'error', confirmButtonText: 'Cerrar', confirmButtonColor: '#00c3ff'});
+      setLoading(false);
+      return;
     }
 
-    if (result && result.status === "success") {
-      const templateId = result.template.id;
+    try {
 
-      const result2 = await sendRequest2(templateId);
+      const result = await sendRequest();
 
-      if (result2 && result2.status === "success") {
-        Swal.fire({
-          title: 'Éxito',
-          text: 'La plantilla se actualizó correctamente.',
-          icon: 'success',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#00c3ff'
-        });
 
-        navigate('/Dashboard');
+      if (result && result.status === "success") {
+
+        const templateId = result.template.id;
+
+
+        const result2 = await sendRequest2(templateId);
+
+
+        if (result2 && result2.status === "success") {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La plantilla se actualizó correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+
+          navigate('/Dashboard');
+        } else {
+          console.error("El segundo request no fue exitoso.");
+          Swal.fire({
+            title: 'Error al actualizar',
+            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+          setLoading(false);
+        }
       } else {
-        console.error("El segundo request no fue exitoso.");
+        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         Swal.fire({
-          title: 'Error al actualizar',
-          text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-          icon: 'error',
+          title: 'Error en el primer request',
+          text: `Ocurrió un problema al crear la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+          icon: 'warning',
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
         setLoading(false);
       }
-    } else {
-      console.error("El primer request no fue exitoso o no tiene el formato esperado.");
+    } catch (error) {
+      console.error("Ocurrió un error:", error);
       Swal.fire({
-        title: isFlowTemplate ? 'Error al editar plantilla FLOW' : 'Error en el primer request',
-        text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'crear'} la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-        icon: 'warning',
+        title: 'Error',
+        text: `Ocurrió un problema al actualizar la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        icon: 'error',
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
       setLoading(false);
     }
-  } catch (error) {
-    console.error("Ocurrió un error:", error);
-    Swal.fire({
-      title: 'Error',
-      text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'actualizar'} la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-      icon: 'error',
-      confirmButtonText: 'Cerrar',
-      confirmButtonColor: '#00c3ff'
-    });
-    setLoading(false);
-  }
-};
+  };
 
 
   const sendRequest = async () => {
@@ -1519,41 +1411,6 @@ const EditTemplateForm = () => {
     setExample(newExample);
   }, [message, variableExamples]);
 
-
-  const handleFlowClose = () => {
-        setIsSelectorOpen(false);
-    };
-
-      // Función para cargar el preview
-  const loadPreview = async () => {
-    if (!selectedFlow?.id) return;
-
-    setIsLoadingPreview(true);
-    try {
-      const previewData = await previewFlow(appId, authCode, selectedFlow.id);
-
-      // Verifica si la respuesta tiene la estructura esperada
-      if (previewData.preview?.preview_url) {
-        // Actualiza el selectedFlow con la información del preview
-        setSelectedFlow(prev => ({
-          ...prev,
-          previewUrl: previewData.preview.preview_url,
-          previewExpires: new Date(previewData.preview.expires_at).toLocaleString(),
-          previewId: previewData.id,
-          previewStatus: previewData.status
-        }));
-
-      } else {
-        console.warn("Estructura de preview inesperada:", previewData);
-      }
-    } catch (error) {
-      console.error("Error al cargar preview:", error);
-    } finally {
-      setIsLoadingPreview(false);
-    }
-  };
-
-
   return (
     <Grid container spacing={2} sx={{ height: '100vh' }}>
 
@@ -2002,406 +1859,90 @@ const EditTemplateForm = () => {
           </FormHelperText>
         </Box>
 
-        {/* Botones --data-urlencode 'buttons*/}
-        
-        {isFlowTemplate ? (
-          // 🎯 INTERFAZ PARA PLANTILLAS FLOW
-          <Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel>Botones (Flow)</FormLabel>
-              <FormHelperText>Esta plantilla utiliza un botón de tipo Flow</FormHelperText>
-            </FormControl>
+        {/* Botones --data-urlencode 'buttons*/}<Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
+          <FormControl fullWidth>
+            <FormLabel>
+              Botones
+            </FormLabel>
+          </FormControl>
 
-            <Stack spacing={2}>
+          <FormHelperText>
+            Elija los botones que se agregarán a la plantilla. Puede elegir hasta 10 botones.
+          </FormHelperText>
+
+          <Button variant="contained" onClick={addButton} disabled={buttons.length >= maxButtons} sx={{ mt: 3, mb: 3 }}>
+            + Agregar botón
+          </Button>
+
+          <Stack spacing={2}>
+            {buttons.map((button, index) => (
               <Box
+                key={button.id}
                 sx={{
                   display: "flex",
-                  alignItems: "flex-start",
+                  alignItems: "center",
                   gap: 2,
                   border: "1px solid #ccc",
                   borderRadius: 2,
                   p: 2,
                   backgroundColor: "#f9f9f9",
-                  mt: 3,
-                  mb: 3,
                 }}
               >
+                {/* Campo de texto para el título del botón */}
                 <TextField
-                  label="Texto del botón"
-                  value={buttons[0]?.text || ""}
-                  onChange={(e) => updateButton(0, { text: e.target.value })}
+                  label="Button Title"
+                  value={button.title}
+                  onChange={(e) => updateButton(button.id, "title", e.target.value)}
                   fullWidth
-                  inputProps={{ maxLength: 25 }}
-                  helperText={`${buttons[0]?.text?.length || 0}/25 caracteres`}
                 />
 
+                {/* Selector de tipo de botón */}
                 <Select
-                  value="FLOW"
+                  value={button.type}
+                  onChange={(e) => updateButton(button.id, "type", e.target.value)}
                   sx={{ minWidth: 150 }}
-                  disabled
                 >
-                  <MenuItem value="FLOW">Flow</MenuItem>
+                  <MenuItem value="QUICK_REPLY">Quick Reply</MenuItem>
+                  <MenuItem value="URL">URL</MenuItem>
+                  <MenuItem value="PHONE_NUMBER">Phone Number</MenuItem>
                 </Select>
-              </Box>
 
-              <Box>
-                <Button
-                  variant="contained"
-                  component="span"
-                  startIcon={<AccountTreeIcon />}
-                  size="large"
-                  onClick={() => setIsSelectorOpen(true)}
-                  sx={{
-                    minHeight: 56,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontSize: '1rem'
-                  }}
-                >
-                  {selectedFlow ? 'Cambiar Flow' : 'Seleccionar Flow'}
-                </Button>
-
-                {isSelectorOpen && (
-                  <FlowSelector
-                    onClose={handleFlowClose}
-                    urlTemplatesGS={urlTemplatesGS}
-                    appId={appId}
-                    authCode={authCode}
-                    onFlowSelect={(flow) => {
-                      setSelectedFlow(flow);
-
-                      const updates = {
-                        flow_id: flow.id,
-                        navigate_screen: flow.screenName,
-                        flow_action: "NAVIGATE"
-                      };
-
-                      updateButton(0, updates);
-                      handleFlowClose();
-                    }}
-                  />
-                )}
-
-                {selectedFlow && (
-                  <Box
-                    sx={{
-                      mt: 2,
-                      p: 2,
-                      border: "1px solid #e0e0e0",
-                      borderRadius: 2,
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Flow seleccionado:
-                    </Typography>
-
-                    <Grid container spacing={2}>
-                      {/* COLUMNA 1: Flow */}
-                      <Grid item xs={12} md={4}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <AccountTreeIcon color="primary" />
-                          <Box>
-                            <Typography variant="body1">
-                              <strong>{selectedFlow.name || "— sin nombre —"}</strong>
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              ID: {selectedFlow.id ?? "—"}
-                            </Typography>
-                          </Box>
-                        </Box>
-
-                        {/* Log del flow */}
-                        {selectedFlow.log && (
-                          <Box
-                            component="pre"
-                            sx={{
-                              mt: 1,
-                              p: 1,
-                              bgcolor: "background.paper",
-                              borderRadius: 1,
-                              border: "1px solid rgba(0,0,0,0.06)",
-                              fontFamily: "monospace",
-                              fontSize: "0.8rem",
-                              maxHeight: 120,
-                              overflow: "auto",
-                              whiteSpace: "pre-wrap",
-                            }}
-                          >
-                            {selectedFlow.log}
-                          </Box>
-                        )}
-                      </Grid>
-
-                      {/* COLUMNA 2: Pantalla inicial */}
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Pantalla inicial:
-                        </Typography>
-                        {selectedFlow.screenName ? (
-                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}>
-                            <Chip label={selectedFlow.screenName} size="small" />
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            No se encontró nombre de pantalla.
-                          </Typography>
-                        )}
-
-                        {selectedFlow.screenError && (
-                          <Alert severity="warning" sx={{ mt: 2 }}>
-                            {selectedFlow.screenError}
-                          </Alert>
-                        )}
-                      </Grid>
-
-                      {/* COLUMNA 3: Categorías */}
-                      <Grid item xs={12} md={4}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Categoría:
-                        </Typography>
-                        {selectedFlow.categories && selectedFlow.categories.length > 0 ? (
-                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}>
-                            {selectedFlow.categories.map((c, i) => (
-                              <Chip key={i} label={c} size="small" />
-                            ))}
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            Sin categorías.
-                          </Typography>
-                        )}
-                      </Grid>
-
-                      {/* FILA COMPLETA: Vista previa embebida */}
-                      <Grid item xs={12}>
-                        <Box sx={{ mt: 2 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography variant="subtitle1" color="text.primary">
-                              Vista previa del Flow
-                            </Typography>
-
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              {selectedFlow.previewUrl && (
-                                <>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    startIcon={<OpenInNewIcon />}
-                                    onClick={() => window.open(selectedFlow.previewUrl, '_blank')}
-                                  >
-                                    Abrir en nueva pestaña
-                                  </Button>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    startIcon={<RefreshIcon />}
-                                    onClick={loadPreview}
-                                    disabled={isLoadingPreview}
-                                  >
-                                    Actualizar
-                                  </Button>
-                                </>
-                              )}
-                            </Box>
-                          </Box>
-
-                          <Box
-                            sx={{
-                              height: 900,
-                              border: "1px solid #e0e0e0",
-                              borderRadius: 2,
-                              overflow: "hidden",
-                              backgroundColor: "white",
-                              position: "relative",
-
-                            }}
-                          >
-                            {selectedFlow.previewUrl ? (
-                              <>
-                                <iframe
-                                  src={selectedFlow.previewUrl}
-                                  title="Flow Preview"
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    border: "none",
-                                  }}
-                                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-                                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
-                                />
-                                <Box
-                                  sx={{
-                                    position: "absolute",
-                                    top: 28,
-                                    right: 188,
-                                    backgroundColor: "rgba(255,255,255,0.9)",
-                                    borderRadius: 1,
-                                    p: 1,
-                                    boxShadow: 1,
-                                  }}
-                                >
-                                  <Typography variant="caption" color="text.secondary">
-                                    Expira: {selectedFlow.previewExpires}
-                                  </Typography>
-                                </Box>
-                              </>
-                            ) : (
-                              <Box
-                                sx={{
-                                  height: "100%",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  color: "text.secondary",
-                                  p: 1,
-                                }}
-                              >
-                                <PreviewIcon sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
-                                <Typography variant="h6" gutterBottom align="center">
-                                  Vista previa no cargada
-                                </Typography>
-                                <Typography variant="body2" align="center" sx={{ mb: 3, maxWidth: 400 }}>
-                                  {isLoadingPreview
-                                    ? "Cargando vista previa del flow..."
-                                    : "Carga la vista previa para interactuar con el flow directamente desde aquí"}
-                                </Typography>
-                                <Button
-                                  variant="contained"
-                                  size="medium"
-                                  startIcon={<PreviewIcon />}
-                                  onClick={loadPreview}
-                                  disabled={isLoadingPreview || !selectedFlow.id}
-                                  sx={{ py: 1, px: 3 }}
-                                >
-                                  {isLoadingPreview ? (
-                                    <>
-                                      <RefreshIcon size={20} sx={{ mr: 1 }} />
-                                      Cargando...
-                                    </>
-                                  ) : (
-                                    "Cargar Vista Previa"
-                                  )}
-                                </Button>
-
-                                {selectedFlow.id && (
-                                  <Typography variant="caption" sx={{ mt: 2, textAlign: 'center' }}>
-                                    Flow ID: {selectedFlow.id}
-                                  </Typography>
-                                )}
-                              </Box>
-                            )}
-                          </Box>
-
-                          {/* Información adicional del preview */}
-                          {selectedFlow.previewUrl && (
-                            <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="caption" color="text.secondary">
-                                URL: {selectedFlow.previewUrl.substring(0, 80)}...
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Estado: {selectedFlow.previewStatus || 'Desconocido'}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                )}
-              </Box>
-            </Stack>
-          </Box>
-        ) : (
-          // 🔵 INTERFAZ PARA BOTONES NORMALES
-          <Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel>Botones</FormLabel>
-            </FormControl>
-
-            <FormHelperText>
-              Elija los botones que se agregarán a la plantilla. Puede elegir hasta 10 botones.
-            </FormHelperText>
-
-            <Button
-              variant="contained"
-              onClick={addButton}
-              disabled={buttons.length >= maxButtons}
-              sx={{ mt: 3, mb: 3 }}
-            >
-              + Agregar botón
-            </Button>
-
-            <Stack spacing={2}>
-              {buttons.map((button) => (
-                <Box
-                  key={button.id}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    border: "1px solid #ccc",
-                    borderRadius: 2,
-                    p: 2,
-                    backgroundColor: "#f9f9f9",
-                  }}
-                >
+                {/* Campo adicional según el tipo de botón */}
+                {button.type === "URL" && (
                   <TextField
-                    label="Button Title"
-                    value={button.title}
-                    onChange={(e) => updateButton(button.id, "title", e.target.value)}
+                    label="URL"
+                    value={button.url}
+                    onChange={(e) => updateButton(button.id, "url", e.target.value)}
                     fullWidth
                   />
+                )}
 
-                  <Select
-                    value={button.type}
-                    onChange={(e) => updateButton(button.id, "type", e.target.value)}
-                    sx={{ minWidth: 150 }}
-                  >
-                    <MenuItem value="QUICK_REPLY">Quick Reply</MenuItem>
-                    <MenuItem value="URL">URL</MenuItem>
-                    <MenuItem value="PHONE_NUMBER">Phone Number</MenuItem>
-                  </Select>
+                {button.type === "PHONE_NUMBER" && (
+                  <TextField
+                    label="Phone Number"
+                    value={button.phoneNumber}
+                    onChange={(e) => updateButton(button.id, "phoneNumber", e.target.value)}
+                    fullWidth
+                  />
+                )}
 
-                  {button.type === "URL" && (
-                    <TextField
-                      label="URL"
-                      value={button.url}
-                      onChange={(e) => updateButton(button.id, "url", e.target.value)}
-                      fullWidth
-                    />
-                  )}
+                {/* Icono según el tipo de botón */}
+                {button.type === "QUICK_REPLY" && <ArrowForward />}
+                {button.type === "URL" && <Link />}
+                {button.type === "PHONE_NUMBER" && <Phone />}
 
-                  {button.type === "PHONE_NUMBER" && (
-                    <TextField
-                      label="Phone Number"
-                      value={button.phoneNumber}
-                      onChange={(e) => updateButton(button.id, "phoneNumber", e.target.value)}
-                      fullWidth
-                    />
-                  )}
+                {/* Botón para eliminar */}
+                <IconButton color="error" onClick={() => removeButton(button.id)}>
+                  <Delete />
+                </IconButton>
+              </Box>
+            ))}
+          </Stack>
 
-                  {button.type === "QUICK_REPLY" && <ArrowForward />}
-                  {button.type === "URL" && <Link />}
-                  {button.type === "PHONE_NUMBER" && <Phone />}
-
-                  <IconButton color="error" onClick={() => removeButton(button.id)}>
-                    <Delete />
-                  </IconButton>
-                </Box>
-              ))}
-            </Stack>
-
-            <Typography
-              variant="body2"
-              color={buttons.length >= maxButtons ? "error" : "text.secondary"}
-              sx={{ mt: 2 }}
-            >
-              {buttons.length} / {maxButtons} botones agregados
-            </Typography>
-          </Box>
-        )}
+          <Typography variant="body2" color={buttons.length >= maxButtons ? "error" : "text.secondary"} sx={{ mt: 2 }}>
+            {buttons.length} / {maxButtons} botones agregados
+          </Typography>
+        </Box>
 
         {/* Ejemplo --data-urlencode example */}<Box sx={{ width: '100%', marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2, display: 'none' }}>
           <FormControl fullWidth>

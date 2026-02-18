@@ -25,6 +25,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CategoryIcon from '@mui/icons-material/Category';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
@@ -290,6 +291,11 @@ export default function BasicCard() {
     navigate("/CreateTemplatePage/CreateTemplateCarousel");
   };
 
+  const crearPlantillaFlow = () => {
+    handleClose2();
+    navigate("/CreateTemplatePage/CreateTemplateFlow");
+  };
+
   const showReasonAlert = (reason) => {
     Swal.fire({
       title: '<strong>Razón de rechazo</strong>',
@@ -431,6 +437,11 @@ export default function BasicCard() {
                 text: 'Carrusel',
                 onClick: crearPlantillaCarrusel,
                 icon: <ViewCarouselIcon fontSize="small" />
+              },
+              {
+                text: 'Flow',
+                onClick: crearPlantillaFlow,
+                icon: <AccountTreeIcon fontSize="small" />
               }
             ].map((item, index) => (
               <MenuItem

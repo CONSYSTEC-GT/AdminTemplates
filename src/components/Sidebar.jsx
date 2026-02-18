@@ -21,6 +21,7 @@ import ForumIcon from '@mui/icons-material/Forum';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 const NAVIGATION = [
   {
@@ -47,6 +48,11 @@ const NAVIGATION = [
         segment: 'CreateTemplateCarousel',
         title: 'Carrusel',
         icon: <ViewCarouselIcon />,
+      },
+      {
+        segment: 'CreateTemplateFlow',
+        title: 'Flow',
+        icon: <AccountTreeIcon />,
       }
     ]
   },

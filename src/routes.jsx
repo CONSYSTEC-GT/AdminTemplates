@@ -4,6 +4,7 @@ import TemplateList from './pages/TemplateList';
 import CreateTemplatePage from './pages/CreateTemplatePage';
 import CreateTemplateCatalog from './pages/CreateTemplateCatalog';
 import CreateTemplateCarousel from './pages/CreateTemplateCarousel';
+import CreateTemplateFlow from './pages/CreateTemplateFlow';
 import EditTemplatePage from './pages/EditTemplatePage';
 import TemplateAll from './pages/TemplateAll';
 import TemplateAproved from './pages/TemplateAproved';
@@ -13,6 +14,7 @@ import TemplateSend from './pages/TemplateSend';
 import ModifyTemplatePage from './pages/ModifyTemplatePage';
 import ModifyTemplateCarouselPage from './pages/ModifyTemplateCarouselPage';
 import ModifyTemplateCatalogPage from './pages/ModifyTemplateCatalogPage';
+import ModifyTemplateFlowPage from './pages/ModifyTemplateFlowPage';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './utils/ProtectedRoute';
 import LoginRequired from './pages/LoginRequired';
@@ -72,6 +74,14 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/CreateTemplatePage/CreateTemplateFlow"
+              element={
+                <ProtectedRoute>
+                  <CreateTemplateFlow />
+                </ProtectedRoute>
+              }
+            />
           <Route
             path="/edit-template"
             element={
@@ -101,6 +111,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <ModifyTemplateCatalogPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/modify-template-flow"
+            element={
+              <ProtectedRoute>
+                <ModifyTemplateFlowPage />
               </ProtectedRoute>
             }
           />
