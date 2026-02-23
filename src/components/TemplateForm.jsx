@@ -255,72 +255,81 @@ const TemplateForm = () => {
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-    const newErrors = {};
-    const newDescriptionErrors = {};
 
-    for (const variable of variables) {
-      const variableType = variableTypes[variable] || 'normal';
-      
-      // Validar descripción (requerida para todos los tipos)
-      if (!variableDescriptions[variable]?.trim()) {
-        isValid = false;
-        newDescriptionErrors[variable] = "El campo Descripción es requerido";
-      } else {
-        newDescriptionErrors[variable] = "";
-      }
+      const newErrors = {};
+      const newDescriptionErrors = {};
 
-      // Validar según el tipo de variable
-      if (variableType === 'normal') {
-        // Para variables normales: validar ejemplo
+      for (const variable of variables) {
+        // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
+
+          isValid = false;
+          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+        } else {
+          newErrors[variable] = "";
+        }
+
+        // Validar descripción
+        if (!variableDescriptions[variable]?.trim()) {
+
           isValid = false;
           newErrors[variable] = "El campo Texto de ejemplo es requerido";
         } else {
-          newErrors[variable] = "";
-        }
-      } else if (variableType === 'list') {
-        // Para listas: validar que tenga al menos una opción
-        if (!variableLists[variable] || variableLists[variable].length === 0) {
-          isValid = false;
-          newErrors[variable] = "Debe agregar al menos una opción a la lista";
-        } else {
-          newErrors[variable] = "";
-        }
-      }
-    }
-
-    // Validar descripciones duplicadas
-    const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-    if (duplicateVariables.size > 0) {
-      isValid = false;
-      
-      duplicateVariables.forEach(variable => {
-        newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
-      });
-
-      // Enfocar la primera variable con descripción duplicada
-      const firstDuplicateVariable = Array.from(duplicateVariables)[0];
-      if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
-        descriptionRefs.current[firstDuplicateVariable].focus();
-      }
-    } else {
-      // Limpiar errores de descripción duplicada
-      variables.forEach(variable => {
-        if (!newDescriptionErrors[variable]) {
           newDescriptionErrors[variable] = "";
         }
-      });
+      }
+
+      //AQUI VALIDO SI LAS VARIABLES ESTAN DUPLICADAS
+      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
+
+      if (duplicateVariables.size > 0) {
+
+        isValid = false;
+
+        // Marcar todas las variables con descripciones duplicadas
+        duplicateVariables.forEach(variable => {
+          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+        });
+
+        // Enfocar la primera variable con descripción duplicada
+        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
+        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
+          descriptionRefs.current[firstDuplicateVariable].focus();
+        }
+      } else {
+
+        // Limpiar errores de descripción
+        variables.forEach(variable => {
+          newDescriptionErrors[variable] = "";
+        });
+      }
+
+      // 3. Validar que todas las variables tengan descripción (opcional)
+      for (const variable of variables) {
+        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
+
+          isValid = false;
+          newDescriptionErrors[variable] = "La descripción es requerida";
+
+          // Enfocar el campo de descripción vacío
+          if (descriptionRefs.current && descriptionRefs.current[variable]) {
+            descriptionRefs.current[variable].focus();
+          }
+        }
+      }
+
+      // Actualizar el estado de errores
+      setVariableErrors(newErrors);
+
+      // Si hay errores, no retornar aquí, continuar con el flujo
+      if (!isValid) {
+
+      } else {
+
+      }
+    } else {
+
     }
-
-    // Actualizar estados de errores
-    setVariableErrors(newErrors);
-    // Si tienes un estado para errores de descripción, actualízalo también
-    // setDescriptionErrors(newDescriptionErrors);
-
-  } else {
-    // No hay variables - considerar si esto es válido o no según tu caso
-    // isValid = false; // Descomenta si necesitas al menos una variable
-  }
 
 
     return isValid; // Retornar el valor final de isValid
@@ -384,6 +393,7 @@ const TemplateForm = () => {
   */
 
   const iniciarRequest = async () => {
+    console.log("Buttons: ", buttons);
     if (loading) return;
     setLoading(true);
 
@@ -425,42 +435,22 @@ const TemplateForm = () => {
         urlTemplatesGS,
         validateFields
       );
-      
+
+
       if (result && result.status === "success" && result.template && result.template.id) {
         const templateId = result.template.id;
-        /*
-      // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
-      const mockResult = {
-        status: "success",
-        template: {
-          id: "ID_PRUEBA_LOCAL13" // Usa un ID de prueba aquí
-        }
-      };
 
-      
-      // Verificar si el primer request fue exitoso (ahora usando el mock)
-      if (mockResult && mockResult.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
-        const templateId = mockResult.template.id;
-
-        console.log({
-  templateId,
-  templateName,
-  templateType,
-  pantallas,
-  selectedCategory,
-  message,
-  uploadedUrl,
-  idNombreUsuarioTalkMe: idNombreUsuarioTalkMe || "Sistema.TalkMe",
-  variableTypes,
-  variables,
-  variableDescriptions,
-  variableExamples,
-  variableLists,
-  idBotRedes,
-  urlTemplatesGS
-});
-*/
+        /* Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
+        const mockResult = {
+          status: "success",
+          template: {
+            id: "TEST_BOTONES1"
+          }
+        };
+  
+        if (mockResult && mockResult.status === "success") {
+          const templateId = mockResult.template.id;
+  */
 
         // Hacer el segundo request a TalkMe API
         const result2 = await saveTemplateToTalkMe(
@@ -481,7 +471,8 @@ const TemplateForm = () => {
           variableLists,
           [],
           idBotRedes,
-          urlTemplatesGS
+          urlTemplatesGS,
+          buttons
         );
 
         // Limpia todos los campos si todo fue bien
@@ -964,6 +955,88 @@ const TemplateForm = () => {
     () => setShowEmojiPicker(false)
   );
 
+  // Nueva función para borrar una variable específica
+  const deleteVariable = (variableToDelete) => {
+    // Eliminar la variable del texto
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+    // Eliminar la variable de la lista de variables
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+    // Renumerar las variables restantes para mantener el orden secuencial
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
+    });
+
+    // Actualizar el texto con las variables renumeradas
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
+
+    // Crear nuevos objetos para descripciones y ejemplos de variables
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+    // Eliminar la variable eliminada de los errores
+    delete newVariableErrors[variableToDelete];
+
+    // Copiar las descripciones y ejemplos con las nuevas claves
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+    // Actualizar todos los estados
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+    // Actualizar las referencias
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+  // Nueva función para borrar todas las variables
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+
+    // Limpiar todos los estados relacionados con variables
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
+
   // Función para previsualizar el mensaje con ejemplos aplicados
   const previewMessage = () => {
     let previewHeader = header;
@@ -975,6 +1048,23 @@ const TemplateForm = () => {
       previewText = previewText.replaceAll(variable, example);
     });
   }
+  //
+
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+
+      return updatedExamples;
+    });
+  };
+
+  const handleUpdateDescriptions = (variable, event) => {
+    const newValue = event.target.value.replace(/\s+/g, '_');
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+  };
 
   // Función para generar el ejemplo combinando el mensaje y los valores de las variables
   const generateExample = () => {
@@ -1092,7 +1182,7 @@ const TemplateForm = () => {
       }
     };
   }, [templateName, idBotRedes]);
-  
+
   // BOTON AGREGAR VARIABLE
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;

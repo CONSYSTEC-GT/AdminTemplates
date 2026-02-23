@@ -960,8 +960,6 @@ const TemplateForm = () => {
 
     useEffect(() => {
         if (selectedFlow) {
-            console.log("✅ selectedFlow actualizado:", selectedFlow);
-            console.log("✅ Buttons después de selección:", buttons);
         }
     }, [selectedFlow, buttons]);
 
@@ -983,15 +981,11 @@ const TemplateForm = () => {
                     previewId: previewData.id,
                     previewStatus: previewData.status
                 }));
-
-                console.log("Preview cargado:", previewData);
             } else {
                 console.warn("Estructura de preview inesperada:", previewData);
-                // Muestra un error o maneja la respuesta diferente
             }
         } catch (error) {
             console.error("Error al cargar preview:", error);
-            // Puedes mostrar un snackbar o alerta de error
         } finally {
             setIsLoadingPreview(false);
         }
@@ -1484,19 +1478,12 @@ const TemplateForm = () => {
                                     appId={appId}
                                     authCode={authCode}
                                     onFlowSelect={(flow) => {
-                                        console.log("✅ Flow recibido con screenName:", flow);
                                         setSelectedFlow(flow);
 
-                                        // Actualizar todos los campos en una sola llamada
                                         const updates = {
                                             flow_id: flow.id,
                                             navigate_screen: flow.screenName,
                                         };
-
-                                        /* Solo actualizar el texto si está vacío
-                                        if (!buttons[0]?.text || buttons[0].text === "") {
-                                          updates.text = flow.name || "Iniciar Flow";
-                                        }*/
 
                                         updateButton(0, updates);
                                         handleFlowClose();

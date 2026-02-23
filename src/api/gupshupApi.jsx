@@ -1464,7 +1464,6 @@ export const getFlowScreenName = async (appId, authCode, flowId) => {
     
     if (flowJson.screens && flowJson.screens.length > 0) {
       return flowJson.screens[0].id;
-      console.log("flowjson screen:", flowJson);
     }
 
     throw new Error('No se encontraron pantallas en el flow');

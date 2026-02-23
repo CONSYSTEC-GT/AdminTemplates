@@ -25,7 +25,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
-import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, obtenerOpcionesParametro, eliminarOpcionesParametro, saveTemplateParams, saveTemplateParamsOptions, obtenerParametrosPorPlantilla, eliminarParametrosYOpciones } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams, saveTemplateButtons, deleteTemplateButtons } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 import { editTemplateFlowGupshup } from '../api/gupshupApi';
@@ -162,12 +162,6 @@ const EditTemplateForm = () => {
   const [previewData, setPreviewData] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  const [variableTypes, setVariableTypes] = useState({});
-  const [variableLists, setVariableLists] = useState({});
-  const [editingOption, setEditingOption] = useState(null);
-  const [draggedItem, setDraggedItem] = useState(null);
-  const listInputRefs = useRef({});
-
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
@@ -197,12 +191,6 @@ const EditTemplateForm = () => {
 
         setIsFlowTemplate(isFlow);
 
-        console.log("🔍 Tipo de plantilla detectado:", {
-          buttonSupported: templateData.buttonSupported,
-          detectedFromButtons: isFlow,
-          isFlowTemplate: isFlow
-        });
-
         if (templateData.containerMeta) {
           try {
             const meta = JSON.parse(templateData.containerMeta);
@@ -227,8 +215,6 @@ const EditTemplateForm = () => {
                 // Cargar botón FLOW
                 const flowButton = meta.buttons[0];
 
-                console.log("✅ Cargando botón FLOW:", flowButton);
-
                 setButtons([
                   {
                     id: 0,
@@ -249,8 +235,6 @@ const EditTemplateForm = () => {
                   });
                 }
               } else {
-                // Cargar botones normales
-                console.log("✅ Cargando botones normales:", meta.buttons);
 
                 setButtons(
                   meta.buttons.map((button, index) => ({
@@ -843,7 +827,6 @@ const EditTemplateForm = () => {
       "Content-Type": "application/json",
     };
 
-
     let ID_PLANTILLA_CATEGORIA;
     if (selectedCategory === "MARKETING") {
       ID_PLANTILLA_CATEGORIA = 10;
@@ -868,10 +851,7 @@ const EditTemplateForm = () => {
       CAROUSEL: "image"
     };
 
-
     const MEDIA = mediaMap[templateType] || null;
-
-
     const mensajeProcesado = reordenarVariables(message);
     const nombreProcesado = templateName.replace(/_/g, " ");
 
@@ -907,9 +887,6 @@ const EditTemplateForm = () => {
       const result = await response.json();
 
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-
-
-
 
         try {
           console.log('🟣 === INICIO: Actualizar parámetros de la plantilla', result.ID_PLANTILLA);
@@ -952,6 +929,22 @@ const EditTemplateForm = () => {
           console.error("❌ Error gestionando parámetros:", error);
           showSnackbar("❌ Error al actualizar los parámetros de la plantilla", "error");
           return { status: "error", message: "No se pudieron actualizar los parámetros de la plantilla." };
+
+        }
+      }
+
+      if (result && result.ID_PLANTILLA) {
+        try {
+          await deleteTemplateButtons(result.ID_PLANTILLA, urlTemplatesGS);
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          if (buttons && buttons.length > 0) {
+            await saveTemplateButtons(result.ID_PLANTILLA, buttons, idNombreUsuarioTalkMe, urlTemplatesGS);
+          }
+        } catch (error) {
+          console.error("Error gestionando botones:", error);
+          return { status: "error", message: "No se pudieron actualizar los botones de la plantilla." };
         }
       }
 
@@ -1516,211 +1509,14 @@ const EditTemplateForm = () => {
           previewStatus: previewData.status
         }));
 
-        console.log("Preview cargado:", previewData);
       } else {
         console.warn("Estructura de preview inesperada:", previewData);
-        // Muestra un error o maneja la respuesta diferente
       }
     } catch (error) {
       console.error("Error al cargar preview:", error);
-      // Puedes mostrar un snackbar o alerta de error
     } finally {
       setIsLoadingPreview(false);
     }
-  };
-
-  // BOTON BORRAR VARIABLES
-  const deleteAllVariables = () => {
-    let newMessage = message;
-    variables.forEach(variable => {
-      newMessage = newMessage.replaceAll(variable, '');
-    });
-    setMessage(newMessage);
-    setVariables([]);
-    setVariableDescriptions({});
-    setVariableExamples({});
-    setVariableErrors({});
-    exampleRefs.current = {};
-
-    messageRef.current?.focus();
-  };
-
-  // BOTON PARA BORRAR UNA VARIABLE EN ESPECIFICO
-  const deleteVariable = (variableToDelete) => {
-    // Eliminar la variable del texto
-    const newMessage = message.replace(variableToDelete, '');
-    setMessage(newMessage);
-
-    // Eliminar la variable de la lista de variables
-    const updatedVariables = variables.filter(v => v !== variableToDelete);
-
-    // Renumerar las variables restantes para mantener el orden secuencial
-    const renumberedVariables = [];
-    const variableMapping = {}; // Mapeo de variable antigua a nueva
-
-    updatedVariables.forEach((v, index) => {
-      const newVar = `{{${index + 1}}}`;
-      renumberedVariables.push(newVar);
-      variableMapping[v] = newVar;
-    });
-
-    // Actualizar el texto con las variables renumeradas
-    let updatedMessage = newMessage;
-    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
-    });
-
-    // Crear nuevos objetos para descripciones y ejemplos de variables
-    const newVariableDescriptions = {};
-    const newVariableExamples = {};
-    const newVariableErrors = { ...variableErrors };
-
-    // Eliminar la variable eliminada de los errores
-    delete newVariableErrors[variableToDelete];
-
-    // Copiar las descripciones y ejemplos con las nuevas claves
-    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
-      if (variableDescriptions[oldVar]) {
-        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
-      }
-      if (variableExamples[oldVar]) {
-        newVariableExamples[newVar] = variableExamples[oldVar];
-      }
-      if (variableErrors[oldVar]) {
-        newVariableErrors[newVar] = variableErrors[oldVar];
-        delete newVariableErrors[oldVar];
-      }
-    });
-
-    // Actualizar todos los estados
-    setMessage(updatedMessage);
-    setVariables(renumberedVariables);
-    setVariableDescriptions(newVariableDescriptions);
-    setVariableExamples(newVariableExamples);
-    setVariableErrors(newVariableErrors);
-
-    // Actualizar las referencias
-    const newExampleRefs = {};
-    renumberedVariables.forEach(v => {
-      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
-    });
-    exampleRefs.current = newExampleRefs;
-
-    messageRef.current?.focus();
-  };
-
-  // ACTUALIZA LA DESCRIPCION DE LA VARIABLE
-  const handleUpdateDescriptions = (variable, event) => {
-    const newValue = event.target.value.replace(/\s+/g, '_');
-    setVariableDescriptions(prevDescriptions => ({
-      ...prevDescriptions,
-      [variable]: newValue
-    }));
-  };
-
-  // ACTUALIZA EL EJEMPLO DE LA VARIABLE
-  const handleUpdateExample = (variable, value) => {
-    setVariableExamples(prevExamples => {
-      const updatedExamples = { ...prevExamples, [variable]: value };
-
-      return updatedExamples;
-    });
-  };
-
-  // Función para actualizar el tipo de variable
-  const handleUpdateVariableType = (variable, type) => {
-    setVariableTypes(prev => ({
-      ...prev,
-      [variable]: type
-    }));
-
-    // Limpiar datos según el tipo
-    if (type === 'list') {
-      setVariableExamples(prev => {
-        const newExamples = { ...prev };
-        delete newExamples[variable];
-        return newExamples;
-      });
-    } else {
-      setVariableLists(prev => {
-        const newLists = { ...prev };
-        delete newLists[variable];
-        return newLists;
-      });
-    }
-  };
-
-  // Función para agregar opción a la lista
-  const handleAddListOption = (variable, option) => {
-    if (!option.trim()) return;
-
-    setVariableLists(prev => ({
-      ...prev,
-      [variable]: [...(prev[variable] || []), option.trim()]
-    }));
-  };
-
-  // Función para eliminar opción de la lista
-  const handleDeleteListOption = (variable, optionIndex) => {
-    setVariableLists(prev => ({
-      ...prev,
-      [variable]: prev[variable].filter((_, index) => index !== optionIndex)
-    }));
-  };
-
-  // Función para iniciar edición de opción
-  const handleStartEditOption = (variable, index, currentValue) => {
-    setEditingOption({
-      variable,
-      index,
-      value: currentValue
-    });
-  };
-
-  // Función para guardar edición de opción
-  const handleSaveOptionEdit = (variable, index) => {
-    if (editingOption && editingOption.value.trim()) {
-      const newLists = { ...variableLists };
-      newLists[variable][index] = editingOption.value.trim();
-      setVariableLists(newLists);
-    }
-    setEditingOption(null);
-  };
-
-  // Funciones para drag & drop
-  const handleDragStart = (e, variable, index) => {
-    setDraggedItem({ variable, index });
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e, variable, targetIndex) => {
-    e.preventDefault();
-
-    if (!draggedItem || draggedItem.variable !== variable) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const sourceIndex = draggedItem.index;
-
-    if (sourceIndex === targetIndex) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const newLists = { ...variableLists };
-    const items = [...newLists[variable]];
-    const [removed] = items.splice(sourceIndex, 1);
-    items.splice(targetIndex, 0, removed);
-
-    newLists[variable] = items;
-    setVariableLists(newLists);
-    setDraggedItem(null);
   };
 
 
@@ -2380,7 +2176,6 @@ const EditTemplateForm = () => {
                     appId={appId}
                     authCode={authCode}
                     onFlowSelect={(flow) => {
-                      console.log("✅ Flow seleccionado:", flow);
                       setSelectedFlow(flow);
 
                       const updates = {
