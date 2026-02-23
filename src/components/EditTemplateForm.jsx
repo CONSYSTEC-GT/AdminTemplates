@@ -25,7 +25,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from './FileUploadComponentV2';
 import { saveTemplateLog } from '../api/templatesGSLog';
-import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams } from '../api/templatesGSApi';
+import { eliminarParametrosPlantilla, obtenerPantallasMedia, obtenerParametros, saveTemplateParams, saveTemplateButtons, deleteTemplateButtons } from '../api/templatesGSApi';
 import { useClickOutside } from '../utils/emojiClick';
 import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
 import { editTemplateFlowGupshup } from '../api/gupshupApi';
@@ -163,133 +163,133 @@ const EditTemplateForm = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
-  const loadData = async () => {
-    if (templateData) {
-      setTemplateName(templateData.elementName || "");
-      setSelectedCategory(templateData.category || "");
-      setTemplateType(templateData.templateType || "");
-      setLanguageCode(templateData.languageCode || "");
-      setVertical(templateData.vertical || "");
-      setIdTemplate(templateData.id);
+    const loadData = async () => {
+      if (templateData) {
+        setTemplateName(templateData.elementName || "");
+        setSelectedCategory(templateData.category || "");
+        setTemplateType(templateData.templateType || "");
+        setLanguageCode(templateData.languageCode || "");
+        setVertical(templateData.vertical || "");
+        setIdTemplate(templateData.id);
 
-      // ✅ DETECTAR SI ES PLANTILLA FLOW
-      // Primero intentar con buttonSupported, si no existe, revisar los botones
-      let isFlow = templateData.buttonSupported === "FLOW";
-      
-      // Si buttonSupported no está definido, verificar en containerMeta
-      if (!isFlow && templateData.containerMeta) {
-        try {
-          const metaPreview = JSON.parse(templateData.containerMeta);
-          if (metaPreview.buttons && Array.isArray(metaPreview.buttons) && metaPreview.buttons.length > 0) {
-            // Si el primer botón es de tipo FLOW, es una plantilla Flow
-            isFlow = metaPreview.buttons[0].type === "FLOW";
+        // ✅ DETECTAR SI ES PLANTILLA FLOW
+        // Primero intentar con buttonSupported, si no existe, revisar los botones
+        let isFlow = templateData.buttonSupported === "FLOW";
+
+        // Si buttonSupported no está definido, verificar en containerMeta
+        if (!isFlow && templateData.containerMeta) {
+          try {
+            const metaPreview = JSON.parse(templateData.containerMeta);
+            if (metaPreview.buttons && Array.isArray(metaPreview.buttons) && metaPreview.buttons.length > 0) {
+              // Si el primer botón es de tipo FLOW, es una plantilla Flow
+              isFlow = metaPreview.buttons[0].type === "FLOW";
+            }
+          } catch (e) {
+            console.error("Error al pre-verificar tipo:", e);
           }
-        } catch (e) {
-          console.error("Error al pre-verificar tipo:", e);
         }
-      }
-      
-      setIsFlowTemplate(isFlow);
 
-      if (templateData.containerMeta) {
-        try {
-          const meta = JSON.parse(templateData.containerMeta);
-          setMessage(meta.data || "");
-          setHeader(meta.header || "");
-          setFooter(meta.footer || "");
-          setExample(meta.sampleText || "");
+        setIsFlowTemplate(isFlow);
 
-          if (meta.sampleMedia) {
-            if (isValidSampleMedia(meta.sampleMedia)) {
-              setMediaId(meta.sampleMedia);
+        if (templateData.containerMeta) {
+          try {
+            const meta = JSON.parse(templateData.containerMeta);
+            setMessage(meta.data || "");
+            setHeader(meta.header || "");
+            setFooter(meta.footer || "");
+            setExample(meta.sampleText || "");
+
+            if (meta.sampleMedia) {
+              if (isValidSampleMedia(meta.sampleMedia)) {
+                setMediaId(meta.sampleMedia);
+              } else {
+                setMediaId("");
+              }
             } else {
               setMediaId("");
             }
-          } else {
-            setMediaId("");
-          }
 
-          // ✅ CARGAR BOTONES SEGÚN EL TIPO
-          if (meta.buttons && Array.isArray(meta.buttons)) {
-            if (isFlow) {
-              // Cargar botón FLOW
-              const flowButton = meta.buttons[0];
-              
-              setButtons([
-                {
-                  id: 0,
-                  text: flowButton.text || "",
-                  type: "FLOW",
-                  flow_id: flowButton.flow_id || "",
-                  flow_action: flowButton.flow_action || "NAVIGATE",
-                  navigate_screen: flowButton.navigate_screen || "",
+            // ✅ CARGAR BOTONES SEGÚN EL TIPO
+            if (meta.buttons && Array.isArray(meta.buttons)) {
+              if (isFlow) {
+                // Cargar botón FLOW
+                const flowButton = meta.buttons[0];
+
+                setButtons([
+                  {
+                    id: 0,
+                    text: flowButton.text || "",
+                    type: "FLOW",
+                    flow_id: flowButton.flow_id || "",
+                    flow_action: flowButton.flow_action || "NAVIGATE",
+                    navigate_screen: flowButton.navigate_screen || "",
+                  }
+                ]);
+
+                // Establecer el flow seleccionado
+                if (flowButton.flow_id) {
+                  setSelectedFlow({
+                    id: flowButton.flow_id,
+                    screenName: flowButton.navigate_screen,
+                    name: flowButton.text || "Flow sin nombre"
+                  });
                 }
-              ]);
+              } else {
 
-              // Establecer el flow seleccionado
-              if (flowButton.flow_id) {
-                setSelectedFlow({
-                  id: flowButton.flow_id,
-                  screenName: flowButton.navigate_screen,
-                  name: flowButton.text || "Flow sin nombre"
-                });
+                setButtons(
+                  meta.buttons.map((button, index) => ({
+                    id: index,
+                    title: button.text || "",
+                    type: button.type || "QUICK_REPLY",
+                    url: button.url || "",
+                    phoneNumber: button.phone_number || "",
+                  }))
+                );
               }
             } else {
-              
-              setButtons(
-                meta.buttons.map((button, index) => ({
-                  id: index,
-                  title: button.text || "",
-                  type: button.type || "QUICK_REPLY",
-                  url: button.url || "",
-                  phoneNumber: button.phone_number || "",
-                }))
-              );
+              // No hay botones, inicializar según el tipo
+              if (isFlow) {
+                setButtons([
+                  {
+                    id: 0,
+                    text: "",
+                    type: "FLOW",
+                    flow_id: "",
+                    flow_action: "NAVIGATE",
+                    navigate_screen: "",
+                  }
+                ]);
+              } else {
+                setButtons([]);
+              }
             }
-          } else {
-            // No hay botones, inicializar según el tipo
-            if (isFlow) {
-              setButtons([
-                {
-                  id: 0,
-                  text: "",
-                  type: "FLOW",
-                  flow_id: "",
-                  flow_action: "NAVIGATE",
-                  navigate_screen: "",
-                }
-              ]);
-            } else {
-              setButtons([]);
-            }
+          } catch (error) {
+            console.error("❌ Error al parsear containerMeta:", error);
+          }
+        }
+
+        // Cargar pantallas y media
+        try {
+          const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+          if (info !== null) {
+            const pantallasFromAPI = info.pantallas || "";
+            setPantallas(pantallasFromAPI);
+
+            const displayValues = procesarPantallasAPI(pantallasFromAPI);
+            setDisplayPantallas(displayValues);
+
+            setMediaURL(info.url || "");
+            setImagePreview(info.url || "");
+            setIdPlantilla(info.id_plantilla || "");
           }
         } catch (error) {
-          console.error("❌ Error al parsear containerMeta:", error);
+          console.error("❌ Error al cargar pantallas/media:", error);
         }
       }
+    };
 
-      // Cargar pantallas y media
-      try {
-        const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-        if (info !== null) {
-          const pantallasFromAPI = info.pantallas || "";
-          setPantallas(pantallasFromAPI);
-
-          const displayValues = procesarPantallasAPI(pantallasFromAPI);
-          setDisplayPantallas(displayValues);
-
-          setMediaURL(info.url || "");
-          setImagePreview(info.url || "");
-          setIdPlantilla(info.id_plantilla || "");
-        }
-      } catch (error) {
-        console.error("❌ Error al cargar pantallas/media:", error);
-      }
-    }
-  };
-
-  loadData();
-}, [templateData, urlTemplatesGS]);
+    loadData();
+  }, [templateData, urlTemplatesGS]);
 
   useEffect(() => {
     const loadParametros = async () => {
@@ -525,97 +525,97 @@ const EditTemplateForm = () => {
   };
 
   const iniciarRequest = async () => {
-  if (loading) return;
-  setLoading(true);
+    if (loading) return;
+    setLoading(true);
 
-  const isValid = validateFields();
-  if (!isValid) {
-    setLoading(false);
-    return;
-  }
-
-  try {
-    let result;
-    
-    // Validar si es una plantilla de tipo FLOW
-    if (isFlowTemplate) {
-      // Usar la función específica para plantillas FLOW
-      result = await editTemplateFlowGupshup(
-        appId,
-        authCode,
-        {
-          templateName,
-          selectedCategory,
-          languageCode,
-          templateType,
-          vertical,
-          message,
-          header,
-          footer,
-          mediaId,
-          buttons,
-          example,
-          exampleHeader
-        },
-        templateId, // Asegúrate de tener el ID de la plantilla para editar
-        idNombreUsuarioTalkMe,
-        urlTemplatesGS,
-        validateFields
-      );
-    } else {
-      // Usar la función original para otras plantillas
-      result = await sendRequest();
+    const isValid = validateFields();
+    if (!isValid) {
+      setLoading(false);
+      return;
     }
 
-    if (result && result.status === "success") {
-      const templateId = result.template.id;
+    try {
+      let result;
 
-      const result2 = await sendRequest2(templateId);
-
-      if (result2 && result2.status === "success") {
-        Swal.fire({
-          title: 'Éxito',
-          text: 'La plantilla se actualizó correctamente.',
-          icon: 'success',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#00c3ff'
-        });
-
-        navigate('/Dashboard');
+      // Validar si es una plantilla de tipo FLOW
+      if (isFlowTemplate) {
+        // Usar la función específica para plantillas FLOW
+        result = await editTemplateFlowGupshup(
+          appId,
+          authCode,
+          {
+            templateName,
+            selectedCategory,
+            languageCode,
+            templateType,
+            vertical,
+            message,
+            header,
+            footer,
+            mediaId,
+            buttons,
+            example,
+            exampleHeader
+          },
+          templateId, // Asegúrate de tener el ID de la plantilla para editar
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS,
+          validateFields
+        );
       } else {
-        console.error("El segundo request no fue exitoso.");
+        // Usar la función original para otras plantillas
+        result = await sendRequest();
+      }
+
+      if (result && result.status === "success") {
+        const templateId = result.template.id;
+
+        const result2 = await sendRequest2(templateId);
+
+        if (result2 && result2.status === "success") {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La plantilla se actualizó correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+
+          navigate('/Dashboard');
+        } else {
+          console.error("El segundo request no fue exitoso.");
+          Swal.fire({
+            title: 'Error al actualizar',
+            text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+            icon: 'error',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#00c3ff'
+          });
+          setLoading(false);
+        }
+      } else {
+        console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         Swal.fire({
-          title: 'Error al actualizar',
-          text: `Ocurrió un problema al actualizar la plantilla. Error: ${result2?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-          icon: 'error',
+          title: isFlowTemplate ? 'Error al editar plantilla FLOW' : 'Error en el primer request',
+          text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'crear'} la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+          icon: 'warning',
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
         setLoading(false);
       }
-    } else {
-      console.error("El primer request no fue exitoso o no tiene el formato esperado.");
+    } catch (error) {
+      console.error("Ocurrió un error:", error);
       Swal.fire({
-        title: isFlowTemplate ? 'Error al editar plantilla FLOW' : 'Error en el primer request',
-        text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'crear'} la plantilla. Error: ${result?.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-        icon: 'warning',
+        title: 'Error',
+        text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'actualizar'} la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
+        icon: 'error',
         confirmButtonText: 'Cerrar',
         confirmButtonColor: '#00c3ff'
       });
       setLoading(false);
     }
-  } catch (error) {
-    console.error("Ocurrió un error:", error);
-    Swal.fire({
-      title: 'Error',
-      text: `Ocurrió un problema al ${isFlowTemplate ? 'editar' : 'actualizar'} la plantilla. Error: ${error.message || 'Ocurrió un problema al actualizar la plantilla, intenta nuevamente.'}`,
-      icon: 'error',
-      confirmButtonText: 'Cerrar',
-      confirmButtonColor: '#00c3ff'
-    });
-    setLoading(false);
-  }
-};
+  };
 
 
   const sendRequest = async () => {
@@ -791,7 +791,6 @@ const EditTemplateForm = () => {
       "Content-Type": "application/json",
     };
 
-
     let ID_PLANTILLA_CATEGORIA;
     if (selectedCategory === "MARKETING") {
       ID_PLANTILLA_CATEGORIA = 10;
@@ -816,10 +815,7 @@ const EditTemplateForm = () => {
       CAROUSEL: "image"
     };
 
-
     const MEDIA = mediaMap[templateType] || null;
-
-
     const mensajeProcesado = reordenarVariables(message);
     const nombreProcesado = templateName.replace(/_/g, " ");
 
@@ -856,9 +852,6 @@ const EditTemplateForm = () => {
 
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
 
-
-
-
         try {
 
           await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
@@ -873,6 +866,21 @@ const EditTemplateForm = () => {
 
           return { status: "error", message: "No se pudieron actualizar los parámetros de la plantilla." };
 
+        }
+      }
+
+      if (result && result.ID_PLANTILLA) {
+        try {
+          await deleteTemplateButtons(result.ID_PLANTILLA, urlTemplatesGS);
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          if (buttons && buttons.length > 0) {
+            await saveTemplateButtons(result.ID_PLANTILLA, buttons, idNombreUsuarioTalkMe, urlTemplatesGS);
+          }
+        } catch (error) {
+          console.error("Error gestionando botones:", error);
+          return { status: "error", message: "No se pudieron actualizar los botones de la plantilla." };
         }
       }
 
@@ -1521,10 +1529,10 @@ const EditTemplateForm = () => {
 
 
   const handleFlowClose = () => {
-        setIsSelectorOpen(false);
-    };
+    setIsSelectorOpen(false);
+  };
 
-      // Función para cargar el preview
+  // Función para cargar el preview
   const loadPreview = async () => {
     if (!selectedFlow?.id) return;
 
@@ -2003,7 +2011,7 @@ const EditTemplateForm = () => {
         </Box>
 
         {/* Botones --data-urlencode 'buttons*/}
-        
+
         {isFlowTemplate ? (
           // 🎯 INTERFAZ PARA PLANTILLAS FLOW
           <Box sx={{ width: "100%", marginTop: 2, marginBottom: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>

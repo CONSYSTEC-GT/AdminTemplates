@@ -151,7 +151,7 @@ const TemplateForm = () => {
     setOpenSnackbar(false);
   };
 
-const validateFields = async () => {
+  const validateFields = async () => {
     let isValid = true;
 
     if (!templateName || templateName.trim() === "") {
@@ -173,89 +173,89 @@ const validateFields = async () => {
 
       } else {
       }
-      }
+    }
 
-      if (!templateType || templateType.trim() === "") {
+    if (!templateType || templateType.trim() === "") {
 
-        setTemplateTypeError(true);
-        setTemplateTypeHelperText("Este campo es requerido");
-        isValid = false;
-        if (templateTypeRef.current) templateTypeRef.current.focus();
+      setTemplateTypeError(true);
+      setTemplateTypeHelperText("Este campo es requerido");
+      isValid = false;
+      if (templateTypeRef.current) templateTypeRef.current.focus();
 
-        // No retornar aquí, continuar con la validación de otros campos
-      } else {
-      
+      // No retornar aquí, continuar con la validación de otros campos
+    } else {
+
     }
 
     if (displayPantallas.length === 0) {
-      
+
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-      
+
       setPantallasError(false);
       setPantallasHelperText("");
     }
 
     if (!languageCode || languageCode.trim() === "") {
-      
+
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
       if (languageCodeRef.current) languageCodeRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!vertical || vertical.trim() === "") {
-      
+
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current) verticalRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!message || message.trim() === "") {
-      
+
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
       if (messageRef.current) messageRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     if (!selectedCategory || selectedCategory.trim() === "") {
-      
+
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
       if (selectedCategoryRef.current) selectedCategoryRef.current.focus();
-      
+
       // No retornar aquí, continuar con la validación de otros campos
     } else {
-      
+
     }
 
     // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-      
+
       const newErrors = {};
       const newDescriptionErrors = {};
 
       for (const variable of variables) {
         // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-          
+
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -264,7 +264,7 @@ const validateFields = async () => {
 
         // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
@@ -276,7 +276,7 @@ const validateFields = async () => {
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-        
+
         isValid = false;
 
         // Marcar todas las variables con descripciones duplicadas
@@ -290,7 +290,7 @@ const validateFields = async () => {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
       } else {
-        
+
         // Limpiar errores de descripción
         variables.forEach(variable => {
           newDescriptionErrors[variable] = "";
@@ -300,7 +300,7 @@ const validateFields = async () => {
       // 3. Validar que todas las variables tengan descripción (opcional)
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          
+
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
 
@@ -316,15 +316,15 @@ const validateFields = async () => {
 
       // Si hay errores, no retornar aquí, continuar con el flujo
       if (!isValid) {
-        
+
       } else {
-        
+
       }
     } else {
-      
+
     }
 
-    
+
     return isValid; // Retornar el valor final de isValid
   };
 
@@ -369,6 +369,7 @@ const validateFields = async () => {
   }
 
   const iniciarRequest = async () => {
+    console.log("Buttons: ", buttons);
     if (loading) return;
     setLoading(true);
 
@@ -411,28 +412,22 @@ const validateFields = async () => {
         urlTemplatesGS,
         validateFields
       );
-      //
 
-      //
-      // Verificar si el primer request fue exitoso
+
       if (result && result.status === "success" && result.template && result.template.id) {
-        // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
-        /*
-       // Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
-      const mockResult = {
-        status: "success",
-        template: {
-          id: "ID_PRUEBA_LOCAL1" // Usa un ID de prueba aquí
-        }
-      };
 
-      // Verificar si el primer request fue exitoso (ahora usando el mock)
-      if (mockResult && mockResult.status === "success") {
-        // Extraer el valor de `id` del objeto `template`
-        const templateId = mockResult.template.id;
-
-        */
+        /* Simulamos un resultado exitoso con un templateId hardcodeado para pruebas
+        const mockResult = {
+          status: "success",
+          template: {
+            id: "TEST_BOTONES1"
+          }
+        };
+  
+        if (mockResult && mockResult.status === "success") {
+          const templateId = mockResult.template.id;
+  */
 
         // Hacer el segundo request a TalkMe API
         const result2 = await saveTemplateToTalkMe(
@@ -450,7 +445,8 @@ const validateFields = async () => {
           variableDescriptions,
           [],
           idBotRedes,
-          urlTemplatesGS
+          urlTemplatesGS,
+          buttons
         );
 
         // Limpia todos los campos si todo fue bien
@@ -494,7 +490,7 @@ const validateFields = async () => {
 
   //MEDIA
   const handleUploadSuccess = (uploadedMediaId) => {
-    
+
     setMediaId(uploadedMediaId);
     // Mostrar mensaje de éxito
     showSnackbar("✅ Archivo subido exitosamente", "success");
@@ -569,41 +565,41 @@ const validateFields = async () => {
   };
 
   // Función para validar el nombre de la plantilla
-const validateTemplateName = async (nombre) => {
-  // Reemplazar _ por espacios
-  const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
-  
-  if (!nombreFormateado.trim() || !idBotRedes) return;
+  const validateTemplateName = async (nombre) => {
+    // Reemplazar _ por espacios
+    const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
+
+    if (!nombreFormateado.trim() || !idBotRedes) return;
 
 
-  setIsValidating(true);
+    setIsValidating(true);
 
-  
-  try {
-    const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
-    
-    if (existe === true) {
-      setTemplateNameError(true);
-      setTemplateNameHelperText("Ya existe una plantilla con este nombre");
-    } else if (existe === false) {
-      // Solo limpiar el error si no hay otros errores
-      if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
-        setTemplateNameError(false);
-        setTemplateNameHelperText("Nombre disponible");
+
+    try {
+      const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
+
+      if (existe === true) {
+        setTemplateNameError(true);
+        setTemplateNameHelperText("Ya existe una plantilla con este nombre");
+      } else if (existe === false) {
+        // Solo limpiar el error si no hay otros errores
+        if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
+          setTemplateNameError(false);
+          setTemplateNameHelperText("Nombre disponible");
+        }
+      } else {
+        // Error en la validación (existe === null)
+        setTemplateNameError(true);
+        setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
       }
-    } else {
-      // Error en la validación (existe === null)
+    } catch (error) {
+      console.error("Error en validación:", error);
       setTemplateNameError(true);
       setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
+    } finally {
+      setIsValidating(false);
     }
-  } catch (error) {
-    console.error("Error en validación:", error);
-    setTemplateNameError(true);
-    setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
-  } finally {
-    setIsValidating(false);
-  }
-};
+  };
 
   //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
@@ -705,7 +701,7 @@ const validateTemplateName = async (nombre) => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-      
+
     }
   };
 
@@ -713,11 +709,11 @@ const validateTemplateName = async (nombre) => {
   const handleHeaderChange = (e) => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
-      
+
       setExampleHeader(e.target.value);
-      
+
     }
-    
+
   };
 
 
@@ -966,11 +962,11 @@ const validateTemplateName = async (nombre) => {
     }, 100);
   };
 
-// Llamada correcta al hook (sin el tercer parámetro)
-useClickOutside(
-  emojiPickerRef, 
-  () => setShowEmojiPicker(false)
-);
+  // Llamada correcta al hook (sin el tercer parámetro)
+  useClickOutside(
+    emojiPickerRef,
+    () => setShowEmojiPicker(false)
+  );
 
   // Nueva función para borrar una variable específica
   const deleteVariable = (variableToDelete) => {
@@ -1070,7 +1066,7 @@ useClickOutside(
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-      
+
       return updatedExamples;
     });
   };
@@ -1099,7 +1095,7 @@ useClickOutside(
       // Remover las llaves de la clave para crear el regex correcto
       const cleanVariable = variable.replace(/[{}]/g, '');
       const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-      
+
       result = result.replace(regex, variables[variable]);
     });
 
@@ -1185,9 +1181,9 @@ useClickOutside(
       }, 800); // Esperar 800ms después de que el usuario deje de escribir
     } else {
       // Si está vacío, limpiar mensajes de validación de existencia
-      if (templateNameHelperText === "Ya existe una plantilla con este nombre" || 
-          templateNameHelperText === "Nombre disponible" ||
-          templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
+      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
+        templateNameHelperText === "Nombre disponible" ||
+        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
         setTemplateNameHelperText("");
       }
     }
@@ -1374,7 +1370,7 @@ useClickOutside(
 
 
             {/* Componente para subir archivos */}
-            {}
+            { }
             {/*<FileUploadComponent
               templateType={templateType}
               onUploadSuccess={(mediaId, uploadedUrl) => {
@@ -1392,9 +1388,9 @@ useClickOutside(
               onUploadSuccess={(uploadData) => {
                 setMediaId(uploadData.mediaId);
                 setUploadedUrl(uploadData.url);
-                
-                
-                
+
+
+
               }}
               onImagePreview={(preview) => setImagePreview(preview)}
               onHeaderChange={(newHeader) => setHeader(newHeader)}
