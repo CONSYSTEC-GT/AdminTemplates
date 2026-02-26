@@ -296,10 +296,10 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
       ID_MEDIA: null,
       DESCRIPCION: body,
       LINK: mediaUrl || null,
-      BOTON_0_TEXTO: buttons[0]?.title || '',
-      BOTON_0_COMANDO: buttons[0]?.title || '',
-      BOTON_1_TEXTO: buttons[1]?.title || '',
-      BOTON_1_COMANDO: buttons[1]?.title || '',
+      BOTON_0_TEXTO: (buttons[0]?.title || '').trim(),
+      BOTON_0_COMANDO: (buttons[0]?.title || '').trim(),
+      BOTON_1_TEXTO: (buttons[1]?.title || '').trim(),
+      BOTON_1_COMANDO: (buttons[1]?.title || '').trim(),
       CREADO_POR: idNombreUsuarioTalkMe,
     };
 
@@ -407,6 +407,8 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   } else {
     TIPO_PLANTILLA = 0;
   }
+
+
 
   const mediaMap = {
     image: "image",
@@ -664,10 +666,6 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
 export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS, idBotRedes) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
 
-
-
-  // URL para actualizar plantilla por ID_INTERNO
-  //const url = `https://certificacion.talkme.pro/templatesGS/api/plantillas/${idTemplate}`;
   const url = `${urlTemplatesGS}plantillas/${idTemplate}`;
   const headers = {
     "Content-Type": "application/json",
@@ -704,6 +702,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
   const MEDIA = mediaMap[templateType] || null;
 
   const data = {
+    ID_INTERNO: idTemplate,
     ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
     ID_BOT_REDES: idBotRedes,
     NOMBRE: templateName,
@@ -755,24 +754,11 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
     const result = await response.json();
     showSnackbar("✅ Plantilla actualizada exitosamente", "success");
 
-
-    // Para actualizar los parámetros y tarjetas, necesitamos el ID_PLANTILLA
-    // que viene en la respuesta del servidor
     const talkmeId = result.ID_PLANTILLA;
-    console.log('🆔 TalkmeId obtenido:', talkmeId);
 
-    // ====== GESTIÓN DE PARÁMETROS (MEJORADA) ======
-    if (talkmeId && variables && variables.length > 0) {
+    if (talkmeId) {
       try {
-        console.log('🟣 === INICIO: Actualizar parámetros de la plantilla', talkmeId);
-        console.log('📊 Variables recibidas:', variables);
-        console.log('📊 variableDescriptions:', variableDescriptions);
-        console.log('📊 variableTypes:', typeof variableTypes !== 'undefined' ? variableTypes : 'UNDEFINED');
-        console.log('📊 variableExamples:', typeof variableExamples !== 'undefined' ? variableExamples : 'UNDEFINED');
-        console.log('📊 variableLists:', typeof variableLists !== 'undefined' ? variableLists : 'UNDEFINED');
 
-        // PASO 0: Eliminar parámetros de BROADCAST (tabla separada)
-        console.log('📥 PASO 0: Eliminando parámetros de BROADCAST...');
         const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
 
         if (parametros && parametros.length > 0 && TIPO_PLANTILLA === 1) {
@@ -783,8 +769,6 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
 
         await deleteTemplateParams(talkmeId, urlTemplatesGS);
 
-
-        // Insertar nuevos parámetros solo si existen
         if (variables && variables.length > 0) {
           await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
 
@@ -814,7 +798,6 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
           }
         });
 
-        // Solo lanzamos error si la respuesta no es exitosa Y no es un 404 (no encontrado)
         if (!deleteResponse.ok && deleteResponse.status !== 404) {
           throw new Error("No se pudieron eliminar las tarjetas existentes");
         }
