@@ -426,6 +426,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   };
 
   try {
+    console.log("🔍 DEBUG saveTemplateToTalkMe →", { url, status: "enviando...", body: data });
     const response = await fetch(url, {
       method: "POST",
       headers: headers,
