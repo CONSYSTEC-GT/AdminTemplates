@@ -488,14 +488,12 @@ const TemplateFormCarousel = () => {
             uploadedUrl
           },
           idNombreUsuarioTalkMe || "Sistema.TalkMe",
-          variableTypes,
           variables,
           variableDescriptions,
-          variableExamples,
-          variableLists,
           cardsToSendArray,
           idBotRedes,
-          urlTemplatesGS
+          urlTemplatesGS,
+          []
         );
 
         resetForm();
