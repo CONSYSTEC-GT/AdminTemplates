@@ -76,6 +76,35 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
   }
 };
 
+const deleteTemplateButtons = async (ID_PLANTILLA, urlTemplatesGS) => {
+  const url = `${urlTemplatesGS}botones/plantilla/${ID_PLANTILLA}`;
+  try {
+    const response = await fetch(
+      url,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok && response.status !== 404) {
+      const errorMessage = await response.text();
+      throw new Error(`Error al eliminar botones: ${errorMessage}`);
+    }
+
+    const result = await response.json();
+
+    showSnackbar("🗑️ Botones eliminados correctamente", "success");
+    return result;
+  } catch (error) {
+    console.error("Error eliminando botones:", error);
+    showSnackbar("❌ Error al eliminar botones", "error");
+    throw error;
+  }
+};
+
 const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTalkMe, urlTemplatesGS) => {
 
   const url = urlTemplatesGS + 'tarjetas/';
@@ -135,7 +164,54 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
   }
 };
 
-export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], idBotRedes, urlTemplatesGS) => {
+const saveTemplateButtons = async (ID_PLANTILLA, buttons = [], idNombreUsuarioTalkMe, urlTemplatesGS) => {
+  const url = urlTemplatesGS + 'botones';
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const results = [];
+    for (let i = 0; i < buttons.length; i++) {
+      const button = buttons[i];
+
+      const data = {
+        ID_PLANTILLA: ID_PLANTILLA,
+        TIPO: button.type || 'QUICK_REPLY',
+        TITULO: button.title || '',
+        URL: button.url || null,
+        TELEFONO: button.phoneNumber || null,
+        ORDEN: i,
+        CREADO_POR: idNombreUsuarioTalkMe,
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error(`Error al guardar botón ${i}:`, errorResponse);
+        showSnackbar(`❌ Error guardando botón: ${errorResponse.message || 'Solicitud inválida'}`, 'error');
+        continue;
+      }
+
+      const result = await response.json();
+      results.push(result);
+    }
+
+    showSnackbar('✅ Botones guardados exitosamente', 'success');
+    return results;
+  } catch (error) {
+    console.error('Error guardando botones:', error);
+    showSnackbar('❌ Error al guardar los botones', 'error');
+    throw error;
+  }
+};
+
+export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], idBotRedes, urlTemplatesGS, buttons) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
   const url = urlTemplatesGS + 'plantillas';
@@ -243,6 +319,15 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
           ID_PLANTILLA: result.ID_PLANTILLA,
           cards: cards
         },
+        idNombreUsuarioTalkMe,
+        urlTemplatesGS
+      );
+    }
+
+    if (result && result.ID_PLANTILLA && buttons && buttons.length > 0) {
+      await saveTemplateButtons(
+        result.ID_PLANTILLA,
+        buttons,
         idNombreUsuarioTalkMe,
         urlTemplatesGS
       );
@@ -766,4 +851,4 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export { saveTemplateParams };
+export { saveTemplateParams, saveTemplateButtons, deleteTemplateButtons };
