@@ -19,7 +19,7 @@
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.1",
     "@toolpad/core": "^0.12.0",
-    "aws-amplify": "^6.13.1",
+    "aws-amplify": "^6.6.0",
     "axios": "^1.8.1",
     "emoji-picker-react": "^4.12.0",
     "framer-motion": "^12.6.2",
@@ -65,6 +65,7 @@
     "node": ">=18.0.0"
   },
   "overrides": {
-    "@aws-sdk/types": "^3.821.0"
+    "@aws-sdk/core": "^3.685.0",
+    "@aws-sdk/types": "^3.685.0"
   }
 }
