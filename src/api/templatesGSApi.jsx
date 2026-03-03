@@ -9,46 +9,28 @@ const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions,
 
   try {
     const results = [];
-
-    console.log('📊 Procesando todas las variables:', variables);
-
     for (let i = 0; i < variables.length; i++) {
-      const variable = variables[i];
-      const variableType = variableTypes[variable] || 'normal';
-      const nombreVariable = variableDescriptions[variable] || variable;
-
-      console.log(`\n🔄 Procesando variable ${i + 1}/${variables.length}: ${variable} (tipo: ${variableType})`);
-
-      // ⬅️ Determinar el ID_PLANTILLA_TIPO_DATO según el tipo
-      const ID_PLANTILLA_TIPO_DATO = variableType === 'list' ? 5 : 1;
-
-      const data = {
+      const variableData = {
         ID_PLANTILLA: ID_PLANTILLA,
-        ID_PLANTILLA_TIPO_DATO: ID_PLANTILLA_TIPO_DATO, // ⬅️ AGREGAR ESTE CAMPO
-        NOMBRE: nombreVariable,
-        PLACEHOLDER: nombreVariable,
+        ID_PLANTILLA_TIPO_DATO: tipoDatoId,
+        NOMBRE: variableDescriptions[variables[i]] || '',
+        PLACEHOLDER: variableDescriptions[variables[i]] || '',
         ORDEN: i,
         CREADO_POR: "Sistema.TalkMe",
       };
 
-      console.log('📤 Datos a enviar:', data);
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(variableData),
       });
-
-      console.log('📡 Response status:', response.status);
 
       if (!response.ok) {
         const errorMessage = await response.text();
-        console.error('❌ Error en response:', errorMessage);
-        throw new Error(
-          `Error al guardar el parámetro ${variable}: ${errorMessage}`
-        );
+        throw new Error(`Error al guardar la variable ${variables[i]}: ${errorMessage}`);
       }
 
       const result = await response.json();
@@ -59,8 +41,8 @@ const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions,
     showSnackbar("✅ Variables guardadas exitosamente", "success");
     return results;
   } catch (error) {
-    console.error('💥 Error en saveTemplateParams:', error);
-    showSnackbar("❌ Error al guardar los parámetros", "error");
+    console.error('Error:', error);
+    showSnackbar("❌ Error al guardar las variables", "error");
     throw error;
   }
 };
