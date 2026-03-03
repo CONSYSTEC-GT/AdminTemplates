@@ -5,7 +5,7 @@ import { getMediaType } from '../utils/validarUrl';
 const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS) => {
   const tipoDatoId = 1;
   const url = urlTemplatesGS + 'parametros'
-  
+
 
   try {
     const results = [];
@@ -37,7 +37,7 @@ const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions,
       results.push(result);
     }
 
-    
+
     showSnackbar("✅ Variables guardadas exitosamente", "success");
     return results;
   } catch (error) {
@@ -66,7 +66,7 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
     }
 
     const result = await response.json();
-    
+
     showSnackbar("🗑️ Parámetros eliminados correctamente", "success");
     return result;
   } catch (error) {
@@ -77,9 +77,9 @@ const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
 };
 
 const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTalkMe, urlTemplatesGS) => {
-  
+
   const url = urlTemplatesGS + 'tarjetas/';
-  
+
   const headers = {
     "Content-Type": "application/json",
   };
@@ -102,14 +102,14 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
       ID_MEDIA: null,
       DESCRIPCION: body,
       LINK: mediaUrl || null,
-      BOTON_0_TEXTO: buttons[0]?.title || '',
-      BOTON_0_COMANDO: buttons[0]?.title || '',
-      BOTON_1_TEXTO: buttons[1]?.title || '',
-      BOTON_1_COMANDO: buttons[1]?.title || '',
+      BOTON_0_TEXTO: (buttons[0]?.title || '').trim(),
+      BOTON_0_COMANDO: (buttons[0]?.title || '').trim(),
+      BOTON_1_TEXTO: (buttons[1]?.title || '').trim(),
+      BOTON_1_COMANDO: (buttons[1]?.title || '').trim(),
       CREADO_POR: idNombreUsuarioTalkMe,
     };
 
-    
+
 
     try {
       const response = await fetch(url, {
@@ -126,7 +126,7 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
       }
 
       const result = await response.json();
-      
+
       showSnackbar("✅ Tarjeta guardada correctamente", "success");
     } catch (error) {
       console.error("Error en la petición de tarjeta:", error);
@@ -138,14 +138,11 @@ const saveCardsTemplate = async ({ ID_PLANTILLA, cards = [] }, idNombreUsuarioTa
 export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], idBotRedes, urlTemplatesGS) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
-  //const url = 'https://certificacion.talkme.pro/templatesGS/api/plantillas/';
   const url = urlTemplatesGS + 'plantillas';
   const headers = {
     "Content-Type": "application/json",
   };
 
-  //13 y 14 son en certi igual que 149 en bot redes y en dev son 17 y 
-  //10 Y 13 SON EN S1 AL S4
   let ID_PLANTILLA_CATEGORIA;
   if (selectedCategory === "MARKETING") {
     ID_PLANTILLA_CATEGORIA = 10;
@@ -160,7 +157,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#00c3ff'
     });
-    return null; // Retornar null si la categoría no es válida
+    return null;
   }
 
   let TIPO_PLANTILLA;
@@ -170,7 +167,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     TIPO_PLANTILLA = 0;
   }
 
-  
+
 
   const mediaMap = {
     image: "image",
@@ -233,7 +230,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#00c3ff'
     });
-    
+
 
     // Si tenemos variables, hacer el tercer request
     if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
@@ -265,7 +262,7 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   }
 };
 
-export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes= [], variables = [], variableDescriptions = {}, variableExamples = {},variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
+export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes = [], variables = [], variableDescriptions = {}, variableExamples = {}, variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
   //const url = 'https://certificacion.talkme.pro/templatesGS/api/plantillas/';
@@ -354,7 +351,7 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#00c3ff'
     });
-    
+
 
     // Si tenemos variables, hacer el tercer request
     if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
@@ -372,7 +369,7 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
       // Guardar listas de opciones
       await saveTemplateParamsOptions(
         result.ID_PLANTILLA,
-        idNombreUsuarioTalkMe ,
+        idNombreUsuarioTalkMe,
         variables,
         variableDescriptions,
         variableTypes,
@@ -414,10 +411,6 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
 export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS, idBotRedes) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
 
-  
-
-  // URL para actualizar plantilla por ID_INTERNO
-  //const url = `https://certificacion.talkme.pro/templatesGS/api/plantillas/${idTemplate}`;
   const url = `${urlTemplatesGS}plantillas/${idTemplate}`;
   const headers = {
     "Content-Type": "application/json",
@@ -459,7 +452,7 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
 
   // Crear un objeto con los datos actualizados
   const data = {
-    ID_INTERNO: idTemplate, // ID de la plantilla de GupShup
+    ID_INTERNO: idTemplate,
     ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
     ID_BOT_REDES: idBotRedes,
     NOMBRE: templateName,
@@ -492,38 +485,31 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
 
     const result = await response.json();
     showSnackbar("✅ Plantilla actualizada exitosamente", "success");
-    
 
-    // Para actualizar los parámetros y tarjetas, necesitamos el ID_PLANTILLA
-    // que viene en la respuesta del servidor
     const talkmeId = result.ID_PLANTILLA;
 
-    // Actualizar variables si existen
     if (talkmeId) {
       try {
 
-        // Obtener y limpiar parámetros existentes
         const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
-        
-        if (parametros && parametros.length > 0 && TIPO_PLANTILLA===1) {
+
+        if (parametros && parametros.length > 0 && TIPO_PLANTILLA === 1) {
           const parametrosIds = parametros.map(param => param.ID_PLANTILLA_PARAMETRO);
           await eliminarBroadcastParametros(urlTemplatesGS, parametrosIds);
         }
 
         await deleteTemplateParams(talkmeId, urlTemplatesGS);
-        
 
-        // Insertar nuevos parámetros solo si existen
         if (variables && variables.length > 0) {
           await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
-          
+
         }
 
       } catch (error) {
       }
     }
-    
-    if (talkmeId && TIPO_PLANTILLA===1) {
+
+    if (talkmeId && TIPO_PLANTILLA === 1) {
       try {
         // 1. Eliminar todas las tarjetas existentes de una sola vez
         const deleteResponse = await fetch(`${urlTemplatesGS}tarjetas/plantilla/${talkmeId}`, {
@@ -532,19 +518,17 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
             "Content-Type": "application/json",
           }
         });
-        
-        // Solo lanzamos error si la respuesta no es exitosa Y no es un 404 (no encontrado)
+
         if (!deleteResponse.ok && deleteResponse.status !== 404) {
           throw new Error("No se pudieron eliminar las tarjetas existentes");
         }
 
-        // 2. Agregar las nuevas tarjetas
         for (const card of cards) {
-          
+
           await saveCardsTemplate({
             ID_PLANTILLA: talkmeId,
             cards: [card]
-          }, idNombreUsuarioTalkMe, urlTemplatesGS); // <-- Añade la URL aquí
+          }, idNombreUsuarioTalkMe, urlTemplatesGS);
         }
 
       } catch (error) {
@@ -585,9 +569,9 @@ export const obtenerApiToken = async (urlTemplatesGS, idEmpresa) => {
 
 export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
   const url = `${urlTemplatesGS}plantillas/${id_interno}/pantallas-media`;
-  
 
-  try{
+
+  try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -595,14 +579,14 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
       },
     });
 
-    if (!response.ok){
+    if (!response.ok) {
       throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
     }
 
     const data = await response.json();
 
     return data
-  } catch (error){
+  } catch (error) {
     console.error("Error obteniendo info de la plantilla:", error);
     return null;
   }
@@ -611,10 +595,10 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
 
 export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
-  
-  
 
-  try{
+
+
+  try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -622,16 +606,16 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
       },
     });
 
-    
 
-    if (!response.ok){
+
+    if (!response.ok) {
       throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
     }
 
     const data = await response.json();
 
     return data
-  } catch (error){
+  } catch (error) {
     console.error("Error obteniendo parametros de la plantilla", error);
     return null;
   }
@@ -639,7 +623,7 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
 
 export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
-  
+
   try {
     const response = await fetch(url, {
       method: 'DELETE',
@@ -653,7 +637,7 @@ export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) 
     }
 
     const data = await response.json();
-    
+
     return data;
   } catch (error) {
     console.error("Error eliminando parámetros de la plantilla", error);
@@ -664,11 +648,11 @@ export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) 
 export const eliminarBroadcastParametros = async (urlTemplatesGS, parametrosIds) => {
   try {
     const resultados = [];
-    
+
     // Iterar sobre cada ID de parámetro
     for (const idParametro of parametrosIds) {
       const url = `${urlTemplatesGS}broadcast_plantilla_valores/ID_PLANTILLA_PARAMETRO/${idParametro}`;
-      
+
       try {
         const response = await fetch(url, {
           method: 'DELETE',
@@ -700,7 +684,7 @@ export const eliminarBroadcastParametros = async (urlTemplatesGS, parametrosIds)
 
 export const validarNombrePlantillas = async (urlTemplatesGS, nombre, idBotRedes) => {
   const url = `${urlTemplatesGS}plantillas/validar?nombre=${encodeURIComponent(nombre)}&id_bot_redes=${encodeURIComponent(idBotRedes)}`;
-  
+
 
   try {
     const response = await fetch(url, {
@@ -716,7 +700,7 @@ export const validarNombrePlantillas = async (urlTemplatesGS, nombre, idBotRedes
 
     const data = await response.json();
     return data.existe; // Retorna true si existe, false si no
-    
+
   } catch (error) {
     console.error("Error validando la plantilla:", error);
     return null;
@@ -725,7 +709,7 @@ export const validarNombrePlantillas = async (urlTemplatesGS, nombre, idBotRedes
 
 export const getFlowScreenName = async (urlTemplatesGS, appId, authCode, flowId) => {
   const url = `${urlTemplatesGS}flow-webhook/${appId}/flows/${flowId}/pantallas`;
-  
+
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -747,7 +731,7 @@ export const getFlowScreenName = async (urlTemplatesGS, appId, authCode, flowId)
     }
 
     throw new Error('No se encontraron pantallas en el flow');
-    
+
   } catch (error) {
     console.error('Error al obtener el nombre de la pantalla:', error);
     return null;
@@ -760,20 +744,20 @@ export const getFlowScreenName = async (urlTemplatesGS, appId, authCode, flowId)
 function reordenarVariables(message) {
   // Encontrar todas las variables en el mensaje
   const variables = message.match(/\{\{\d+\}\}/g) || [];
-  
+
   // Crear un mapa para el reordenamiento: {{1}} -> {{0}}, {{2}} -> {{1}}, etc.
   const reordenamiento = {};
   variables.forEach((variable, index) => {
     const numeroOriginal = variable.match(/\d+/)[0];
     reordenamiento[variable] = `{{${index}}}`;
   });
-  
+
   // Reemplazar cada variable con su nuevo número
   let nuevoMensaje = message;
   for (const [vieja, nueva] of Object.entries(reordenamiento)) {
     nuevoMensaje = nuevoMensaje.replace(new RegExp(escapeRegExp(vieja), 'g'), nueva);
   }
-  
+
   return nuevoMensaje;
 }
 
