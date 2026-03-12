@@ -122,6 +122,8 @@ const EditTemplateForm = () => {
   const [variableErrors, setVariableErrors] = useState({});
   const [descriptionErrors, setDescriptionErrors] = useState({});
   const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
+  const [variableDescriptionErrors, setVariableDescriptionErrors] = useState({});
+  const [variableDescriptionHelperTexts, setVariableDescriptionHelperTexts] = useState({});
 
   const [mediaId, setMediaId] = useState('');
 
@@ -297,9 +299,8 @@ const EditTemplateForm = () => {
 
       try {
         const infoParametros = await obtenerParametros(urlTemplatesGS, idPlantilla);
-
         if (infoParametros === null || infoParametros.length === 0) {
-          // Sin parámetros
+
         } else {
           const parametrosOrdenados = infoParametros.sort((a, b) => a.ORDEN - b.ORDEN);
           const variablesFormateadas = parametrosOrdenados.map((param, index) => `{{${index + 1}}}`);
@@ -308,63 +309,23 @@ const EditTemplateForm = () => {
 
           const descripcionesIniciales = {};
           const ejemplosIniciales = {};
-          const tiposIniciales = {};
-          const listasIniciales = {};
 
-          // Procesar cada parámetro
-          for (let index = 0; index < parametrosOrdenados.length; index++) {
-            const param = parametrosOrdenados[index];
+          parametrosOrdenados.forEach((param, index) => {
             const variableKey = `{{${index + 1}}}`;
-
             descripcionesIniciales[variableKey] = param.NOMBRE;
-            tiposIniciales[variableKey] = 'normal';
-
-            // Verificar si es una lista de opciones
-            if (esListaOpciones(param.ID_PLANTILLA_TIPO_DATO)) {
-              try {
-                const opciones = await obtenerOpcionesParametro(
-                  urlTemplatesGS,
-                  param.ID_PLANTILLA_PARAMETRO
-                );
-
-                if (opciones && opciones.length > 0) {
-                  // Establecer tipo como 'list'
-                  tiposIniciales[variableKey] = 'list';
-
-                  // Ordenar opciones por ORDEN y extraer los nombres
-                  const opcionesOrdenadas = opciones
-                    .sort((a, b) => a.ORDEN - b.ORDEN)
-                    .map(opcion => opcion.NOMBRE);
-
-                  listasIniciales[variableKey] = opcionesOrdenadas;
-                } else {
-                  ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-                }
-              } catch (error) {
-                console.error(`Error cargando opciones para ${variableKey}:`, error);
-                ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-              }
-            } else {
-              ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
-            }
-          }
+            ejemplosIniciales[variableKey] = param.PLACEHOLDER || '';
+          });
 
           setVariableDescriptions(descripcionesIniciales);
           setVariableExamples(ejemplosIniciales);
-          setVariableTypes(tiposIniciales);
-          setVariableLists(listasIniciales);
         }
       } catch (error) {
-        console.error("Error en loadParametros:", error);
+
       }
     };
 
     loadParametros();
   }, [idPlantilla, urlTemplatesGS]);
-
-  const esListaOpciones = (tipoData) => {
-    return tipoData === 5;
-  };
 
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
@@ -477,95 +438,90 @@ const EditTemplateForm = () => {
     if (variables.length > 0) {
       const newErrors = {};
       const newDescriptionErrors = {};
+      const newHelperTexts = { ...variableDescriptionHelperTexts };
 
       for (const variable of variables) {
-        if (variableTypes[variable] !== 'list' && !variableExamples[variable]?.trim()) {
+        // Validar ejemplo
+        if (!variableExamples[variable]?.trim()) {
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
         }
 
+        // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
-        } else {
-          newDescriptionErrors[variable] = "";
+          newHelperTexts[variable] = "El campo Descripción y Ejemplo es requerido";
         }
       }
 
-
+      // VALIDAR SI LAS VARIABLES ESTAN DUPLICADAS
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-
         isValid = false;
 
-
+        // Marcar todas las variables con descripciones duplicadas
         duplicateVariables.forEach(variable => {
           newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+          newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
         });
 
-
+        // Enfocar la primera variable con descripción duplicada
         const firstDuplicateVariable = Array.from(duplicateVariables)[0];
         if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
-      } else {
-
-
-        variables.forEach(variable => {
-          newDescriptionErrors[variable] = "";
-        });
       }
 
-
+      // Validar que todas las variables tengan descripción
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
+          newHelperTexts[variable] = "La descripción es requerida";
 
-
+          // Enfocar el campo de descripción vacío
           if (descriptionRefs.current && descriptionRefs.current[variable]) {
             descriptionRefs.current[variable].focus();
           }
         }
       }
 
+      if (duplicateVariables.size === 0) {
+        variables.forEach(variable => {
+          if (variableDescriptions[variable]?.trim() &&
+            newHelperTexts[variable] !== "Esta descripción ya existe en otra variable" &&
+            newHelperTexts[variable] !== "El campo Descripción y Ejemplo es requerido" &&
+            newHelperTexts[variable] !== "La descripción es requerida") {
+            newHelperTexts[variable] = "";
+          }
+        });
+      }
 
       setVariableErrors(newErrors);
-
-
-      if (!isValid) {
-
-      } else {
-
-      }
-    } else {
-
+      setVariableDescriptionErrors(newDescriptionErrors);
+      setVariableDescriptionHelperTexts(newHelperTexts);
     }
 
-    if (!isValid) {
-      Swal.fire({
-        title: 'Error',
-        text: 'Campos incompletos.',
-        icon: 'error',
-        confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#00c3ff'
-      });
-    }
-
-
-    return isValid; // Retornar el valor final de isValid
+    return isValid;
   };
 
   const iniciarRequest = async () => {
     if (loading) return;
     setLoading(true);
 
-    const isValid = validateFields();
+    const isValid = await validateFields();
     if (!isValid) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Campo incompletos.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00c3ff'
+      });
       setLoading(false);
       return;
     }
@@ -889,45 +845,17 @@ const EditTemplateForm = () => {
       if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
 
         try {
-          console.log('🟣 === INICIO: Actualizar parámetros de la plantilla', result.ID_PLANTILLA);
 
-          // PASO 1: Eliminar TODOS los parámetros y opciones en UNA sola llamada
-          console.log('📥 PASO 1: Eliminando parámetros y opciones existentes...');
-          await eliminarParametrosYOpciones(urlTemplatesGS, result.ID_PLANTILLA);
-          console.log('✅ PASO 1 completado');
+          await eliminarParametrosPlantilla(urlTemplatesGS, result.ID_PLANTILLA);
 
-          // PASO 2: Guardar nuevos parámetros
-          console.log('📥 PASO 2: Guardando nuevos parámetros...');
-          await saveTemplateParams(
-            result.ID_PLANTILLA,
-            idNombreUsuarioTalkMe,
-            variables,
-            variableDescriptions,
-            variableTypes,
-            variableExamples,
-            urlTemplatesGS
-          );
-          console.log('✅ PASO 2 completado');
+          await new Promise(resolve => setTimeout(resolve, 100));
 
-          // PASO 3: Guardar opciones de los nuevos parámetros
-          console.log('📥 PASO 3: Guardando opciones de los nuevos parámetros...');
-          await saveTemplateParamsOptions(
-            result.ID_PLANTILLA,
-            idNombreUsuarioTalkMe,
-            variables,
-            variableDescriptions,
-            variableTypes,
-            variableLists,
-            urlTemplatesGS
-          );
-          console.log('✅ PASO 3 completado');
-
-          console.log('🟣 === FIN: Parámetros actualizados correctamente');
-          showSnackbar("✅ Plantilla actualizada correctamente", "success");
+          await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
 
         } catch (error) {
-          console.error("❌ Error gestionando parámetros:", error);
-          showSnackbar("❌ Error al actualizar los parámetros de la plantilla", "error");
+
+          console.error("Error gestionando parámetros:", error);
+
           return { status: "error", message: "No se pudieron actualizar los parámetros de la plantilla." };
 
         }
@@ -1225,7 +1153,9 @@ const EditTemplateForm = () => {
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
 
+
     if (message.length + newVariable.length > 550) {
+
       Swal.fire({
         title: 'Limite de caracteres',
         text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
@@ -1236,12 +1166,20 @@ const EditTemplateForm = () => {
       return;
     }
 
+
     const cursorPosition = messageRef.current.selectionStart;
+
+
     const textBeforeCursor = message.substring(0, cursorPosition);
     const textAfterCursor = message.substring(cursorPosition);
+
+
     const newMessage = `${textBeforeCursor}${newVariable}${textAfterCursor}`;
     setMessage(newMessage);
+
+
     setVariables([...variables, newVariable]);
+
 
     setTimeout(() => {
       const newPosition = cursorPosition + newVariable.length;
@@ -1370,6 +1308,151 @@ const EditTemplateForm = () => {
     });
   };
 
+
+  const deleteVariable = (variableToDelete) => {
+
+    const newMessage = message.replace(variableToDelete, '');
+    setMessage(newMessage);
+
+
+    const updatedVariables = variables.filter(v => v !== variableToDelete);
+
+
+    const renumberedVariables = [];
+    const variableMapping = {}; // Mapeo de variable antigua a nueva
+
+    updatedVariables.forEach((v, index) => {
+      const newVar = `{{${index + 1}}}`;
+      renumberedVariables.push(newVar);
+      variableMapping[v] = newVar;
+    });
+
+
+    let updatedMessage = newMessage;
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      updatedMessage = updatedMessage.replaceAll(oldVar, newVar);
+    });
+
+
+    const newVariableDescriptions = {};
+    const newVariableExamples = {};
+    const newVariableErrors = { ...variableErrors };
+
+
+    delete newVariableErrors[variableToDelete];
+
+
+    Object.entries(variableMapping).forEach(([oldVar, newVar]) => {
+      if (variableDescriptions[oldVar]) {
+        newVariableDescriptions[newVar] = variableDescriptions[oldVar];
+      }
+      if (variableExamples[oldVar]) {
+        newVariableExamples[newVar] = variableExamples[oldVar];
+      }
+      if (variableErrors[oldVar]) {
+        newVariableErrors[newVar] = variableErrors[oldVar];
+        delete newVariableErrors[oldVar];
+      }
+    });
+
+
+    setMessage(updatedMessage);
+    setVariables(renumberedVariables);
+    setVariableDescriptions(newVariableDescriptions);
+    setVariableExamples(newVariableExamples);
+    setVariableErrors(newVariableErrors);
+
+
+    const newExampleRefs = {};
+    renumberedVariables.forEach(v => {
+      newExampleRefs[v] = exampleRefs.current[variableMapping[v]] || null;
+    });
+    exampleRefs.current = newExampleRefs;
+
+    messageRef.current?.focus();
+  };
+
+
+  const deleteAllVariables = () => {
+    let newMessage = message;
+    variables.forEach(variable => {
+      newMessage = newMessage.replaceAll(variable, '');
+    });
+    setMessage(newMessage);
+    setVariables([]);
+
+
+    setVariableDescriptions({});
+    setVariableExamples({});
+    setVariableErrors({});
+    exampleRefs.current = {};
+
+    messageRef.current?.focus();
+  };
+
+  const handleUpdateExample = (variable, value) => {
+    setVariableExamples(prevExamples => {
+      const updatedExamples = { ...prevExamples, [variable]: value };
+
+      return updatedExamples;
+    });
+  };
+
+  const handleUpdateDescriptions = (variable, event) => {
+    const inputValue = event.target.value;
+
+    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
+
+    const newValue = inputValue
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ñ/gi, 'n') 
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_]/g, '');
+
+    setVariableDescriptions(prevDescriptions => ({
+      ...prevDescriptions,
+      [variable]: newValue
+    }));
+
+    const newErrors = { ...variableDescriptionErrors };
+    const newHelperTexts = { ...variableDescriptionHelperTexts };
+
+    if (hasInvalidChars) {
+      newErrors[variable] = true;
+      newHelperTexts[variable] = "Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales";
+    } else if (newValue.trim() === "") {
+      newErrors[variable] = true;
+      newHelperTexts[variable] = "Este campo es requerido";
+    } else {
+      const currentDescriptions = {
+        ...variableDescriptions,
+        [variable]: newValue
+      };
+
+      let isDuplicate = false;
+      const entries = Object.entries(currentDescriptions);
+      for (let i = 0; i < entries.length; i++) {
+        const [key, value] = entries[i];
+        if (key !== variable && value === newValue && newValue !== "") {
+          isDuplicate = true;
+          break;
+        }
+      }
+
+      if (isDuplicate) {
+        newErrors[variable] = true;
+        newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
+      } else {
+        newErrors[variable] = false;
+        newHelperTexts[variable] = "";
+      }
+    }
+
+    setVariableDescriptionErrors(newErrors);
+    setVariableDescriptionHelperTexts(newHelperTexts);
+  };
+
   const replaceVariables = (text, variables) => {
     let result = text;
 
@@ -1476,8 +1559,6 @@ const EditTemplateForm = () => {
 
 
   const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-
-
 
 
   useEffect(() => {
@@ -1791,7 +1872,7 @@ const EditTemplateForm = () => {
               placeholder="Ingresa el contenido de tu mensaje aquí..."
               value={message}
               onChange={handleBodyMessageChange}
-              //onChange={(e) => setMessage(e.target.value)}
+
               sx={{
                 mb: 3,
                 mt: 4,
@@ -1893,7 +1974,7 @@ const EditTemplateForm = () => {
                     key={index}
                     sx={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'center',
                       flexWrap: 'wrap',
                       gap: 2,
                       mb: 2,
@@ -1906,7 +1987,7 @@ const EditTemplateForm = () => {
                     <Chip
                       label={variable}
                       color="primary"
-                      sx={{ fontWeight: "500", mt: 1 }}
+                      sx={{ fontWeight: "500" }}
                       deleteIcon={
                         <Tooltip title="Borrar variable">
                           <DeleteIcon />
@@ -1915,175 +1996,31 @@ const EditTemplateForm = () => {
                       onDelete={() => deleteVariable(variable)}
                     />
 
-                    <Stack sx={{ flexGrow: 1, gap: 1.5 }}>
-                      {/* Selector de tipo de variable */}
-                      <FormControl size="small" fullWidth>
-                        <InputLabel>Tipo de variable</InputLabel>
-                        <Select
-                          value={variableTypes[variable] || 'normal'}
-                          label="Tipo de variable"
-                          onChange={(e) => handleUpdateVariableType(variable, e.target.value)}
-                        >
-                          <MenuItem value="normal">Variable normal</MenuItem>
-                          <MenuItem value="list">Lista de opciones</MenuItem>
-                        </Select>
-                      </FormControl>
-
+                    <Stack sx={{ flexGrow: 1, gap: 1 }}>
                       <TextField
                         size="small"
                         label="Descripción"
                         placeholder="¿Para qué sirve esta variable?"
                         value={variableDescriptions[variable] || ''}
                         onChange={(e) => handleUpdateDescriptions(variable, e)}
-                        error={duplicateVariables.has(variable)}
+                        error={!!variableDescriptionErrors[variable]}
                         helperText={
-                          duplicateVariables.has(variable)
-                            ? "Esta descripción ya existe en otra variable"
-                            : ""
+                          variableDescriptionHelperTexts[variable] || ""
                         }
-                        fullWidth
+                        sx={{ flexGrow: 1 }}
                       />
 
-                      {/* Mostrar campo diferente según el tipo */}
-                      {variableTypes[variable] === 'list' ? (
-                        <Box>
-                          {/* Campo de entrada con botón de agregar */}
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <TextField
-                              size="small"
-                              label="Agregar opción a la lista"
-                              placeholder="Escribe una opción"
-                              inputRef={(el) => (listInputRefs.current[variable] = el)}
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddListOption(variable, e.target.value);
-                                  e.target.value = '';
-                                }
-                              }}
-                              fullWidth
-                            />
-                            <Tooltip title="Agregar opción">
-                              <IconButton
-                                color="primary"
-                                onClick={() => {
-                                  const inputEl = listInputRefs.current[variable];
-                                  if (inputEl && inputEl.value.trim()) {
-                                    handleAddListOption(variable, inputEl.value);
-                                    inputEl.value = '';
-                                  }
-                                }}
-                                sx={{
-                                  border: '1px solid',
-                                  borderColor: 'primary.main',
-                                  borderRadius: 1
-                                }}
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
+                      <TextField
+                        size="small"
+                        label="Texto de ejemplo"
+                        value={variableExamples[variable] || ''}
+                        onChange={(e) => handleUpdateExample(variable, e.target.value)}
+                        sx={{ flexGrow: 1 }}
+                        inputRef={(el) => (exampleRefs.current[variable] = el)}
+                        error={!!variableErrors[variable]}
+                        helperText={variableErrors[variable]}
+                      />
 
-                          {/* Mostrar las opciones agregadas con numeración y drag & drop */}
-                          {variableLists[variable]?.length > 0 && (
-                            <Box sx={{ mt: 1.5 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-                                Opciones (arrastra para reordenar):
-                              </Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {variableLists[variable].map((option, optIndex) => (
-                                  <Box
-                                    key={optIndex}
-                                    draggable
-                                    onDragStart={(e) => handleDragStart(e, variable, optIndex)}
-                                    onDragOver={(e) => handleDragOver(e)}
-                                    onDrop={(e) => handleDrop(e, variable, optIndex)}
-                                    sx={{
-                                      cursor: 'move',
-                                      transition: 'transform 0.2s',
-                                      '&:hover': {
-                                        transform: 'scale(1.02)'
-                                      }
-                                    }}
-                                  >
-                                    {editingOption?.variable === variable && editingOption?.index === optIndex ? (
-                                      // Modo edición
-                                      <TextField
-                                        size="small"
-                                        autoFocus
-                                        value={editingOption.value}
-                                        onChange={(e) => setEditingOption({
-                                          ...editingOption,
-                                          value: e.target.value
-                                        })}
-                                        onBlur={() => handleSaveOptionEdit(variable, optIndex)}
-                                        onKeyPress={(e) => {
-                                          if (e.key === 'Enter') {
-                                            handleSaveOptionEdit(variable, optIndex);
-                                          } else if (e.key === 'Escape') {
-                                            setEditingOption(null);
-                                          }
-                                        }}
-                                        sx={{ width: '150px' }}
-                                      />
-                                    ) : (
-                                      // Modo visualización
-                                      <Chip
-                                        icon={
-                                          <Box
-                                            component="span"
-                                            sx={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              justifyContent: 'center',
-                                              minWidth: '20px',
-                                              height: '20px',
-                                              borderRadius: '50%',
-                                              backgroundColor: 'primary.main',
-                                              color: 'white',
-                                              fontSize: '0.7rem',
-                                              fontWeight: 'bold',
-                                              mr: 0.5
-                                            }}
-                                          >
-                                            {optIndex + 1}
-                                          </Box>
-                                        }
-                                        label={option}
-                                        size="small"
-                                        onClick={() => handleStartEditOption(variable, optIndex, option)}
-                                        onDelete={() => handleDeleteListOption(variable, optIndex)}
-                                        variant="outlined"
-                                        deleteIcon={
-                                          <Tooltip title="Eliminar">
-                                            <DeleteIcon fontSize="small" />
-                                          </Tooltip>
-                                        }
-                                        sx={{
-                                          '& .MuiChip-icon': {
-                                            ml: 0.5
-                                          }
-                                        }}
-                                      />
-                                    )}
-                                  </Box>
-                                ))}
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
-                      ) : (
-                        <TextField
-                          size="small"
-                          label="Texto de ejemplo"
-                          value={variableExamples[variable] || ''}
-                          onChange={(e) => handleUpdateExample(variable, e.target.value)}
-                          fullWidth
-                          inputRef={(el) => (exampleRefs.current[variable] = el)}
-                          error={!!variableErrors[variable]}
-                          helperText={variableErrors[variable]}
-                        />
-                      )}
                     </Stack>
                   </Box>
                 ))}
