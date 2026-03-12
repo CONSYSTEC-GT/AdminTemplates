@@ -137,6 +137,8 @@ const EditTemplateForm = () => {
   const [variableDescriptions, setVariableDescriptions] = useState({});
   const [variableDescriptionsError, setvariableDescriptionsError] = useState(false);
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
+  const [variableDescriptionErrors, setVariableDescriptionErrors] = useState({});
+  const [variableDescriptionHelperTexts, setVariableDescriptionHelperTexts] = useState({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -1291,11 +1293,58 @@ const EditTemplateForm = () => {
   };
 
   const handleUpdateDescriptions = (variable, event) => {
-    const newValue = event.target.value.replace(/\s+/g, '_');
+    const inputValue = event.target.value;
+
+    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
+
+    const newValue = inputValue
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ñ/gi, 'n') 
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_]/g, '');
+
     setVariableDescriptions(prevDescriptions => ({
       ...prevDescriptions,
       [variable]: newValue
     }));
+
+    const newErrors = { ...variableDescriptionErrors };
+    const newHelperTexts = { ...variableDescriptionHelperTexts };
+
+    if (hasInvalidChars) {
+      newErrors[variable] = true;
+      newHelperTexts[variable] = "Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales";
+    } else if (newValue.trim() === "") {
+      newErrors[variable] = true;
+      newHelperTexts[variable] = "Este campo es requerido";
+    } else {
+      const currentDescriptions = {
+        ...variableDescriptions,
+        [variable]: newValue
+      };
+
+      let isDuplicate = false;
+      const entries = Object.entries(currentDescriptions);
+      for (let i = 0; i < entries.length; i++) {
+        const [key, value] = entries[i];
+        if (key !== variable && value === newValue && newValue !== "") {
+          isDuplicate = true;
+          break;
+        }
+      }
+
+      if (isDuplicate) {
+        newErrors[variable] = true;
+        newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
+      } else {
+        newErrors[variable] = false;
+        newHelperTexts[variable] = "";
+      }
+    }
+
+    setVariableDescriptionErrors(newErrors);
+    setVariableDescriptionHelperTexts(newHelperTexts);
   };
 
   const replaceVariables = (text, variables) => {
@@ -1813,11 +1862,9 @@ const EditTemplateForm = () => {
                         placeholder="¿Para qué sirve esta variable?"
                         value={variableDescriptions[variable] || ''}
                         onChange={(e) => handleUpdateDescriptions(variable, e)}
-                        error={duplicateVariables.has(variable)}
+                        error={!!variableDescriptionErrors[variable]}
                         helperText={
-                          duplicateVariables.has(variable)
-                            ? "Esta descripción ya existe en otra variable"
-                            : ""
+                          variableDescriptionHelperTexts[variable] || ""
                         }
                         sx={{ flexGrow: 1 }}
                       />
