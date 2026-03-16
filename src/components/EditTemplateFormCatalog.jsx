@@ -119,6 +119,8 @@ const TemplateForm = () => {
   const [variableDescriptionsHelperText, setvariableDescriptionsHelperText] = useState("");
   const [descriptionErrors, setDescriptionErrors] = useState({});
   const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
+  const [variableDescriptionErrors, setVariableDescriptionErrors] = useState({});
+  const [variableDescriptionHelperTexts, setVariableDescriptionHelperTexts] = useState({});
 
 
   const [mediaId, setMediaId] = useState('');
@@ -355,87 +357,80 @@ const TemplateForm = () => {
 
 
 
+    // Validar que todas las variables tengan un texto de ejemplo
     if (variables.length > 0) {
-
       const newErrors = {};
       const newDescriptionErrors = {};
+      const newHelperTexts = { ...variableDescriptionHelperTexts };
 
       for (const variable of variables) {
-
+        // Validar ejemplo
         if (!variableExamples[variable]?.trim()) {
-
           isValid = false;
           newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
         } else {
           newErrors[variable] = "";
         }
 
-
+        // Validar descripción
         if (!variableDescriptions[variable]?.trim()) {
-
           isValid = false;
           newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
-        } else {
-          newDescriptionErrors[variable] = "";
+          newHelperTexts[variable] = "El campo Descripción y Ejemplo es requerido";
         }
       }
 
-
+      // VALIDAR SI LAS VARIABLES ESTAN DUPLICADAS
       const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
 
       if (duplicateVariables.size > 0) {
-
         isValid = false;
 
-
+        // Marcar todas las variables con descripciones duplicadas
         duplicateVariables.forEach(variable => {
           newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
+          newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
         });
 
-
+        // Enfocar la primera variable con descripción duplicada
         const firstDuplicateVariable = Array.from(duplicateVariables)[0];
         if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
           descriptionRefs.current[firstDuplicateVariable].focus();
         }
-      } else {
-
-
-        variables.forEach(variable => {
-          newDescriptionErrors[variable] = "";
-        });
       }
 
-
+      // Validar que todas las variables tengan descripción
       for (const variable of variables) {
         if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-
           isValid = false;
           newDescriptionErrors[variable] = "La descripción es requerida";
+          newHelperTexts[variable] = "La descripción es requerida";
 
-
+          // Enfocar el campo de descripción vacío
           if (descriptionRefs.current && descriptionRefs.current[variable]) {
             descriptionRefs.current[variable].focus();
           }
         }
       }
 
+      if (duplicateVariables.size === 0) {
+        variables.forEach(variable => {
+          if (variableDescriptions[variable]?.trim() &&
+            newHelperTexts[variable] !== "Esta descripción ya existe en otra variable" &&
+            newHelperTexts[variable] !== "El campo Descripción y Ejemplo es requerido" &&
+            newHelperTexts[variable] !== "La descripción es requerida") {
+            newHelperTexts[variable] = "";
+          }
+        });
+      }
 
       setVariableErrors(newErrors);
-
-
-      if (!isValid) {
-
-      } else {
-
-      }
-    } else {
-
+      setVariableDescriptionErrors(newDescriptionErrors);
+      setVariableDescriptionHelperTexts(newHelperTexts);
     }
-
 
     return isValid;
   };
-
 
   const getMediaType = (url) => {
 
@@ -919,12 +914,59 @@ const TemplateForm = () => {
     });
   };
 
-  const handleUpdateDescriptions = (variable, value) => {
-    const newValue = event.target.value.replace(/\s+/g, '_');
+  const handleUpdateDescriptions = (variable, event) => {
+    const inputValue = event.target.value;
+
+    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
+
+    const newValue = inputValue
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ñ/gi, 'n') 
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_]/g, '');
+
     setVariableDescriptions(prevDescriptions => ({
       ...prevDescriptions,
       [variable]: newValue
     }));
+
+    const newErrors = { ...variableDescriptionErrors };
+    const newHelperTexts = { ...variableDescriptionHelperTexts };
+
+    if (hasInvalidChars) {
+      newErrors[variable] = true;
+      newHelperTexts[variable] = "Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales";
+    } else if (newValue.trim() === "") {
+      newErrors[variable] = true;
+      newHelperTexts[variable] = "Este campo es requerido";
+    } else {
+      const currentDescriptions = {
+        ...variableDescriptions,
+        [variable]: newValue
+      };
+
+      let isDuplicate = false;
+      const entries = Object.entries(currentDescriptions);
+      for (let i = 0; i < entries.length; i++) {
+        const [key, value] = entries[i];
+        if (key !== variable && value === newValue && newValue !== "") {
+          isDuplicate = true;
+          break;
+        }
+      }
+
+      if (isDuplicate) {
+        newErrors[variable] = true;
+        newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
+      } else {
+        newErrors[variable] = false;
+        newHelperTexts[variable] = "";
+      }
+    }
+
+    setVariableDescriptionErrors(newErrors);
+    setVariableDescriptionHelperTexts(newHelperTexts);
   };
 
 
@@ -1384,12 +1426,10 @@ const TemplateForm = () => {
                         label="Descripción"
                         placeholder="¿Para qué sirve esta variable?"
                         value={variableDescriptions[variable] || ''}
-                        onChange={(e) => handleUpdateDescriptions(variable, e.target.value)}
-                        error={duplicateVariables.has(variable)}
+                        onChange={(e) => handleUpdateDescriptions(variable, e)}
+                        error={!!variableDescriptionErrors[variable]}
                         helperText={
-                          duplicateVariables.has(variable)
-                            ? "Esta descripción ya existe en otra variable"
-                            : ""
+                          variableDescriptionHelperTexts[variable] || ""
                         }
                         sx={{ flexGrow: 1 }}
                       />
