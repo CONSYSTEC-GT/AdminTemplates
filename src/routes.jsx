@@ -15,7 +15,7 @@ import ModifyTemplatePage from './pages/ModifyTemplatePage';
 import ModifyTemplateCarouselPage from './pages/ModifyTemplateCarouselPage';
 import ModifyTemplateCatalogPage from './pages/ModifyTemplateCatalogPage';
 import ModifyTemplateFlowPage from './pages/ModifyTemplateFlowPage';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/common/Sidebar.jsx';
 import ProtectedRoute from './utils/ProtectedRoute';
 import LoginRequired from './pages/LoginRequired';
 import SessionClose from './pages/SessionClose';

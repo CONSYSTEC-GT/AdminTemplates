@@ -4,8 +4,8 @@ import { CloudUpload, CheckCircle, Error as ErrorIcon, Close } from '@mui/icons-
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
-import { obtenerApiToken } from '../api/templatesGSApi';
-import { guardarLogArchivos } from '../api/templatesGSArchivosLogs';
+import { obtenerApiToken } from '../../api/templatesGSApi.jsx';
+import { guardarLogArchivos } from '../../api/templatesGSArchivosLogs.jsx';
 
 const ImprovedFileUpload = ({ onUploadSuccess, carouselType }) => {
 

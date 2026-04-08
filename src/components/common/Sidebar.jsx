@@ -16,8 +16,6 @@ import SendIcon from '@mui/icons-material/Send';
 import SmsFailedIcon from '@mui/icons-material/SmsFailed';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import EmailIcon from '@mui/icons-material/Email';
-import ForumIcon from '@mui/icons-material/Forum';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import LogoutIcon from '@mui/icons-material/Logout';

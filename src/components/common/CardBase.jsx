@@ -20,7 +20,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ArrowForward from '@mui/icons-material/ArrowForward';
-import ReplyIcon from '@mui/icons-material/Reply';
 import Link from '@mui/icons-material/Link';
 import Phone from '@mui/icons-material/Phone';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -29,18 +28,13 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CategoryIcon from '@mui/icons-material/Category';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import ReplyIcon from '@mui/icons-material/Reply';
+import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
-// Import Swiper styles
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { EffectCoverflow, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
+import FechaModificacion from '../../utils/FechaModificacion.jsx';
 
-import FechaModificacion from '../utils/FechaModificacion';
-
-const CardBaseCarousel = ({
+const TemplateCard = ({
   template,
   handleEdit,
   handleDeleteClick,
@@ -75,8 +69,15 @@ const CardBaseCarousel = ({
     handleClose();
   };
 
-  const container = JSON.parse(template.gupshup.containerMeta); // o donde tengas el objeto
-  const cards = container.cards || [];
+  const getButtonsFromTemplate = (template) => {
+    try {
+      const containerMeta = JSON.parse(template.gupshup.containerMeta);
+      return containerMeta.buttons || [];
+    } catch (error) {
+      console.error('Error parsing containerMeta:', error);
+      return [];
+    }
+  };
 
   return (
     <Card
@@ -214,6 +215,77 @@ const CardBaseCarousel = ({
               //overflowY: 'auto'
             }}
           >
+            {/* Imagen para plantillas tipo CAROUSEL o IMAGE */}
+            {/* Contenido multimedia para plantillas tipo IMAGE, VIDEO o DOCUMENT */}
+            {(template.gupshup.templateType === 'IMAGE' || template.gupshup.templateType === 'VIDEO' || template.gupshup.templateType === 'DOCUMENT') && (
+              <Box sx={{ mb: 2, width: '100%', height: 140, borderRadius: 2, overflow: 'hidden' }}>
+                {/* Mostrar imagen */}
+                {template.gupshup.templateType === 'IMAGE' && (
+                  <img
+                    src={template.talkme.url}
+                    alt="Template image"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                    }}
+                  />
+                )}
+
+                {/* Mostrar video */}
+                {template.gupshup.templateType === 'VIDEO' && (
+                  <video
+                    src={template.talkme.url}
+                    controls
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    Tu navegador no soporta el elemento video.
+                  </video>
+                )}
+
+                {/* Mostrar documento */}
+                {template.gupshup.templateType === 'DOCUMENT' && (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '8px',
+                      flexDirection: 'column',
+                      gap: 1
+                    }}
+                  >
+                    {/* Icono de documento */}
+                    <Box sx={{ fontSize: 24 }}>📄</Box>
+                    <Typography variant="caption" sx={{ textAlign: 'center', px: 1 }}>
+                      Documento
+                    </Typography>
+                    {/* Enlace para descargar/ver el documento */}
+                    <a
+                      href={template.talkme.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#1976d2',
+                        textDecoration: 'none',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Ver documento
+                    </a>
+                  </Box>
+                )}
+              </Box>
+            )}
 
             <Typography
               variant="body2"
@@ -223,169 +295,104 @@ const CardBaseCarousel = ({
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
-                flexDirection: "column"
+                flexDirection: "column",
+                overflowY: "auto",
+                overflowX: "hidden"
               }}
               component="div"
             >
-              {parseTemplateContent(template.gupshup.data).text.split('\n').map((line, i) => (
-                <span key={i}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+              {parseTemplateContent(template.gupshup.data).text
+                .replace(/\|/g, '')  // elimina todos los pipes
+                .split('\n')
+                .map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    <br />
+                  </span>
+                ))
+              }
             </Typography>
 
             {/* Botones */}
-            <Stack spacing={1} sx={{ mt: 2 }}>
-              {parseTemplateContent(template.gupshup.data).buttons?.map((button, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-start",
-                    gap: 1,
-                    border: "1px solid #ccc",
-                    borderRadius: "20px",
-                    p: 1,
-                    backgroundColor: "#ffffff",
-                    boxShadow: 1,
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#f5f5f5",
-                    },
-                  }}
-                >
-                  {button.type === "QUICK_REPLY" && (
-                    <ArrowForward sx={{ fontSize: "16px", color: "#297c86" }} />
-                  )}
-                  {button.type === "URL" && (
-                    <Link sx={{ fontSize: "16px", color: "#297c86" }} />
-                  )}
-                  {button.type === "PHONE_NUMBER" && (
-                    <Phone sx={{ fontSize: "16px", color: "#297c86" }} />
-                  )}
-                  <Typography variant="body1" sx={{ fontWeight: "medium", color: "#297c86", fontSize: "14px" }}>
-                    {button.title}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-
-
-
-
-          <Box sx={{ flex: 1, width: '100%', minHeight: 0 }}>
-            <Swiper
-              modules={[Pagination]}
-              effect="coverflow"
-              spaceBetween={10}
-              slidesPerView={1.1}
-              centeredSlides={true}
-              pagination={{ clickable: true }}
-              style={{ width: '100%', paddingBottom: '2rem', flex: 1, minHeight: 0, }}
+            <Box
+              sx={{
+                mt: 'auto', // empuja el botón al fondo si usas flexDirection: column
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 1,
+                flexWrap: 'wrap',
+                borderTop: '1px solid #eee',
+                pt: 1,
+                flexDirection: 'column'
+              }}
             >
-              {cards.map((card, index) => (
-                <SwiperSlide key={index}>
-                  <Box
-                    sx={{
-                      borderRadius: 3,
-                      border: '1px solid #ccc',
-                      backgroundColor: '#fdfdfd',
-                      overflow: 'hidden',
-                      boxShadow: 1,
-                      p: 1,
-                      height: 'auto'
-                    }}
-                  >
-                    {card.headerType === "IMAGE" && (
-                      <img
-                        src={card.mediaUrl}
-                        alt="Card Header"
-                        style={{ width: '100%', maxHeight: '100px', borderRadius: 8 }}
-                      />
-                    )}
+              {getButtonsFromTemplate(template).map((button, index) => {
 
-                    <Typography
-                      variant="body2"
-                      sx={{ mt: 1, mb: 1, fontWeight: 500 }}
-                    >
-                      {card.body}
-                    </Typography>
+                let styles = {
+                  borderRadius: 20,
+                  px: 2,
+                  py: 0.5,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                };
 
-                    <Box
-                      sx={{
-                        mt: 'auto', // empuja el botón al fondo si usas flexDirection: column
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        gap: 1,
-                        flexWrap: 'wrap',
-                        borderTop: '1px solid #eee',
-                        pt: 1,
-                      }}
-                    >
-                      {card.buttons.map((button, btnIdx) => {
-                        let styles = {
-                          borderRadius: 20,
-                          px: 2,
-                          py: 0.5,
-                          fontSize: 12,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                        };
+                if (button.type === 'QUICK_REPLY') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86'
+                  };
+                } else if (button.type === 'URL') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #ccc',
+                    color: '#297c86',
+                  };
+                } else if (button.type === 'PHONE_NUMBER') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86',
+                  };
+                } else if (button.type === 'CATALOG') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86',
+                  };
+                } else if (button.type === 'FLOW') {
+                  styles = {
+                    ...styles,
+                    backgroundColor: '#ffffff',
+                    color: '#297c86',
+                  }
+                }
 
-                        if (button.type === 'QUICK_REPLY') {
-                          styles = {
-                            ...styles,
-                            backgroundColor: '#ffffff',
-                            color: '#297c86'
-                          };
-                        } else if (button.type === 'URL') {
-                          styles = {
-                            ...styles,
-                            backgroundColor: '#ffffff',
-                            border: '1px solid #ccc',
-                            color: '#297c86',
-                          };
-                        } else if (button.type === 'PHONE_NUMBER') {
-                          styles = {
-                            ...styles,
-                            backgroundColor: '#ffffff',
-                            color: '#297c86',
-                          };
-                        }
-
-                        return (
-                          <Box key={btnIdx} sx={styles}>
-                            {button.type === 'QUICK_REPLY' && <ReplyIcon size={14} />}
-                            {button.type === 'URL' && <Link size={14} />}
-                            {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
-                            {button.text}
-                          </Box>
-                        );
-                      })}
-                    </Box>
+                return (
+                  <Box key={index} sx={styles}>
+                    {button.type === 'QUICK_REPLY' && <ReplyIcon size={14} />}
+                    {button.type === 'URL' && <Link size={14} />}
+                    {button.type === 'PHONE_NUMBER' && <Phone size={14} />}
+                    {button.type === 'CATALOG' && <ProductionQuantityLimitsIcon size={14} />}
+                    {button.type === 'FLOW' && <AccountTreeIcon size={14} />}
+                    {button.text}
                   </Box>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
-              <FechaModificacion timestamp={template.gupshup.modifiedOn} />
-            </Typography>
+                );
+              })}
+            </Box>
           </Box>
 
-
-
-
-
+          <Typography sx={{ marginTop: 'auto', alignSelf: 'center' }}>
+            <FechaModificacion timestamp={template.gupshup.modifiedOn} />
+          </Typography>
 
         </Box>
-
       </CardContent>
 
       {/* Acciones */}
@@ -472,4 +479,4 @@ const CardBaseCarousel = ({
   );
 };
 
-export default CardBaseCarousel;
+export default TemplateCard;

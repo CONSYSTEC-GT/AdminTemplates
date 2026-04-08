@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import TemplateFormFlow from '../components/TemplateFormFlow';
+import TemplateFormFlow from '../forms/templates/components/TemplateFormFlow.jsx';
 
 const CreateTemplateFlowPage = () => {
   const navigate = useNavigate();

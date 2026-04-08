@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { alpha, Box, Button, Card, CardActions, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, FormControl, FormLabel, Input, InputAdornment, ListItemIcon, ListItemText, InputLabel, Menu, MenuItem, OutlinedInput, Select, Stack, styled, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/common/Sidebar.jsx';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2'
@@ -25,9 +25,9 @@ import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 
 import TemplateCardSkeleton from '../utils/SkeletonTemplates';
-import CardBase from '../components/CardBase';
-import CardBaseCarousel from '../components/CardBaseCarousel';
-import CardBaseSkeleton from '../components/CardBaseSkeleton';
+import CardBase from '../components/common/CardBase.jsx';
+import CardBaseCarousel from '../components/common/CardBaseCarousel.jsx';
+import CardBaseSkeleton from '../components/common/CardBaseSkeleton.jsx';
 import { fetchMergedTemplates } from '../api/templatesServices';
 
 const TemplateAproved = () => {

@@ -2,8 +2,8 @@ import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import TemplateFormCarousel from '../components/TemplateFormCarousel';
-import TemplateFormCarouselV2 from '../components/TemplateFormCarouselV2';
+import TemplateFormCarousel from '../forms/templates/components/TemplateFormCarousel.jsx';
+import TemplateFormCarouselV2 from '../forms/templates/components/TemplateFormCarouselV2.jsx';
 
 const CreateTemplateCarousel = () => {
   const navigate = useNavigate();

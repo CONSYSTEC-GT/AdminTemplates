@@ -47,153 +47,6 @@ const saveTemplateParams = async (ID_PLANTILLA, variables, variableDescriptions,
   }
 };
 
-export const saveTemplateParamsOptions = async (
-  ID_PLANTILLA,
-  idNombreUsuarioTalkMe,
-  variables,
-  variableDescriptions,
-  variableTypes,
-  variableLists,
-  urlTemplatesGS
-) => {
-  console.log('🟢 === INICIO saveTemplateParamsOptions ===');
-  console.log('📥 Parámetros recibidos:', {
-    ID_PLANTILLA,
-    idNombreUsuarioTalkMe,
-    variables,
-    variableDescriptions,
-    variableTypes,
-    variableLists,
-    urlTemplatesGS
-  });
-
-  const url = urlTemplatesGS + 'parametros_opciones';
-
-  try {
-    const results = [];
-
-    // Filtrar solo las variables de tipo lista
-    const listVariables = variables.filter(variable => variableTypes[variable] === 'list');
-    console.log('📊 Variables de tipo lista encontradas:', listVariables);
-
-    if (listVariables.length === 0) {
-      console.log('⚠️ No hay variables de tipo lista para procesar');
-      return results;
-    }
-
-    // Obtener los parámetros creados
-    console.log('🔍 Obteniendo IDs de parámetros de la BD...');
-    const parametrosResponse = await fetch(`${urlTemplatesGS}parametros?ID_PLANTILLA=${ID_PLANTILLA}`);
-
-    if (!parametrosResponse.ok) {
-      throw new Error('Error al obtener los parámetros existentes');
-    }
-
-    const parametrosExistentes = await parametrosResponse.json();
-    console.log('📋 Parámetros existentes en BD:', parametrosExistentes);
-
-    // SOLUCIÓN: Crear un mapa por ORDEN para hacer el match correcto
-    // Ya que el ORDEN se guarda como i en saveTemplateParams
-    const parametrosPorOrden = {};
-    parametrosExistentes.forEach(p => {
-      parametrosPorOrden[p.ORDEN] = p;
-    });
-    console.log('🗺️ Mapa de parámetros por ORDEN:', parametrosPorOrden);
-
-    for (let i = 0; i < listVariables.length; i++) {
-      const variable = listVariables[i];
-      console.log(`\n🔄 Procesando variable lista: ${variable}`);
-
-      const options = variableLists[variable] || [];
-      console.log(`📝 Opciones para ${variable}:`, options);
-
-      if (options.length === 0) {
-        console.log(`⚠️ No hay opciones para la variable ${variable}`);
-        continue;
-      }
-
-      // Encontrar el índice original de esta variable en el array completo
-      const indexInOriginalArray = variables.indexOf(variable);
-      const orden = indexInOriginalArray; // El ORDEN que se guardó en saveTemplateParams
-
-      console.log(`🔍 Buscando parámetro con ORDEN: ${orden}`);
-
-      // Buscar el parámetro por ORDEN
-      const parametro = parametrosPorOrden[orden];
-
-      if (!parametro) {
-        console.error(`❌ No se encontró el parámetro con ORDEN ${orden} para la variable ${variable}`);
-        console.error(`Variables disponibles:`, Object.keys(parametrosPorOrden));
-        continue;
-      }
-
-      // Validar que sea una variable de tipo lista
-      if (parametro.ID_PLANTILLA_TIPO_DATO !== 5) {
-        console.error(`❌ El parámetro encontrado no es de tipo lista (ID_PLANTILLA_TIPO_DATO: ${parametro.ID_PLANTILLA_TIPO_DATO})`);
-        continue;
-      }
-
-      const ID_PLANTILLA_PARAMETRO = parametro.ID_PLANTILLA_PARAMETRO;
-      console.log(`✅ ID_PLANTILLA_PARAMETRO encontrado: ${ID_PLANTILLA_PARAMETRO}`);
-      console.log(`   Detalles del parámetro:`, {
-        ID: parametro.ID_PLANTILLA_PARAMETRO,
-        NOMBRE: parametro.NOMBRE,
-        ORDEN: parametro.ORDEN,
-        TIPO: parametro.ID_PLANTILLA_TIPO_DATO
-      });
-
-      // Guardar cada opción de la lista
-      for (let j = 0; j < options.length; j++) {
-        console.log(`  📌 Guardando opción ${j + 1}/${options.length}: ${options[j]}`);
-
-        const optionData = {
-          ID_PLANTILLA_PARAMETRO: ID_PLANTILLA_PARAMETRO,
-          NOMBRE: options[j],
-          PLACEHOLDER: options[j],
-          ORDEN: j + 1,
-          CREADO_POR: idNombreUsuarioTalkMe || "Sistema.TalkMe",
-        };
-
-        console.log('  📤 Datos a enviar:', optionData);
-
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(optionData),
-        });
-
-        console.log('  📡 Response status:', response.status);
-
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          console.error('  ❌ Error en response:', errorMessage);
-          throw new Error(
-            `Error al guardar la opción ${options[j]} de la variable ${variable}: ${errorMessage}`
-          );
-        }
-
-        const result = await response.json();
-        console.log('  ✅ Opción guardada exitosamente:', result);
-        results.push(result);
-      }
-    }
-
-    console.log('🎉 Total de opciones guardadas:', results.length);
-    if (results.length > 0) {
-      showSnackbar("✅ Opciones de listas guardadas exitosamente", "success");
-    }
-
-    console.log('🟢 === FIN saveTemplateParamsOptions ===\n');
-    return results;
-  } catch (error) {
-    console.error('💥 Error en saveTemplateParamsOptions:', error);
-    showSnackbar("❌ Error al guardar las opciones de listas", "error");
-    throw error;
-  }
-};
-
 const deleteTemplateParams = async (ID_PLANTILLA, urlTemplatesGS) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${ID_PLANTILLA}`;
   try {
@@ -328,6 +181,7 @@ const saveTemplateButtons = async (ID_PLANTILLA, buttons = [], idNombreUsuarioTa
         TITULO: button.title || '',
         URL: button.url || null,
         TELEFONO: button.phoneNumber || null,
+        FLOW_ID: button.flow_id || null,
         ORDEN: i,
         CREADO_POR: idNombreUsuarioTalkMe,
       };
@@ -341,7 +195,6 @@ const saveTemplateButtons = async (ID_PLANTILLA, buttons = [], idNombreUsuarioTa
       if (!response.ok) {
         const errorResponse = await response.json();
         console.error(`Error al guardar botón ${i}:`, errorResponse);
-        showSnackbar(`❌ Error guardando botón: ${errorResponse.message || 'Solicitud inválida'}`, 'error');
         continue;
       }
 
@@ -349,16 +202,24 @@ const saveTemplateButtons = async (ID_PLANTILLA, buttons = [], idNombreUsuarioTa
       results.push(result);
     }
 
-    showSnackbar('✅ Botones guardados exitosamente', 'success');
     return results;
   } catch (error) {
     console.error('Error guardando botones:', error);
-    showSnackbar('❌ Error al guardar los botones', 'error');
     throw error;
   }
 };
 
-export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], idBotRedes, urlTemplatesGS, buttons) => {
+export const saveTemplateToTalkMe = async (
+    templateId,
+    templateData,
+    idNombreUsuarioTalkMe,
+    variables = [],
+    variableDescriptions = {},
+    cards = [],
+    idBotRedes,
+    urlTemplatesGS,
+    buttons
+) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
   const url = urlTemplatesGS + 'plantillas';
@@ -373,13 +234,6 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     ID_PLANTILLA_CATEGORIA = 13;
   } else {
     console.error("Categoría no válida:", selectedCategory);
-    Swal.fire({
-      title: '❌ Error',
-      text: 'Categoría no válida.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
     return null;
   }
 
@@ -390,20 +244,19 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     TIPO_PLANTILLA = 0;
   }
 
-
-
   const mediaMap = {
     image: "image",
     video: "video",
     document: "document",
     CAROUSEL: "image"
   };
-
   const MEDIA = mediaMap[templateType] || null;
 
-  const mensajeProcesado = reordenarVariables(message);
+  const mensajeProcesado = message;
 
   const nombreProcesado = templateName.replace(/_/g, " ");
+
+  const pantallasString = Array.isArray(pantallas) ? pantallas.join(',') : pantallas;
 
   const data = {
     ID_PLANTILLA: null,
@@ -415,8 +268,8 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     MENSAJE: mensajeProcesado,
     TIPO_PLANTILLA: TIPO_PLANTILLA,
     MEDIA: MEDIA,
-    URL: uploadedUrl,
-    PANTALLAS: pantallas,
+    URL: uploadedUrl || "",
+    PANTALLAS: pantallasString,
     ESTADO: 0,
     AUTORIZADO: 0,
     ELIMINADO: 0,
@@ -426,7 +279,6 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
   };
 
   try {
-    console.log("🔍 DEBUG saveTemplateToTalkMe →", { url, status: "enviando...", body: data });
     const response = await fetch(url, {
       method: "POST",
       headers: headers,
@@ -436,81 +288,64 @@ export const saveTemplateToTalkMe = async (templateId, templateData, idNombreUsu
     if (!response.ok) {
       const errorResponse = await response.json();
       console.error("Error response:", errorResponse);
-      Swal.fire({
-        title: '❌ Error',
-        text: errorResponse.message || 'Solicitud inválida.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#00c3ff'
-      });
-      return null; // Retornar null en caso de error
+      return null;
     }
 
     const result = await response.json();
-    Swal.fire({
-      title: '¡Éxito!',
-      text: 'La plantilla fue creada correctamente.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
 
+    if (result && result.ID_PLANTILLA) {
+      const plantillaId = result.ID_PLANTILLA;
 
-    // Si tenemos variables, hacer el tercer request
-    if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-      await saveTemplateParams(result.ID_PLANTILLA, variables, variableDescriptions, urlTemplatesGS);
-    }
+      if (variables && variables.length > 0) {
+        await saveTemplateParams(plantillaId, variables, variableDescriptions, urlTemplatesGS);
+      }
 
-    if (result && result.ID_PLANTILLA && cards && cards.length > 0) {
-      try {
+      if (cards && cards.length > 0) {
         await saveCardsTemplate(
-          {
-            ID_PLANTILLA: result.ID_PLANTILLA,
-            cards: cards
-          },
-          idNombreUsuarioTalkMe,
-          urlTemplatesGS
+            {
+              ID_PLANTILLA: plantillaId,
+              cards: cards
+            },
+            idNombreUsuarioTalkMe,
+            urlTemplatesGS
         );
-      } catch (error) {
-        console.error("Error guardando tarjetas:", error);
-        showSnackbar("❌ Error al guardar las tarjetas", "error");
+      }
+
+      if (buttons && buttons.length > 0) {
+        await saveTemplateButtons(
+            plantillaId,
+            buttons,
+            idNombreUsuarioTalkMe,
+            urlTemplatesGS
+        );
       }
     }
 
-    if (result && result.ID_PLANTILLA && buttons && buttons.length > 0) {
-      await saveTemplateButtons(
-        result.ID_PLANTILLA,
-        buttons,
-        idNombreUsuarioTalkMe,
-        urlTemplatesGS
-      );
-    }
-
-    return result; // Retornar el resultado en caso de éxito
+    return result;
   } catch (error) {
     console.error("Error en el segundo request:", error);
-    Swal.fire({
-      title: '❌ Error',
-      text: 'Ocurrió un error en el segundo request.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
-    return null; // Retornar null en caso de error
+    return null;
   }
 };
 
-export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombreUsuarioTalkMe, variableTypes = [], variables = [], variableDescriptions = {}, variableExamples = {}, variableLists = {}, cards = [], idBotRedes, urlTemplatesGS) => {
+export const saveTemplateFlowToTalkMe = async (
+    templateId,
+    templateData,
+    idNombreUsuarioTalkMe,
+    variables = [],
+    variableDescriptions = {},
+    cards = [],
+    idBotRedes,
+    urlTemplatesGS,
+    buttons
+) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
-  //const url = 'https://certificacion.talkme.pro/templatesGS/api/plantillas/';
   const url = urlTemplatesGS + 'plantillas';
   const headers = {
     "Content-Type": "application/json",
   };
 
-  //13 y 14 son en certi igual que 149 en bot redes y en dev son 17 y 
-  //10 Y 13 SON EN S1 AL S4
   let ID_PLANTILLA_CATEGORIA;
   if (selectedCategory === "MARKETING") {
     ID_PLANTILLA_CATEGORIA = 10;
@@ -518,14 +353,14 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
     ID_PLANTILLA_CATEGORIA = 13;
   } else {
     console.error("Categoría no válida:", selectedCategory);
-    Swal.fire({
-      title: '❌ Error',
-      text: 'Categoría no válida.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
-    return null; // Retornar null si la categoría no es válida
+    return null;
+  }
+
+  let TIPO_PLANTILLA;
+  if (templateType === "CAROUSEL") {
+    TIPO_PLANTILLA = 1;
+  } else {
+    TIPO_PLANTILLA = 0;
   }
 
   const mediaMap = {
@@ -534,12 +369,13 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
     document: "document",
     CAROUSEL: "image"
   };
-
   const MEDIA = mediaMap[templateType] || null;
 
-  const mensajeProcesado = reordenarVariables(message);
+  const mensajeProcesado = message;
 
   const nombreProcesado = templateName.replace(/_/g, " ");
+
+  const pantallasString = Array.isArray(pantallas) ? pantallas.join(',') : pantallas;
 
   const data = {
     ID_PLANTILLA: null,
@@ -551,8 +387,8 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
     MENSAJE: mensajeProcesado,
     TIPO_PLANTILLA: 2,
     MEDIA: MEDIA,
-    URL: uploadedUrl,
-    PANTALLAS: pantallas,
+    URL: uploadedUrl || "",
+    PANTALLAS: pantallasString,
     ESTADO: 0,
     AUTORIZADO: 0,
     ELIMINADO: 0,
@@ -571,214 +407,190 @@ export const saveTemplateFlowToTalkMe = async (templateId, templateData, idNombr
     if (!response.ok) {
       const errorResponse = await response.json();
       console.error("Error response:", errorResponse);
-      Swal.fire({
-        title: '❌ Error',
-        text: errorResponse.message || 'Solicitud inválida.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#00c3ff'
-      });
-      return null; // Retornar null en caso de error
+      return null;
     }
 
     const result = await response.json();
-    Swal.fire({
-      title: '¡Éxito!',
-      text: 'La plantilla fue creada correctamente.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
 
+    if (result && result.ID_PLANTILLA) {
+      const plantillaId = result.ID_PLANTILLA;
 
-    // Si tenemos variables, hacer el tercer request
-    if (result && result.ID_PLANTILLA && variables && variables.length > 0) {
-      // Guardar variables normales
-      await saveTemplateParams(
-        result.ID_PLANTILLA,
-        idNombreUsuarioTalkMe,
-        variables,
-        variableDescriptions,
-        variableTypes,
-        variableExamples,
-        urlTemplatesGS
-      );
+      if (variables && variables.length > 0) {
+        await saveTemplateParams(plantillaId, variables, variableDescriptions, urlTemplatesGS);
+      }
 
-      // Guardar listas de opciones
-      await saveTemplateParamsOptions(
-        result.ID_PLANTILLA,
-        idNombreUsuarioTalkMe,
-        variables,
-        variableDescriptions,
-        variableTypes,
-        variableLists,
-        urlTemplatesGS
-      );
-    }
-
-    if (result && result.ID_PLANTILLA && cards && cards.length > 0) {
-      try {
+      if (cards && cards.length > 0) {
         await saveCardsTemplate(
-          {
-            ID_PLANTILLA: result.ID_PLANTILLA,
-            cards: cards
-          },
-          idNombreUsuarioTalkMe,
-          urlTemplatesGS
+            {
+              ID_PLANTILLA: plantillaId,
+              cards: cards
+            },
+            idNombreUsuarioTalkMe,
+            urlTemplatesGS
         );
-      } catch (error) {
-        console.error("Error guardando tarjetas:", error);
-        showSnackbar("❌ Error al guardar las tarjetas", "error");
+      }
+
+      if (buttons && buttons.length > 0) {
+        await saveTemplateButtons(
+            plantillaId,
+            buttons,
+            idNombreUsuarioTalkMe,
+            urlTemplatesGS
+        );
       }
     }
 
-    return result; // Retornar el resultado en caso de éxito
+    return result;
   } catch (error) {
     console.error("Error en el segundo request:", error);
-    Swal.fire({
-      title: '❌ Error',
-      text: 'Ocurrió un error en el segundo request.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#00c3ff'
-    });
-    return null; // Retornar null en caso de error
+    return null;
   }
 };
 
-export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsuarioTalkMe, variables = [], variableDescriptions = {}, cards = [], urlTemplatesGS, idBotRedes) => {
+export const editTemplateToTalkMe = async (
+    idTemplate,
+    templateData,
+    idNombreUsuarioTalkMe,
+    variables = [],
+    variableDescriptions = {},
+    cards = [],
+    urlTemplatesGS,
+    idBotRedes,
+    buttons = [],
+    pantallas = 0,
+    mediaURL = null,
+    skipParamsAndButtons = false
+) => {
+  console.log("=== editTemplateToTalkMe INICIO ===");
+  console.log("idTemplate:", idTemplate);
+  console.log("templateData:", templateData);
+  console.log("variables:", variables);
+  console.log("variableDescriptions:", variableDescriptions);
+  console.log("buttons:", buttons);
+  console.log("pantallas:", pantallas);
+
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
 
   const url = `${urlTemplatesGS}plantillas/${idTemplate}`;
-  const headers = {
-    "Content-Type": "application/json",
-  };
+  const headers = { "Content-Type": "application/json" };
 
-  let ID_PLANTILLA_CATEGORIA;
-  if (selectedCategory === "MARKETING") {
-    ID_PLANTILLA_CATEGORIA = 10;
-  } else if (selectedCategory === "UTILITY") {
-    ID_PLANTILLA_CATEGORIA = 13;
-  } else {
+  const categoryMap = { MARKETING: 10, UTILITY: 13 };
+  const ID_PLANTILLA_CATEGORIA = categoryMap[selectedCategory];
+  if (!ID_PLANTILLA_CATEGORIA) {
     console.error("Categoría no válida:", selectedCategory);
-    return null;
+    return { status: "error", message: "Categoría no válida" };
   }
 
-  let TIPO_PLANTILLA;
-  let PANTALLAS;
-  if (templateType === "CAROUSEL") {
-    TIPO_PLANTILLA = 1;
-    PANTALLAS = 4;
-  } else {
-    TIPO_PLANTILLA = 0;
-    PANTALLAS = 0;
-  }
+  const isCarousel = templateType === "CAROUSEL";
+  const TIPO_PLANTILLA = isCarousel ? 1 : 0;
+  const PANTALLAS = isCarousel ? pantallas || 4 : pantallas;
 
   const mediaMap = {
     IMAGE: "image",
     VIDEO: "video",
     DOCUMENT: "document",
     CAROUSEL: "image",
-    CATALOG: "image"
+    CATALOG: "image",
   };
-
   const MEDIA = mediaMap[templateType] || null;
+
+  const mensajeProcesado = reordenarVariables(message);
+  const nombreProcesado = templateName.replace(/_/g, " ");
 
   const data = {
     ID_INTERNO: idTemplate,
-    ID_PLANTILLA_CATEGORIA: ID_PLANTILLA_CATEGORIA,
+    ID_PLANTILLA_CATEGORIA,
     ID_BOT_REDES: idBotRedes,
-    NOMBRE: templateName,
-    MENSAJE: message,
-    TIPO_PLANTILLA: TIPO_PLANTILLA,
-    MEDIA: MEDIA,
-    URL: uploadedUrl,
-    PANTALLAS: PANTALLAS,
+    NOMBRE: nombreProcesado,
+    NOMBRE_PLANTILLA: templateName,
+    MENSAJE: mensajeProcesado,
+    TIPO_PLANTILLA,
+    MEDIA,
+    URL: uploadedUrl || mediaURL,
+    PANTALLAS,
     ESTADO: 0,
     AUTORIZADO: 0,
     ELIMINADO: 0,
     SEGUIMIENTO_EDC: 0,
     MODIFICADO_POR: idNombreUsuarioTalkMe,
-    FECHA_MODIFICACION: new Date().toISOString()
+    MODIFICADO_EL: new Date().toISOString(),
   };
 
   try {
-    console.log('🔵 === INICIO: editTemplateToTalkMe ===');
-    console.log('📍 URL:', url);
-    console.log('📍 Data a enviar:', JSON.stringify(data, null, 2));
-
     const response = await fetch(url, {
       method: "PUT",
-      headers: headers,
+      headers,
       body: JSON.stringify(data),
     });
 
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response ok:', response.ok);
-    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
-      console.log('⚠️ Response no OK - Intentando leer error...');
-
-      // Obtener el texto primero para ver qué devuelve
-      const errorText = await response.text();
-      console.log('📄 Error text raw:', errorText);
-
-      try {
-        const errorResponse = JSON.parse(errorText);
-        console.error("❌ Error response JSON:", errorResponse);
-      } catch (parseError) {
-        console.error("❌ Error parseando respuesta de error:", parseError);
-        console.error("❌ Texto recibido:", errorText);
-      }
-      return null;
+      const errorResponse = await response.json();
+      console.error("Error response:", errorResponse);
+      return { status: "error", message: errorResponse.message || "Solicitud inválida" };
     }
 
     const result = await response.json();
-    showSnackbar("✅ Plantilla actualizada exitosamente", "success");
+    console.log("PUT result:", result);
+    const talkmeId = result?.ID_PLANTILLA;
+    console.log("talkmeId:", talkmeId);
 
-    const talkmeId = result.ID_PLANTILLA;
-
-    if (talkmeId) {
-      try {
-
-        const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
-
-        if (parametros && parametros.length > 0 && TIPO_PLANTILLA === 1) {
-          const parametrosIds = parametros.map(param => param.ID_PLANTILLA_PARAMETRO);
-          console.log('📥 IDs a eliminar:', parametrosIds);
-          await eliminarBroadcastParametros(urlTemplatesGS, parametrosIds);
-        }
-
-        await deleteTemplateParams(talkmeId, urlTemplatesGS);
-
-        if (variables && variables.length > 0) {
-          await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
-
-        }
-
-      } catch (error) {
-        console.error("❌ Error gestionando parámetros:", error);
-        console.error("❌ Stack trace:", error.stack);
-        throw error;
-      }
-    } else {
-      console.log('⏭️ No hay parámetros que actualizar');
-      console.log('   - talkmeId:', talkmeId);
-      console.log('   - variables:', variables);
-      console.log('   - variables.length:', variables?.length);
+    if (!talkmeId) {
+      console.log("❌ No se obtuvo talkmeId del PUT");
+      return { status: "error", message: "No se obtuvo ID de plantilla" };
     }
 
-    if (talkmeId && TIPO_PLANTILLA === 1) {
-      try {
-        console.log('🟣 === INICIO: Actualizar tarjetas de la plantilla');
-        console.log('🎴 Cards recibidas:', cards);
+    if (skipParamsAndButtons) {
+      console.log("⏭️ Saltando parámetros y botones (skipParamsAndButtons=true)");
+      return { status: "success", data: result };
+    }
 
+    // ── Parámetros ──────────────────────────────────────────
+    try {
+      console.log("Obteniendo parámetros existentes para talkmeId:", talkmeId);
+      const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
+      console.log("Parámetros existentes:", parametros);
+
+      if (parametros?.length > 0 && TIPO_PLANTILLA === 1) {
+        const parametrosIds = parametros.map((p) => p.ID_PLANTILLA_PARAMETRO);
+        console.log("Eliminando broadcast parámetros:", parametrosIds);
+        await eliminarBroadcastParametros(urlTemplatesGS, parametrosIds);
+      }
+
+      console.log("Eliminando parámetros de plantilla...");
+      await deleteTemplateParams(talkmeId, urlTemplatesGS);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      if (variables.length > 0) {
+        console.log("Guardando parámetros:", { talkmeId, variables, variableDescriptions });
+        await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
+        console.log("✅ Parámetros guardados");
+      } else {
+        console.log("No hay variables, saltando saveTemplateParams");
+      }
+    } catch (error) {
+      console.error("❌ Error gestionando parámetros:", error);
+      return { status: "error", message: "No se pudieron actualizar los parámetros." };
+    }
+
+    // ── Botones ─────────────────────────────────────────────
+    try {
+      await deleteTemplateButtons(talkmeId, urlTemplatesGS);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      if (buttons.length > 0) {
+        await saveTemplateButtons(talkmeId, buttons, idNombreUsuarioTalkMe, urlTemplatesGS);
+      }
+    } catch (error) {
+      console.error("Error gestionando botones:", error);
+      return { status: "error", message: "No se pudieron actualizar los botones." };
+    }
+
+    // ── Tarjetas CAROUSEL ────────────────────────────────────
+    if (TIPO_PLANTILLA === 1 && cards.length > 0) {
+      try {
         const deleteResponse = await fetch(`${urlTemplatesGS}tarjetas/plantilla/${talkmeId}`, {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          }
+          headers,
         });
 
         if (!deleteResponse.ok && deleteResponse.status !== 404) {
@@ -786,35 +598,23 @@ export const editTemplateToTalkMe = async (idTemplate, templateData, idNombreUsu
         }
 
         for (const card of cards) {
-
-          await saveCardsTemplate({
-            ID_PLANTILLA: talkmeId,
-            cards: [card]
-          }, idNombreUsuarioTalkMe, urlTemplatesGS);
+          await saveCardsTemplate(
+              { ID_PLANTILLA: talkmeId, cards: [card] },
+              idNombreUsuarioTalkMe,
+              urlTemplatesGS
+          );
         }
-
-        console.log('✅ Tarjetas actualizadas correctamente');
-
       } catch (error) {
-        console.error("❌ Error gestionando tarjetas:", error);
-        console.error("❌ Stack trace:", error.stack);
-        throw error;
+        console.error("Error gestionando tarjetas:", error);
+        return { status: "error", message: "No se pudieron actualizar las tarjetas." };
       }
-    } else {
-      console.log('⏭️ No hay tarjetas que actualizar');
-      console.log('   - talkmeId:', talkmeId);
-      console.log('   - TIPO_PLANTILLA:', TIPO_PLANTILLA);
     }
 
-    console.log('🔵 === FIN: editTemplateToTalkMe - SUCCESS ===');
-    return result;
+    return { status: "success", data: result };
 
   } catch (error) {
-    console.error("❌ Error en editTemplateToTalkMe:", error);
-    console.error("❌ Error name:", error.name);
-    console.error("❌ Error message:", error.message);
-    console.error("❌ Stack trace:", error.stack);
-    return null;
+    console.error("Error en editTemplateToTalkMe:", error);
+    return { status: "error", message: error.message || "Error en la solicitud" };
   }
 };
 
@@ -897,179 +697,6 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
     return null;
   }
 }
-
-export const obtenerOpcionesParametro = async (urlTemplatesGS, idParametro) => {
-  const url = `${urlTemplatesGS}parametros_opciones/parametro/${idParametro}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener opciones del parámetro: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error obteniendo opciones del parámetro", error);
-    return [];
-  }
-};
-
-export const eliminarParametrosYOpciones = async (urlTemplatesGS, idPlantilla) => {
-  const url = `${urlTemplatesGS}parametros/plantilla/${idPlantilla}`;
-
-  try {
-    console.log(`🗑️ Eliminando parámetros y opciones de la plantilla ${idPlantilla}...`);
-    console.log(`🔗 URL completa: ${url}`);
-
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    console.log(`📡 Response status: ${response.status}`);
-    console.log(`📡 Response ok: ${response.ok}`);
-    console.log(`📡 Response statusText: ${response.statusText}`);
-
-    // Leer la respuesta como texto primero para debuggear
-    const responseText = await response.text();
-    console.log(`📄 Response raw text:`, responseText);
-    console.log(`📄 Response length: ${responseText.length}`);
-
-    if (!response.ok) {
-      console.error(`❌ Error del servidor al eliminar`);
-      console.error(`❌ Status: ${response.status}`);
-      console.error(`❌ StatusText: ${response.statusText}`);
-      console.error(`❌ Response body:`, responseText);
-
-      // Intentar parsear el error si es JSON
-      let errorDetails = responseText;
-      try {
-        const errorJson = JSON.parse(responseText);
-        errorDetails = errorJson;
-        console.error(`❌ Error JSON parseado:`, errorJson);
-      } catch (e) {
-        console.error(`❌ La respuesta de error no es JSON válido`);
-      }
-
-      throw new Error(`Error al eliminar: ${response.status} - ${JSON.stringify(errorDetails)}`);
-    }
-
-    // Parsear la respuesta exitosa
-    let data = null;
-    if (responseText && responseText.trim() !== '') {
-      try {
-        data = JSON.parse(responseText);
-        console.log(`✅ Parámetros y opciones eliminados:`, data);
-      } catch (parseError) {
-        console.log(`⚠️ Respuesta exitosa pero no es JSON:`, responseText);
-      }
-    } else {
-      console.log(`✅ Eliminación exitosa (respuesta vacía)`);
-    }
-
-    return data;
-
-  } catch (error) {
-    console.error("❌ Error eliminando parámetros y opciones:", error);
-    console.error("❌ Error name:", error.name);
-    console.error("❌ Error message:", error.message);
-    console.error("❌ Stack trace:", error.stack);
-    throw error;
-  }
-};
-
-export const eliminarOpcionesParametro = async (urlTemplatesGS, idPlantillaParametro) => {
-  const url = `${urlTemplatesGS}parametro/${idPlantillaParametro}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al eliminar opciones: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`Error eliminando opciones del parámetro ${idPlantillaParametro}:`, error);
-    throw error;
-  }
-};
-
-export const obtenerParametrosPorPlantilla = async (urlTemplatesGS, idPlantilla) => {
-  const url = `${urlTemplatesGS}parametros?ID_PLANTILLA=${idPlantilla}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener parámetros: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error obteniendo parámetros de la plantilla:", error);
-    throw error;
-  }
-};
-
-export const eliminarTodasOpciones = async (urlTemplatesGS, idPlantilla) => {
-  try {
-    console.log('🟡 === Eliminando opciones de la plantilla', idPlantilla);
-
-    // 1. Obtener todos los parámetros de la plantilla
-    const parametros = await obtenerParametrosPorPlantilla(urlTemplatesGS, idPlantilla);
-    console.log('📋 Parámetros encontrados:', parametros);
-
-    if (!parametros || parametros.length === 0) {
-      console.log('⚠️ No hay parámetros para eliminar opciones');
-      return [];
-    }
-
-    // 2. Eliminar opciones de CADA parámetro
-    const resultados = [];
-    for (const parametro of parametros) {
-      try {
-        console.log(`🗑️ Eliminando opciones del parámetro ${parametro.ID_PLANTILLA_PARAMETRO}`);
-        const resultado = await eliminarOpcionesParametro(
-          urlTemplatesGS,
-          parametro.ID_PLANTILLA_PARAMETRO  // ✅ AQUÍ VA EL ID DEL PARÁMETRO, NO DE LA PLANTILLA
-        );
-        resultados.push(resultado);
-        console.log(`✅ Opciones eliminadas del parámetro ${parametro.ID_PLANTILLA_PARAMETRO}`);
-      } catch (error) {
-        console.warn(`⚠️ Error eliminando opciones del parámetro ${parametro.ID_PLANTILLA_PARAMETRO}:`, error);
-        // No detener el flujo si falla uno
-      }
-    }
-
-    console.log('🟢 === Opciones eliminadas correctamente');
-    return resultados;
-  } catch (error) {
-    console.error('❌ Error en eliminarTodasOpciones:', error);
-    throw error;
-  }
-};
-
-
 
 export const eliminarParametrosPlantilla = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;

@@ -71,7 +71,6 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
   data.append("enableSample", true);
   data.append("allowTemplateCategoryChange", false);
 
-  // Preparar datos del request para el log
   const requestData = {
     elementName: templateName,
     category: selectedCategory.toUpperCase(),
@@ -89,7 +88,6 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
     allowTemplateCategoryChange: false
   };
 
-  // Crear el JSON completo del request
   const completeRequestLog = {
     metodo: "POST",
     headers: headers,
@@ -122,11 +120,10 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
         console.error("Error response (texto):", errorText);
       }
 
-      // Guardar log de error
       try {
         await guardarLogArchivos({
           NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_CREACION_ERROR",
-          TIPO_LOG: 2, // Error
+          TIPO_LOG: 2,
           URL_PETICION: url,
           PETICION: completeRequestLog,
           RESPUESTA: errorResponse,
@@ -152,11 +149,10 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
 
     const result = await response.json();
 
-    // Guardar log de éxito
     try {
       await guardarLogArchivos({
         NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_CREACION_EXITOSO",
-        TIPO_LOG: 1, // Success
+        TIPO_LOG: 1,
         URL_PETICION: url,
         PETICION: completeRequestLog,
         RESPUESTA: result,
@@ -190,7 +186,6 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
     });
     const endTime = new Date().toISOString();
 
-    // Guardar log de error de excepción
     try {
       await guardarLogArchivos({
         NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_CREACION_EXCEPTION",
@@ -223,10 +218,10 @@ export const createTemplateGupshup = async (appId, authCode, templateData, idNom
   }
 };
 
-export const editTemplateGupshup = async (appId, authCode, templateData, idTemplate, validateFn) => {
-  // Validar campos antes de enviar la solicitud
+export const editTemplateGupshup = async (appId, authCode, templateData, idTemplate, idNombreUsuarioTalkMe, urlTemplatesGS, validateFn) => {
+
   if (validateFn && !validateFn()) {
-    return null; // Detener la ejecución si hay errores
+    return null;
   }
 
   const {
@@ -238,7 +233,6 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
     message,
     example
   } = templateData;
-
 
   const url = `https://partner.gupshup.io/partner/app/${appId}/templates/${idTemplate}`;
   const headers = {
@@ -257,38 +251,99 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
   data.append("enableSample", "true");
   data.append("allowTemplateCategoryChange", "false");
 
+  const requestData = {
+    elementName: templateName,
+    category: selectedCategory.toUpperCase(),
+    languageCode,
+    templateType: templateType.toUpperCase(),
+    vertical,
+    content: message,
+    example,
+    enableSample: true,
+    allowTemplateCategoryChange: false
+  };
 
-  
+  const completeRequestLog = {
+    metodo: "PUT",
+    headers,
+    payload: requestData,
+    url,
+    metadata: {
+      procesoCompleto: true
+    }
+  };
 
+  const startTime = new Date().toISOString();
 
   try {
     const response = await fetch(url, {
       method: "PUT",
-      headers: headers,
+      headers,
       body: data,
     });
 
-    
-    
+    const endTime = new Date().toISOString();
 
     if (!response.ok) {
       const errorText = await response.text();
       let errorResponse;
+
       try {
         errorResponse = JSON.parse(errorText);
+        if (typeof errorResponse === "string") {
+          errorResponse = { message: errorResponse };
+        }
         console.error("Error response (JSON):", errorResponse);
-      } catch (e) {
+      } catch {
         errorResponse = { message: "Error no JSON", raw: errorText };
         console.error("Error response (texto):", errorText);
       }
-      showSnackbar(`❌ Error al crear la plantilla: ${errorResponse.message || "Solicitud inválida"}`, "error");
-      throw new Error(errorResponse.message || "Error al editar la plantilla");
+
+      try {
+        await guardarLogArchivos({
+          NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_ERROR",
+          TIPO_LOG: 2,
+          URL_PETICION: url,
+          PETICION: completeRequestLog,
+          RESPUESTA: errorResponse,
+          INICIO_PETICION: startTime,
+          FIN_PETICION: endTime,
+          CREADO_POR: idNombreUsuarioTalkMe,
+          CLAVE_REGISTRO: idTemplate
+        }, urlTemplatesGS);
+      } catch (logError) {
+        console.error("Error al guardar log de error:", logError);
+      }
+
+      throw new Error(
+          `[${response.status}] ${
+              errorResponse.message ||
+              errorResponse.error ||
+              "Error al editar la plantilla"
+          }`
+      );
     }
 
     const result = await response.json();
-    showSnackbar("✅ Plantilla editada exitosamente", "success");
-    
-    return result; // Retornar el resultado
+
+    try {
+      await guardarLogArchivos({
+        NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_EXITOSO",
+        TIPO_LOG: 1,
+        URL_PETICION: url,
+        PETICION: completeRequestLog,
+        RESPUESTA: result,
+        INICIO_PETICION: startTime,
+        FIN_PETICION: endTime,
+        CREADO_POR: idNombreUsuarioTalkMe,
+        CLAVE_REGISTRO: idTemplate
+      }, urlTemplatesGS);
+    } catch (logError) {
+      console.error("Error al guardar log de éxito:", logError);
+    }
+
+    return result;
+
   } catch (error) {
     console.error("Error en la solicitud:", error);
     console.error("Error detallado:", {
@@ -296,8 +351,30 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
       message: error.message,
       stack: error.stack
     });
-    showSnackbar("❌ Error al crear la plantilla", "error");
-    return null; // Retornar null en caso de error
+
+    const endTime = new Date().toISOString();
+
+    try {
+      await guardarLogArchivos({
+        NOMBRE_EVENTO: "PLANTILLAS_GUPSHUP_EDICION_EXCEPTION",
+        TIPO_LOG: 3,
+        URL_PETICION: url,
+        PETICION: completeRequestLog,
+        RESPUESTA: {
+          error: error.message,
+          name: error.name,
+          stack: error.stack
+        },
+        INICIO_PETICION: startTime,
+        FIN_PETICION: endTime,
+        CREADO_POR: idNombreUsuarioTalkMe,
+        CLAVE_REGISTRO: idTemplate
+      }, urlTemplatesGS);
+    } catch (logError) {
+      console.error("Error al guardar log de excepción:", logError);
+    }
+
+    return null;
   }
 };
 
