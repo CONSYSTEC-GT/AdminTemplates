@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import TemplateFormCatalog from '../components/TemplateFormCatalog';
+import TemplateFormCatalog from '../forms/templates/components/TemplateFormCatalog.jsx';
 
 const CreateTemplateCatalog = () => {
   const navigate = useNavigate();

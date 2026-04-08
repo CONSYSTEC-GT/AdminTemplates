@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import EditTemplateFormFlow from '../components/EditTemplateFormFlow';
+import EditTemplateFormFlow from '../forms/templates/components/EditTemplateFormFlow.jsx';
 
 
 

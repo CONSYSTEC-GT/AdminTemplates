@@ -4,8 +4,8 @@ import { jwtDecode } from 'jwt-decode';
 import { Alert, Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, FormLabel, Typography, TextField, Snackbar, } from '@mui/material';
 import Swal from 'sweetalert2';
 
-import { CustomDialog } from '../utils/CustomDialog';
-import { obtenerApiToken } from '../api/templatesGSApi';
+import { CustomDialog } from '../../utils/CustomDialog.jsx';
+import { obtenerApiToken } from '../../api/templatesGSApi.jsx';
 
 const FileUploadComponent = ({ onUploadSuccess, onImagePreview, onHeaderChange, initialFile = null }) => {
 

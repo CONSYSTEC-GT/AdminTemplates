@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { alpha, Box, Button, Card, CardActions, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, FormControl, FormLabel, Input, InputAdornment, ListItemIcon, ListItemText, InputLabel, Menu, MenuItem, OutlinedInput, Select, Stack, styled, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/common/Sidebar.jsx';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
 
@@ -22,9 +22,9 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 // MODAL PARA ELIMINAR
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
-import CardBase from '../components/CardBase';
-import CardBaseCarousel from '../components/CardBaseCarousel';
-import CardBaseSkeleton from '../components/CardBaseSkeleton';
+import CardBase from '../components/common/CardBase.jsx';
+import CardBaseCarousel from '../components/common/CardBaseCarousel.jsx';
+import CardBaseSkeleton from '../components/common/CardBaseSkeleton.jsx';
 
 import TemplateCardSkeleton from '../utils/SkeletonTemplates';
 import { fetchMergedTemplates } from '../api/templatesServices';
@@ -84,31 +84,31 @@ const TemplateAproved = () => {
   }, [appId, authCode, urlTemplatesGS]);
 
   useEffect(() => {
-      let filtered = [...templates];
-  
-      if (tipoPlantillaFiltro !== 'ALL') {
-        if (tipoPlantillaFiltro === 'FLOW') {
-          filtered = filtered.filter(template => template.gupshup.buttonSupported === 'FLOW');
-        } else {
-          filtered = filtered.filter(template => 
-            template.gupshup.templateType === tipoPlantillaFiltro &&
-            template.gupshup.buttonSupported !== 'FLOW'
-          );
-        }
-      }
-  
-      if (categoriaFiltro && categoriaFiltro !== 'ALL') {
-        filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
-      }
-  
-      if (busquedaFiltro.trim() !== '') {
+    let filtered = [...templates];
+
+    if (tipoPlantillaFiltro !== 'ALL') {
+      if (tipoPlantillaFiltro === 'FLOW') {
+        filtered = filtered.filter(template => template.gupshup.buttonSupported === 'FLOW');
+      } else {
         filtered = filtered.filter(template =>
-          template.gupshup.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
+          template.gupshup.templateType === tipoPlantillaFiltro &&
+          template.gupshup.buttonSupported !== 'FLOW'
         );
       }
-  
-      setFilteredTemplates(filtered);
-    }, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
+    }
+
+    if (categoriaFiltro && categoriaFiltro !== 'ALL') {
+      filtered = filtered.filter(template => template.gupshup.category === categoriaFiltro);
+    }
+
+    if (busquedaFiltro.trim() !== '') {
+      filtered = filtered.filter(template =>
+        template.gupshup.elementName.toLowerCase().includes(busquedaFiltro.toLowerCase())
+      );
+    }
+
+    setFilteredTemplates(filtered);
+  }, [tipoPlantillaFiltro, categoriaFiltro, busquedaFiltro, templates]);
 
   const handleFiltrarTipoPlantilla = (event) => {
     setTipoPlantillaFiltro(event.target.value);
@@ -174,7 +174,7 @@ const TemplateAproved = () => {
         case 'CAROUSEL':
           navigate('/modify-template-carousel', { state: { template } });
           break;
-        case 'CATALOGO':
+        case 'CATALOG':
           navigate('/modify-template-catalogo', { state: { template } });
           break;
         case 'TEXT':

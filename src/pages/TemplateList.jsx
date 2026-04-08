@@ -31,9 +31,9 @@ import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 
 import TemplateCardSkeleton from '../utils/SkeletonTemplates';
-import CardBase from '../components/CardBase';
-import CardBaseCarousel from '../components/CardBaseCarousel';
-import CardBaseSkeleton from '../components/CardBaseSkeleton';
+import CardBase from '../components/common/CardBase.jsx';
+import CardBaseCarousel from '../components/common/CardBaseCarousel.jsx';
+import CardBaseSkeleton from '../components/common/CardBaseSkeleton.jsx';
 
 const TemplateCard = ({ title, subtitle, description, onEdit, onDelete, whatsappStyle }) => (
   <Card
