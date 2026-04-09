@@ -36,7 +36,7 @@ import { v4 as uuidv4 } from "uuid";
 import Swal from "sweetalert2";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { templateFormCarouselSchema } from "../schemas/templateFormCarousel.schema.ts";
+import { templateFormCarouselSchema } from "../schemas/Templateformcarousel.schema.ts";
 
 import { Smile } from "react-feather";
 import EmojiPicker from "emoji-picker-react";
