@@ -31,7 +31,7 @@ import EmojiPicker from "emoji-picker-react";
 import Swal from 'sweetalert2';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { templateFormSchema } from "../schemas/templateForm.schema.ts";
+import { templateFormSchema } from "../schemas/TemplateForm.schema.ts";
 import { buildVariablesObject } from "../schemas/index.js";
 
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -817,7 +817,7 @@ const TemplateFormCatalog = () => {
                                     Agregar Variable
                                 </Button>
                                 {Object.keys(variables).length > 0 && (
-                                    <Button color="error" variant="contained" size="small" startIcon={<ClearIcon />} onClick={deleteAllVariables} sx={{ ml: "auto", borderRadius: 1, textTransform: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", transition: "all 0.2s ease","&:hover": {boxShadow: "0 4px 12px rgba(0,0,0,0.25)",transform: "translateY(-1px)",},}}>
+                                    <Button color="error" variant="contained" size="small" startIcon={<ClearIcon />} onClick={deleteAllVariables} sx={{ ml: "auto", borderRadius: 1, textTransform: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", transition: "all 0.2s ease", "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.25)", transform: "translateY(-1px)", }, }}>
                                         BORRAR TODAS
                                     </Button>
                                 )}
