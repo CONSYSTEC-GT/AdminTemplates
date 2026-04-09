@@ -3,7 +3,7 @@ import {
     templateBaseSchema,
     buttonSchema,
     variablesSchema,
-} from "./template.schema";
+} from "./Template.schema";
 
 export const templateGupshupSchema = templateBaseSchema
     .extend({
@@ -27,8 +27,8 @@ export const templateGupshupSchema = templateBaseSchema
             .optional()
             .default(""),
 
-        mediaId:       z.string().optional().default(""),
-        example:       z.string().optional().default(""),
+        mediaId: z.string().optional().default(""),
+        example: z.string().optional().default(""),
         exampleHeader: z.string().optional().default(""),
 
         buttons: z
@@ -43,8 +43,8 @@ export const templateGupshupSchema = templateBaseSchema
         if (data.templateType !== "text" && data.templateType !== "catalog") {
             if (!data.mediaId || data.mediaId.trim() === "") {
                 ctx.addIssue({
-                    path:    ["mediaId"],
-                    code:    z.ZodIssueCode.custom,
+                    path: ["mediaId"],
+                    code: z.ZodIssueCode.custom,
                     message: "Debes subir un archivo para este tipo de plantilla",
                 });
             }
