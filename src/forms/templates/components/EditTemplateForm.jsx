@@ -262,6 +262,7 @@ const EditTemplateForm = () => {
 
         try {
           const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+          console.log("info", info);
           if (info !== null) {
             const pantallasFromAPI = info.pantallas || "";
             const pantallasArray = pantallasFromAPI.split(',').filter(p => p);
@@ -276,6 +277,7 @@ const EditTemplateForm = () => {
             setMediaURL(info.url || "");
             setImagePreview(info.url || "");
             setIdPlantilla(info.id_plantilla || "");
+            setValue("idPlantilla", info.id_plantilla || "");
           }
         } catch (error) {
           console.error("❌ Error al cargar pantallas/media:", error);
@@ -937,28 +939,29 @@ const EditTemplateForm = () => {
       <Grid item xs={8}>
         <Box sx={{ height: '100%', overflowY: 'auto', pr: 2 }}>
 
-          {/* Template Name - DESHABILITADO */}
-          <Box sx={{ width: "100%", marginTop: 2, p: 4, border: "1px solid #ddd", borderRadius: 2 }}>
-            <FormControl fullWidth>
-              <FormLabel htmlFor="template-name-input">
-                *Nombre de la plantilla
-              </FormLabel>
-              <Controller
-                name="templateName"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    id="template-name-input"
-                    {...field}
-                    fullWidth
-                    disabled
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message ?? "El nombre no se puede modificar"}
-                  />
-                )}
-              />
-            </FormControl>
+          <Box sx={{ mt: 2, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2, }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", }, gap: 2, }}>
+              <Box>
+                <Typography variant="body1" color="textSecondary">
+                  Nombre de la plantilla
+                </Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  {watch("templateName") || "-"}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="body1" color="textSecondary">
+                  ID
+                </Typography>
+                <Typography variant="body2">
+                  {watch("idPlantilla") || "-"}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
+
+
 
           {/* Categoría - DESHABILITADA */}
           <Box sx={{ maxWidth: '100%', border: "1px solid #ddd", borderRadius: 2, marginTop: 2, p: 3 }}>
@@ -1036,9 +1039,6 @@ const EditTemplateForm = () => {
             <FormControl fullWidth error={pantallasError}>
               <FormLabel>
                 Aplicar en estas pantallas
-                <Typography component="span" variant="caption" sx={{ ml: 1, color: "text.secondary" }}>
-                  (Este cambio solo afecta a TalkMe, no a Gupshup)
-                </Typography>
               </FormLabel>
             </FormControl>
             <FormControl fullWidth sx={{ mt: 1 }} error={pantallasError}>
