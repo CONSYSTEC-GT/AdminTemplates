@@ -1,171 +1,56 @@
-import React, { Suspense } from 'react';
+// routes/index.jsx (o AppRoutes.jsx)
+import React, { lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import TemplateList from './pages/TemplateList';
-import CreateTemplatePage from './pages/CreateTemplatePage';
-import CreateTemplateCatalog from './pages/CreateTemplateCatalog';
-import CreateTemplateCarousel from './pages/CreateTemplateCarousel';
-import CreateTemplateFlow from './pages/CreateTemplateFlow';
-import EditTemplatePage from './pages/EditTemplatePage';
-import TemplateAll from './pages/TemplateAll';
-import TemplateAproved from './pages/TemplateAproved';
-import TemplateRejected from './pages/TemplateRejected';
-import TemplateFailed from './pages/TemplateFailed';
-import TemplateSend from './pages/TemplateSend';
-import ModifyTemplatePage from './pages/ModifyTemplatePage';
-import ModifyTemplateCarouselPage from './pages/ModifyTemplateCarouselPage';
-import ModifyTemplateCatalogPage from './pages/ModifyTemplateCatalogPage';
-import ModifyTemplateFlowPage from './pages/ModifyTemplateFlowPage';
-import Sidebar from './components/Sidebar';
-import ProtectedRoute from './utils/ProtectedRoute';
-import LoginRequired from './pages/LoginRequired';
-import SessionClose from './pages/SessionClose';
-import LoadingSpinner from './utils/LoadingSpinner';
+import SidebarLayout from '../src/components/SidebarLayout';
+import ProtectedRoute from '../src/utils/ProtectedRoute';
+import LoginRequired from '../src/pages/LoginRequired';
+import SessionClose from '../src/pages/SessionClose';
+
+const TemplateList = lazy(() => import('../src/pages/TemplateList'));
+const CreateTemplatePage = lazy(() => import('../src/pages/CreateTemplatePage'));
+const CreateTemplateCatalog = lazy(() => import('../src/pages/CreateTemplateCatalog'));
+const CreateTemplateCarousel = lazy(() => import('../src/pages/CreateTemplateCarousel'));
+const CreateTemplateFlow = lazy(() => import('../src/pages/CreateTemplateFlow'));
+const EditTemplatePage = lazy(() => import('../src/pages/EditTemplatePage'));
+const TemplateAll = lazy(() => import('../src/pages/TemplateAll'));
+const TemplateAproved = lazy(() => import('../src/pages/TemplateAproved'));
+const TemplateRejected = lazy(() => import('../src/pages/TemplateRejected'));
+const TemplateFailed = lazy(() => import('../src/pages/TemplateFailed'));
+const TemplateSend = lazy(() => import('../src/pages/TemplateSend'));
+const ModifyTemplatePage = lazy(() => import('../src/pages/ModifyTemplatePage'));
+const ModifyTemplateCarouselPage = lazy(() => import('../src/pages/ModifyTemplateCarouselPage'));
+const ModifyTemplateCatalogPage = lazy(() => import('../src/pages/ModifyTemplateCatalogPage'));
+const ModifyTemplateFlowPage = lazy(() => import('../src/pages/ModifyTemplateFlowPage'));
 
 const AppRoutes = () => {
   return (
-    <>
-      
-      <Suspense fallback={<LoadingSpinner />}>
+    <Routes>
+      {/* Rutas públicas */}
+      <Route path="/login-required" element={<LoginRequired />} />
+      <Route path="/session-closed" element={<SessionClose />} />
 
-      <Routes>
-        {/* Ruta pública para la página de error */}
-        <Route path="/login-required" element={<LoginRequired />} />
-        <Route path="/session-closed" element={<SessionClose />} />
-
-        {/* Rutas protegidas */}
-        <Route element={<Sidebar />}>
-          <Route
-            index
-            element={
-              <ProtectedRoute>
-                <TemplateList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <TemplateList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/CreateTemplatePage/CreateTemplatePage"
-            element={
-              <ProtectedRoute>
-                <CreateTemplatePage />
-              </ProtectedRoute>
-            }
-          />
-            <Route
-              path="/CreateTemplatePage/CreateTemplateCatalog"
-              element={
-                <ProtectedRoute>
-                  <CreateTemplateCatalog />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/CreateTemplatePage/CreateTemplateCarousel"
-              element={
-                <ProtectedRoute>
-                  <CreateTemplateCarousel />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/CreateTemplatePage/CreateTemplateFlow"
-              element={
-                <ProtectedRoute>
-                  <CreateTemplateFlow />
-                </ProtectedRoute>
-              }
-            />
-          <Route
-            path="/edit-template"
-            element={
-              <ProtectedRoute>
-                <EditTemplatePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/modify-template"
-            element={
-              <ProtectedRoute>
-                <ModifyTemplatePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/modify-template-carousel"
-            element={
-              <ProtectedRoute>
-                <ModifyTemplateCarouselPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/modify-template-catalogo"
-            element={
-              <ProtectedRoute>
-                <ModifyTemplateCatalogPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/modify-template-flow"
-            element={
-              <ProtectedRoute>
-                <ModifyTemplateFlowPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plantillas/todas"
-            element={
-              <ProtectedRoute>
-                <TemplateAll />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plantillas/aprobadas"
-            element={
-              <ProtectedRoute>
-                <TemplateAproved />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plantillas/rechazadas"
-            element={
-              <ProtectedRoute>
-                <TemplateRejected />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plantillas/fallidas"
-            element={
-              <ProtectedRoute>
-                <TemplateFailed />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plantillas/enviadas"
-            element={
-              <ProtectedRoute>
-                <TemplateSend />
-              </ProtectedRoute>
-            }
-          />
+      {/* Rutas protegidas con layout */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<SidebarLayout />}>
+          <Route index element={<TemplateList />} />
+          <Route path="/dashboard" element={<TemplateList />} />
+          <Route path="/CreateTemplatePage/CreateTemplatePage" element={<CreateTemplatePage />} />
+          <Route path="/CreateTemplatePage/CreateTemplateCatalog" element={<CreateTemplateCatalog />} />
+          <Route path="/CreateTemplatePage/CreateTemplateCarousel" element={<CreateTemplateCarousel />} />
+          <Route path="/CreateTemplatePage/CreateTemplateFlow" element={<CreateTemplateFlow />} />
+          <Route path="/edit-template" element={<EditTemplatePage />} />
+          <Route path="/modify-template" element={<ModifyTemplatePage />} />
+          <Route path="/modify-template-carousel" element={<ModifyTemplateCarouselPage />} />
+          <Route path="/modify-template-catalogo" element={<ModifyTemplateCatalogPage />} />
+          <Route path="/modify-template-flow" element={<ModifyTemplateFlowPage />} />
+          <Route path="/plantillas/todas" element={<TemplateAll />} />
+          <Route path="/plantillas/aprobadas" element={<TemplateAproved />} />
+          <Route path="/plantillas/rechazadas" element={<TemplateRejected />} />
+          <Route path="/plantillas/fallidas" element={<TemplateFailed />} />
+          <Route path="/plantillas/enviadas" element={<TemplateSend />} />
         </Route>
-      </Routes>
-      </Suspense>
-    </>
+      </Route>
+    </Routes>
   );
 };
 
