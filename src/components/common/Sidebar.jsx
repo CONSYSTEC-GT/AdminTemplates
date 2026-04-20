@@ -6,6 +6,8 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { useTheme } from '@mui/material/styles';
 import { IconButton, Tooltip } from '@mui/material';
 import Swal from 'sweetalert2';
+import { Suspense } from 'react';
+import LoadingSpinner from '../utils/LoadingSpinner';
 
 // Iconos
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -114,31 +116,31 @@ export default function Sidebar(props) {
   const location = useLocation();
   const navigate = useNavigate();
 
-const handleLogout = () => {
-  Swal.fire({
-    title: 'Cerrar sesión',
-    text: "¿Estás seguro que deseas salir?",
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#00c3ff',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Sí, cerrar sesión',
-    cancelButtonText: 'Cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-     
-      Swal.fire({
-        title: '¡Sesión cerrada!',
-        text: 'Has cerrado sesión exitosamente',
-        icon: 'success',
-        timer: 750,
-        showConfirmButton: false
-      }).then(() => {
-        navigate('/session-closed');
-      });
-    }
-  });
-};
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'Cerrar sesión',
+      text: "¿Estás seguro que deseas salir?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#00c3ff',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+
+        Swal.fire({
+          title: '¡Sesión cerrada!',
+          text: 'Has cerrado sesión exitosamente',
+          icon: 'success',
+          timer: 750,
+          showConfirmButton: false
+        }).then(() => {
+          navigate('/session-closed');
+        });
+      }
+    });
+  };
 
   // Determina si el menú está seleccionado basado en la ruta actual
   const isSelected = (segment) => {
@@ -214,7 +216,9 @@ const handleLogout = () => {
           ),
         }}
       >
-        <Outlet />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Outlet />
+        </Suspense>
       </DashboardLayout>
     </AppProvider>
   );

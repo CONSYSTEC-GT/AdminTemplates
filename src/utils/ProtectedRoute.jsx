@@ -1,35 +1,27 @@
 import React from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = () => {
   const location = useLocation();
 
   const isLocalDevelopment = process.env.NODE_ENV === 'development' &&
     (window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1');
 
-  if (isLocalDevelopment) {
-    return children;
-  }
+  if (isLocalDevelopment) return <Outlet />;
 
   const token = sessionStorage.getItem('authToken');
-
-  if (!token) {
-    return <Navigate to="/login-required" state={{ from: location }} replace />;
-  }
+  if (!token) return <Navigate to="/login-required" state={{ from: location }} replace />;
 
   try {
     const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-
-    if (decoded.exp < currentTime) {
+    if (decoded.exp < Date.now() / 1000) {
       sessionStorage.removeItem('authToken');
       return <Navigate to="/login-required" state={{ from: location }} replace />;
     }
-
-    return children;
-  } catch (error) {
+    return <Outlet />;
+  } catch {
     sessionStorage.removeItem('authToken');
     return <Navigate to="/login-required" state={{ from: location }} replace />;
   }
