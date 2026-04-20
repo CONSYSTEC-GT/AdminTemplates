@@ -1,28 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2'
 
-import LoginRequired from './LoginRequired';
 import { fetchMergedTemplates } from '../api/templatesServices';
 
-import { alpha, Card, CardContent, Typography, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Button, ListItemIcon, ListItemText, Grid, Box, Menu, MenuItem, Stack, TextField, Paper, styled } from '@mui/material';
-import { CircularProgress } from '@mui/material';
+import { Card, CardContent, Typography, Fade, Button, ListItemIcon, ListItemText, Box, Menu, MenuItem, Paper } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import Link from '@mui/icons-material/Link';
-import Phone from '@mui/icons-material/Phone';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import ErrorIcon from '@mui/icons-material/Error';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import CategoryIcon from '@mui/icons-material/Category';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -30,7 +19,6 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 
-import TemplateCardSkeleton from '../utils/SkeletonTemplates';
 import CardBase from '../components/CardBase';
 import CardBaseCarousel from '../components/CardBaseCarousel';
 import CardBaseSkeleton from '../components/CardBaseSkeleton';
@@ -87,26 +75,29 @@ export default function BasicCard() {
 
   const [isSupportMode, setIsSupportMode] = useState(false);
 
-  const token = sessionStorage.getItem('authToken');
+  const { appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP, } = useMemo(() => {
+    const token = sessionStorage.getItem('authToken');
+    if (!token) return {};
 
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
-  if (token) {
     try {
       const decoded = jwtDecode(token);
-      appId = decoded.app_id;
-      authCode = decoded.auth_code;
-      appName = decoded.app_name;
-      idUsuarioTalkMe = decoded.id_usuario;
-      idNombreUsuarioTalkMe = decoded.nombre_usuario;
-      empresaTalkMe = decoded.empresa;
-      idBotRedes = decoded.id_bot_redes;
-      idBot = decoded.id_bot;
-      urlTemplatesGS = decoded.urlTemplatesGS;
-      urlWsFTP = decoded.urlWsFTP;
+      return {
+        appId: decoded.app_id,
+        authCode: decoded.auth_code,
+        appName: decoded.app_name,
+        idUsuarioTalkMe: decoded.id_usuario,
+        idNombreUsuarioTalkMe: decoded.nombre_usuario,
+        empresaTalkMe: decoded.empresa,
+        idBotRedes: decoded.id_bot_redes,
+        idBot: decoded.id_bot,
+        urlTemplatesGS: decoded.urlTemplatesGS,
+        urlWsFTP: decoded.urlWsFTP,
+      };
     } catch (error) {
       console.error('Error decodificando el token:', error);
+      return {};
     }
-  }
+  }, []);
 
   const obtenerTemplatesMerge = async () => {
     try {
@@ -118,30 +109,26 @@ export default function BasicCard() {
   };
 
   useEffect(() => {
-    if (appId && authCode && urlTemplatesGS) {
-      setLoading(true);
-      obtenerTemplatesMerge()
-        .then(data => {
-          setTemplates(data);
-          setLoading(false);
-        });
-    } else {
-      console.error('No se encontró appId o authCode en el token');
-    }
-  }, [appId, authCode]);
-  //
-  useEffect(() => {
-  const handleKeyPress = (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
-      e.preventDefault();
-      setIsSupportMode(prev => !prev);
-      console.log('Modo soporte:', !isSupportMode);
-    }
-  };
+    if (!appId || !authCode || !urlTemplatesGS) return;
+    setLoading(true);
+    obtenerTemplatesMerge().then(data => {
+      setTemplates(data);
+      setLoading(false);
+    });
+  }, [appId, authCode, urlTemplatesGS]);
 
-  window.addEventListener('keydown', handleKeyPress);
-  return () => window.removeEventListener('keydown', handleKeyPress);
-}, [isSupportMode]);
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        setIsSupportMode(prev => !prev);
+        console.log('Modo soporte:', !isSupportMode);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isSupportMode]);
 
 
   const getStatusColor = (status) => {

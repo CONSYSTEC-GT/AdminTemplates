@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import AppRoutes from './routes';
 import LoadingSpinner from './utils/LoadingSpinner';
 import SessionManager from './hooks/SessionManager';
+import { RouteProvider } from './contexts/RouteContext';
 
 function App() {
   const location = useLocation();
@@ -20,58 +21,58 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-  const checkToken = async () => {
-    const searchParams = new URLSearchParams(location.search);
-    const urlToken = searchParams.get('token');
-    const storedToken = sessionStorage.getItem('authToken');
-    
-    // Si no hay token en absoluto
-    if (!urlToken && !storedToken) {
-      navigate('/login-required');
-      return;
-    }
+    const checkToken = async () => {
+      const searchParams = new URLSearchParams(location.search);
+      const urlToken = searchParams.get('token');
+      const storedToken = sessionStorage.getItem('authToken');
 
-    try {
-      // Usar token de URL si existe, sino el almacenado
-      const tokenToValidate = urlToken || storedToken;
-      const decoded = jwtDecode(tokenToValidate);
-      const currentTime = Date.now() / 1000;
-
-      // Token expirado
-      if (decoded.exp < currentTime) {
-        cleanStorageAndRedirect();
+      // Si no hay token en absoluto
+      if (!urlToken && !storedToken) {
+        navigate('/login-required');
         return;
       }
 
-      // Si hay nuevo token de URL, actualizar storage
-      if (urlToken && urlToken !== storedToken) {
-        sessionStorage.setItem('authToken', urlToken);
-        
-        const remainingTimeInSeconds = decoded.exp - currentTime;
-        const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
-        
-        sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly.toString());
-        
-        // Limpiar token de la URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+      try {
+        // Usar token de URL si existe, sino el almacenado
+        const tokenToValidate = urlToken || storedToken;
+        const decoded = jwtDecode(tokenToValidate);
+        const currentTime = Date.now() / 1000;
+
+        // Token expirado
+        if (decoded.exp < currentTime) {
+          cleanStorageAndRedirect();
+          return;
+        }
+
+        // Si hay nuevo token de URL, actualizar storage
+        if (urlToken && urlToken !== storedToken) {
+          sessionStorage.setItem('authToken', urlToken);
+
+          const remainingTimeInSeconds = decoded.exp - currentTime;
+          const remainingMinutesOnly = Math.floor(remainingTimeInSeconds / 60);
+
+          sessionStorage.setItem('initialRemainingMinutes', remainingMinutesOnly.toString());
+
+          // Limpiar token de la URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        setIsLoading(false);
+
+      } catch (error) {
+        console.error('Error procesando token:', error);
+        cleanStorageAndRedirect();
       }
+    };
 
-      setIsLoading(false);
-      
-    } catch (error) {
-      console.error('Error procesando token:', error);
-      cleanStorageAndRedirect();
-    }
-  };
+    const cleanStorageAndRedirect = () => {
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('initialRemainingMinutes');
+      navigate('/login-required');
+    };
 
-  const cleanStorageAndRedirect = () => {
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('initialRemainingMinutes');
-    navigate('/login-required');
-  };
-
-  checkToken();
-}, [location.search, navigate]);
+    checkToken();
+  }, [location.search, navigate]);
 
 
   const theme = useMemo(() =>
@@ -99,10 +100,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SessionManager />
-      <Box sx={{ display: "flex" }}>
-        <AppRoutes />
-      </Box>
+      <RouteProvider>
+        <SessionManager />
+        <Box sx={{ display: "flex" }}>
+          <AppRoutes />
+        </Box>
+      </RouteProvider>
     </ThemeProvider>
   );
 }
