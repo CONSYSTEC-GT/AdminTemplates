@@ -117,6 +117,9 @@ const EditTemplateCatalogForm = () => {
   const [pantallasError, setPantallasError] = useState(false);
   const [pantallasHelperText, setPantallasHelperText] = useState("");
 
+  const [originalHeaderEmpty, setOriginalHeaderEmpty] = useState(false);
+  const [originalFooterEmpty, setOriginalFooterEmpty] = useState(false);
+
   const messageRef = useRef(null);
   const emojiPickerRef = useRef(null);
 
@@ -170,6 +173,9 @@ const EditTemplateCatalogForm = () => {
             setValue("message", meta.data || "", { shouldValidate: false });
             setValue("header", meta.header || "", { shouldValidate: false });
             setValue("footer", meta.footer || "", { shouldValidate: false });
+
+            setOriginalHeaderEmpty(!meta.header);
+            setOriginalFooterEmpty(!meta.footer);
 
             if (meta.sampleMedia && isValidSampleMedia(meta.sampleMedia)) {
               setValue("mediaId", meta.sampleMedia, { shouldValidate: false });
@@ -838,6 +844,7 @@ const EditTemplateCatalogForm = () => {
                 <TextField
                   {...field}
                   fullWidth
+                  disabled={originalHeaderEmpty}
                   label="Escribe el encabezado"
                   onChange={(e) => {
                     if (e.target.value.length <= CHAR_LIMIT) {
@@ -989,15 +996,6 @@ const EditTemplateCatalogForm = () => {
                     <Smile size={20} />
                   </IconButton>
                 </Tooltip>
-                <Divider orientation="vertical" flexItem />
-                <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleAddVariable} sx={{ borderRadius: 1 }}>
-                  Agregar Variable
-                </Button>
-                {Object.keys(watchedVariables).length > 0 && (
-                  <Button color="error" variant="contained" size="small" startIcon={<ClearIcon />} onClick={deleteAllVariables} sx={{ ml: "auto", borderRadius: 1 }}>
-                    BORRAR TODAS
-                  </Button>
-                )}
               </Stack>
 
               {/* Emoji Picker */}
@@ -1019,8 +1017,6 @@ const EditTemplateCatalogForm = () => {
                         label={variable}
                         color="primary"
                         sx={{ fontWeight: "500" }}
-                        deleteIcon={<Tooltip title="Borrar variable"><DeleteIcon /></Tooltip>}
-                        onDelete={() => deleteVariable(variable)}
                       />
                       <Stack sx={{ flexGrow: 1, gap: 1 }}>
                         <TextField
@@ -1060,6 +1056,7 @@ const EditTemplateCatalogForm = () => {
                 <TextField
                   {...field}
                   fullWidth
+                  disabled={originalFooterEmpty}
                   sx={{ mt: 1, mb: 3 }}
                   onChange={(e) => {
                     if (e.target.value.length <= CHAR_LIMIT) {
