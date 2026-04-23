@@ -1183,15 +1183,6 @@ const EditTemplateFormCarousel = () => {
                     <Smile size={20} />
                   </IconButton>
                 </Tooltip>
-                <Divider orientation="vertical" flexItem />
-                <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleAddVariable} sx={{ borderRadius: 1 }}>
-                  Agregar Variable
-                </Button>
-                {Object.keys(watchedVariables).length > 0 && (
-                  <Button color="error" variant="contained" size="small" startIcon={<ClearIcon />} onClick={deleteAllVariables} sx={{ ml: "auto", borderRadius: 1 }}>
-                    BORRAR TODAS
-                  </Button>
-                )}
               </Stack>
 
               {showEmojiPicker && (
@@ -1205,7 +1196,7 @@ const EditTemplateFormCarousel = () => {
                   <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>Agrega una descripción y un ejemplo a tu variable:</Typography>
                   {Object.entries(watchedVariables).map(([variable, value]) => (
                     <Box key={variable} sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, mb: 2, p: 1.5, backgroundColor: "#fff", borderRadius: 1, border: "1px solid #e0e0e0" }}>
-                      <Chip label={variable} color="primary" sx={{ fontWeight: "500" }} deleteIcon={<Tooltip title="Borrar variable"><DeleteIcon /></Tooltip>} onDelete={() => deleteVariable(variable)} />
+                      <Chip label={variable} color="primary" sx={{ fontWeight: "500" }} />
                       <Stack sx={{ flexGrow: 1, gap: 1 }}>
                         <TextField size="small" label="Descripción" placeholder="¿Para qué sirve esta variable?" value={value?.description ?? ""} onChange={(e) => handleUpdateDescriptions(variable, e.target.value)} error={!!errors.variables?.[variable]?.description} helperText={errors.variables?.[variable]?.description?.message ?? ""} />
                         <TextField size="small" label="Texto de ejemplo" value={value?.example ?? ""} onChange={(e) => handleUpdateExample(variable, e.target.value)} error={!!errors.variables?.[variable]?.example} helperText={errors.variables?.[variable]?.example?.message ?? ""} />
@@ -1240,7 +1231,7 @@ const EditTemplateFormCarousel = () => {
                 name="cantidadBotones"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} select label="Cantidad de botones" fullWidth onChange={handleCantidadChange}>
+                  <TextField {...field} select label="Cantidad de botones" fullWidth disabled onChange={handleCantidadChange}>
                     <MenuItem value={1}>1</MenuItem>
                     <MenuItem value={2}>2</MenuItem>
                   </TextField>
@@ -1250,7 +1241,7 @@ const EditTemplateFormCarousel = () => {
                 name="tipoBoton"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} select label="Tipo de botones" fullWidth onChange={handleTipoBotonChange}>
+                  <TextField {...field} select label="Tipo de botones" fullWidth disabled onChange={handleTipoBotonChange}>
                     <MenuItem value="QUICK_REPLY">Respuesta rápida</MenuItem>
                     <MenuItem value="URL">Link</MenuItem>
                     <MenuItem value="PHONE_NUMBER">Teléfono</MenuItem>
@@ -1273,9 +1264,7 @@ const EditTemplateFormCarousel = () => {
                                   <DragIndicatorIcon sx={{ mr: 1, color: 'text.secondary' }} />
                                   <Typography>Tarjeta {index + 1}</Typography>
                                 </Box>
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); deleteCard(card.id); }} sx={{ ml: 2 }}>
-                                  <DeleteIcon />
-                                </IconButton>
+                                {/* Botón eliminar tarjeta inhabilitado */}
                               </AccordionSummary>
                               <AccordionDetails>
                                 <Box component="form" sx={{ '& .MuiTextField-root': { mb: 2, width: '100%' } }}>
@@ -1305,15 +1294,6 @@ const EditTemplateFormCarousel = () => {
                                           <Smile size={20} />
                                         </IconButton>
                                       </Tooltip>
-                                      <Divider orientation="vertical" flexItem />
-                                      <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleAddVariableCard(card.id)} sx={{ borderRadius: 1 }}>
-                                        Agregar Variable
-                                      </Button>
-                                      {(card.variablesCard?.length > 0) && (
-                                        <Button color="error" variant="outlined" size="small" startIcon={<ClearIcon />} onClick={() => deleteAllVariablesCard(card.id)} sx={{ ml: "auto", borderRadius: 1 }}>
-                                          Borrar todas
-                                        </Button>
-                                      )}
                                     </Stack>
 
                                     {showEmojiPickerCards && currentEmojiCardId === card.id && (
@@ -1327,7 +1307,7 @@ const EditTemplateFormCarousel = () => {
                                         <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>Agrega una descripción y un ejemplo a tu variable:</Typography>
                                         {card.variablesCard.map((variableCard, idx) => (
                                           <Box key={idx} sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2, p: 1.5, backgroundColor: "#fff", borderRadius: 1, border: "1px solid #e0e0e0" }}>
-                                            <Chip label={variableCard} color="primary" sx={{ fontWeight: "500" }} deleteIcon={<Tooltip title="Borrar variable"><DeleteIcon /></Tooltip>} onDelete={() => deleteVariableCard(card.id, variableCard)} />
+                                            <Chip label={variableCard} color="primary" sx={{ fontWeight: "500" }} />
                                             <Stack sx={{ flexGrow: 1, gap: 1 }}>
                                               <TextField size="small" label="Descripción" placeholder="¿Para qué sirve esta variable?" value={card.variableDescriptions?.[variableCard] || ''} onChange={(e) => handleUpdateDescriptionsCard(card.id, variableCard, e.target.value)} />
                                               <TextField size="small" label="Texto de ejemplo" value={card.variableExamples?.[variableCard] || ''} onChange={(e) => handleUpdateExampleCard(card.id, variableCard, e.target.value)} />
@@ -1368,9 +1348,7 @@ const EditTemplateFormCarousel = () => {
               </Droppable>
             </DragDropContext>
 
-            <Button variant="contained" startIcon={<AddIcon />} onClick={addCard} sx={{ mt: 2 }}>
-              Añadir tarjeta
-            </Button>
+            {/* Se ha deshabilitado el componente añadir tarjeta */}
           </Box>
 
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2, mb: 20 }}>

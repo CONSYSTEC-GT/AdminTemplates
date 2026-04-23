@@ -129,6 +129,11 @@ const EditTemplateForm = () => {
   const [pantallasError, setPantallasError] = useState(false);
   const [pantallasHelperText, setPantallasHelperText] = useState("");
 
+  // Estados de bloqueo de edición
+  const [originalHeaderEmpty, setOriginalHeaderEmpty] = useState(false);
+  const [originalFooterEmpty, setOriginalFooterEmpty] = useState(false);
+  const [originalButtonsEmpty, setOriginalButtonsEmpty] = useState(false);
+
   const messageRef = useRef(null);
   const emojiPickerRef = useRef(null);
 
@@ -203,6 +208,9 @@ const EditTemplateForm = () => {
             setValue("message", meta.data || "", { shouldValidate: false });
             setValue("header", meta.header || "", { shouldValidate: false });
             setValue("footer", meta.footer || "", { shouldValidate: false });
+            
+            setOriginalHeaderEmpty(!meta.header);
+            setOriginalFooterEmpty(!meta.footer);
 
             if (meta.sampleMedia && isValidSampleMedia(meta.sampleMedia)) {
               setValue("mediaId", meta.sampleMedia, { shouldValidate: false });
@@ -210,7 +218,8 @@ const EditTemplateForm = () => {
               setValue("mediaId", "", { shouldValidate: false });
             }
 
-            if (meta.buttons && Array.isArray(meta.buttons)) {
+            if (meta.buttons && Array.isArray(meta.buttons) && meta.buttons.length > 0) {
+              setOriginalButtonsEmpty(false);
               if (isFlow) {
                 const flowButton = meta.buttons[0];
                 setValue("buttons", [{
@@ -252,8 +261,10 @@ const EditTemplateForm = () => {
                 flow_action: "NAVIGATE",
                 navigate_screen: "",
               }], { shouldValidate: false });
+              setOriginalButtonsEmpty(true);
             } else {
               setValue("buttons", [], { shouldValidate: false });
+              setOriginalButtonsEmpty(true);
             }
           } catch (error) {
             console.error("❌ Error al parsear containerMeta:", error);
@@ -1082,6 +1093,7 @@ const EditTemplateForm = () => {
                     {...field}
                     fullWidth
                     label="Escribe el encabezado"
+                    disabled={originalHeaderEmpty}
                     onChange={(e) => {
                       if (e.target.value.length <= CHAR_LIMIT) {
                         field.onChange(e.target.value);
@@ -1172,6 +1184,7 @@ const EditTemplateForm = () => {
                     label="Escribe"
                     placeholder="Ingresa el contenido de tu mensaje aquí..."
                     inputRef={messageRef}
+                    disabled={isFlowTemplate}
                     error={!!fieldState.error}
                     onChange={(e) => {
                       let newText = e.target.value;
@@ -1248,15 +1261,6 @@ const EditTemplateForm = () => {
                     <Smile size={20} />
                   </IconButton>
                 </Tooltip>
-                <Divider orientation="vertical" flexItem />
-                <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleAddVariable} sx={{ borderRadius: 1 }}>
-                  Agregar Variable
-                </Button>
-                {Object.keys(watchedVariables).length > 0 && (
-                  <Button color="error" variant="contained" size="small" startIcon={<ClearIcon />} onClick={deleteAllVariables} sx={{ ml: "auto", borderRadius: 1 }}>
-                    BORRAR TODAS
-                  </Button>
-                )}
               </Stack>
 
               {/* Emoji Picker */}
@@ -1278,8 +1282,6 @@ const EditTemplateForm = () => {
                         label={variable}
                         color="primary"
                         sx={{ fontWeight: "500" }}
-                        deleteIcon={<Tooltip title="Borrar variable"><DeleteIcon /></Tooltip>}
-                        onDelete={() => deleteVariable(variable)}
                       />
                       <Stack sx={{ flexGrow: 1, gap: 1 }}>
                         <TextField
@@ -1319,6 +1321,7 @@ const EditTemplateForm = () => {
                 <TextField
                   {...field}
                   fullWidth
+                  disabled={originalFooterEmpty}
                   sx={{ mt: 1, mb: 3 }}
                   onChange={(e) => {
                     if (e.target.value.length <= CHAR_LIMIT) {
@@ -1367,9 +1370,10 @@ const EditTemplateForm = () => {
                           {...titleField}
                           label="Texto del botón"
                           fullWidth
+                          disabled
                           inputProps={{ maxLength: 25 }}
                           error={!!fieldState.error}
-                          helperText={fieldState.error?.message ?? `${titleField.value?.length || 0}/25 caracteres`}
+                          helperText={fieldState.error?.message ?? "El texto del botón no se puede modificar"}
                         />
                       )}
                     />
@@ -1391,12 +1395,13 @@ const EditTemplateForm = () => {
                   component="span"
                   startIcon={<AccountTreeIcon />}
                   size="large"
+                  disabled
                   onClick={() => setIsSelectorOpen(true)}
                   sx={{
                     minHeight: 56,
                     borderRadius: 2,
                     textTransform: 'none',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
                   }}
                 >
                   {selectedFlow ? 'Cambiar Flow' : 'Seleccionar Flow'}
@@ -1594,15 +1599,7 @@ const EditTemplateForm = () => {
               </FormControl>
               <FormHelperText>Elija los botones que se agregarán. Puede elegir hasta 10 botones.</FormHelperText>
 
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={addButton}
-                disabled={buttonFields.length >= MAX_BUTTONS}
-                sx={{ mt: 3, mb: 3 }}
-              >
-                Agregar botón
-              </Button>
+              {/* Se ha deshabilitado la capacidad de agregar nuevos botones en la edición */}
 
               <Stack spacing={2}>
                 {buttonFields.map((button, index) => (
@@ -1640,6 +1637,7 @@ const EditTemplateForm = () => {
                         <Select
                           {...field}
                           sx={{ minWidth: 150 }}
+                          disabled={true} // Bloqueado para que no cambien el tipo en edición
                           onChange={(e) => {
                             field.onChange(e.target.value);
                             if (e.target.value === "URL") {
@@ -1694,9 +1692,7 @@ const EditTemplateForm = () => {
                       {button.type === "PHONE_NUMBER" && <Phone />}
                     </Box>
 
-                    <IconButton color="error" onClick={() => handleRemoveButton(index)} sx={{ alignSelf: "center", pb: 4 }}>
-                      <Delete />
-                    </IconButton>
+                    {/* Botón de eliminar inhabilitado */}
                   </Box>
                 ))}
               </Stack>
