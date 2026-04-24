@@ -154,13 +154,10 @@ const EditTemplateCatalogForm = () => {
   const watchedFooter = watch("footer");
   const watchedVariables = watch("variables") ?? {};
 
-  // Cargar datos iniciales desde templateData
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
-        console.log("templateData: ", templateData);
 
-        // Campos deshabilitados - no se pueden cambiar
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
         setValue("selectedCategory", templateData.category || "", { shouldValidate: false });
         setValue("templateType", "CATALOG", { shouldValidate: false });
@@ -464,25 +461,16 @@ const EditTemplateCatalogForm = () => {
   };
 
   const onSubmit = async (formData) => {
-    console.log("🚀🚀🚀 FUNCIÓN onSubmit EJECUTADA 🚀🚀🚀");
-    console.log("formData recibido:", formData);
-    console.log("pantallasState:", pantallasState);
-    console.log("pantallasIniciales:", pantallasIniciales);
 
     if (loading) return;
     setLoading(true);
-
-    // === VALIDACIÓN COMÚN: Pantallas ===
     if (pantallasState.length === 0) {
-      console.log("❌ Validación fallida: No hay pantallas seleccionadas");
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       setLoading(false);
       return;
     }
-    console.log("✅ Pantallas seleccionadas:", pantallasState);
 
-    // === DETECCIÓN TEMPRANA: ¿Solo cambiaron las pantallas? ===
     const pantallasModificadas =
       JSON.stringify([...pantallasState].sort()) !==
       JSON.stringify([...pantallasIniciales].sort());
@@ -512,20 +500,6 @@ const EditTemplateCatalogForm = () => {
       !mediaIdChanged;
 
     const soloCambioPantallas = pantallasModificadas && gupshupSinCambios;
-
-    console.log("=== DEBUG COMPARACIONES ===");
-    console.log("formData.mediaId:", JSON.stringify(formData.mediaId));
-    console.log("mediaIdOriginal:", JSON.stringify(mediaIdOriginal));
-    console.log("messageChanged:", messageChanged);
-    console.log("headerChanged:", headerChanged);
-    console.log("footerChanged:", footerChanged);
-    console.log("mediaIdChanged:", mediaIdChanged);
-    console.log("=== DECISIÓN ===");
-    console.log("pantallasModificadas:", pantallasModificadas);
-    console.log("gupshupSinCambios:", gupshupSinCambios);
-    console.log("soloCambioPantallas:", soloCambioPantallas);
-
-    // === VARIABLES (necesarias para ambos casos) ===
     const variables = formData.variables || {};
     const variableKeys = Object.keys(variables);
     const variableDescriptions = {};
@@ -536,14 +510,9 @@ const EditTemplateCatalogForm = () => {
       variableExamples[key] = val?.example || "";
     });
 
-    // === CASO 1: Solo se modificaron pantallas → Actualizar solo TalkMe ===
     if (soloCambioPantallas) {
-      console.log("🎯 CASO 1: Solo se modificaron pantallas - Actualizando solo TalkMe");
-
-      // Usar la URL original de la imagen (mediaURL del estado, que viene de la API)
       const urlImagen = mediaURL || uploadedUrl;
 
-      // Construir payload con valores originales, SOLO actualizar pantallas
       const talkMePayload = {
         templateName: templateData.elementName,
         selectedCategory: templateData.category,
@@ -564,13 +533,10 @@ const EditTemplateCatalogForm = () => {
         [], // buttons (vacío para catálogo)
         pantallasState.join(','),
         urlImagen,
-        true  // ← skipParamsAndButtons: solo actualizar pantallas
+        true
       );
 
-      console.log("Resultado de editTemplateToTalkMe:", result2);
-
       if (result2?.status === "success") {
-        console.log("✅ Actualización de pantallas exitosa");
         Swal.fire({
           title: 'Éxito',
           text: 'Las pantallas se actualizaron correctamente.',
@@ -580,7 +546,6 @@ const EditTemplateCatalogForm = () => {
         });
         navigate('/Dashboard');
       } else {
-        console.log("❌ Error en actualización de pantallas:", result2);
         Swal.fire({
           title: 'Error al actualizar en TalkMe',
           text: `Error: ${result2?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -593,13 +558,9 @@ const EditTemplateCatalogForm = () => {
       return;
     }
 
-    // === CASO 2: Hay cambios en Gupshup → Validaciones adicionales ===
-    console.log("🎯 CASO 2: Hay cambios en Gupshup - Validando y actualizando");
-
     const descriptions = Object.values(variables).map(v => v?.description).filter(Boolean);
     const uniqueDescriptions = new Set(descriptions);
     if (descriptions.length !== uniqueDescriptions.size) {
-      console.log("❌ Validación fallida: Descripciones duplicadas");
       Swal.fire({
         title: 'Error',
         text: 'Las descripciones de las variables no pueden duplicarse.',
@@ -611,7 +572,6 @@ const EditTemplateCatalogForm = () => {
       return;
     }
 
-    // Preparar payload para Gupshup (plantilla catálogo)
     const templatePayload = {
       elementName: formData.templateName,
       category: formData.selectedCategory,
@@ -634,10 +594,8 @@ const EditTemplateCatalogForm = () => {
       urlTemplatesGS
     );
 
-    console.log("Resultado de actualización Gupshup:", result);
 
     if (result?.status === "success") {
-      console.log("✅ Actualización Gupshup exitosa");
 
       const result2 = await editTemplateToTalkMe(
         result.template.id,
@@ -659,10 +617,8 @@ const EditTemplateCatalogForm = () => {
         mediaURL
       );
 
-      console.log("Resultado de actualización TalkMe:", result2);
 
       if (result2?.status === "success") {
-        console.log("✅ Actualización completa exitosa");
         Swal.fire({
           title: 'Éxito',
           text: 'La plantilla se actualizó correctamente.',
@@ -672,7 +628,6 @@ const EditTemplateCatalogForm = () => {
         });
         navigate('/Dashboard');
       } else {
-        console.log("❌ Error en actualización TalkMe:", result2);
         Swal.fire({
           title: 'Error al actualizar en TalkMe',
           text: `Error: ${result2?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -682,7 +637,6 @@ const EditTemplateCatalogForm = () => {
         });
       }
     } else {
-      console.log("❌ Error en actualización Gupshup:", result);
       Swal.fire({
         title: 'Error al editar plantilla catálogo',
         text: `Error: ${result?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -693,7 +647,6 @@ const EditTemplateCatalogForm = () => {
     }
 
     setLoading(false);
-    console.log("=== FIN onSubmit ===");
   };
 
   useClickOutside(emojiPickerRef, () => setShowEmojiPicker(false));
@@ -1079,15 +1032,10 @@ const EditTemplateCatalogForm = () => {
               size="large"
               color="primary"
               onClick={async () => {
-                console.log("🖱️ Botón clickeado");
-                console.log("loading:", loading);
-                console.log("isSubmitting:", isSubmitting);
 
                 try {
-                  console.log("📞 Llamando a handleSubmit...");
                   await handleSubmit(
                     async (data) => {
-                      console.log("✅ handleSubmit ejecutó el callback con data:", data);
                       await onSubmit(data);
                     },
                     (validationErrors) => {

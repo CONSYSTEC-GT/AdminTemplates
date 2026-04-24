@@ -178,7 +178,6 @@ const EditTemplateForm = () => {
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
-        console.log("templateData: ", templateData);
 
         // Campos deshabilitados - no se pueden cambiar
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
@@ -208,7 +207,7 @@ const EditTemplateForm = () => {
             setValue("message", meta.data || "", { shouldValidate: false });
             setValue("header", meta.header || "", { shouldValidate: false });
             setValue("footer", meta.footer || "", { shouldValidate: false });
-            
+
             setOriginalHeaderEmpty(!meta.header);
             setOriginalFooterEmpty(!meta.footer);
 
@@ -273,7 +272,6 @@ const EditTemplateForm = () => {
 
         try {
           const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
-          console.log("info", info);
           if (info !== null) {
             const pantallasFromAPI = info.pantallas || "";
             const pantallasArray = pantallasFromAPI.split(',').filter(p => p);
@@ -616,25 +614,17 @@ const EditTemplateForm = () => {
   };
 
   const onSubmit = async (formData) => {
-    console.log("🚀🚀🚀 FUNCIÓN onSubmit EJECUTADA 🚀🚀🚀");
-    console.log("formData recibido:", formData);
-    console.log("pantallasState:", pantallasState);
-    console.log("pantallasIniciales:", pantallasIniciales);
 
     if (loading) return;
     setLoading(true);
 
-    // === VALIDACIÓN COMÚN: Pantallas ===
     if (pantallasState.length === 0) {
-      console.log("❌ Validación fallida: No hay pantallas seleccionadas");
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       setLoading(false);
       return;
     }
-    console.log("✅ Pantallas seleccionadas:", pantallasState);
 
-    // === DETECCIÓN TEMPRANA: ¿Solo cambiaron las pantallas? ===
     const pantallasModificadas =
       JSON.stringify([...pantallasState].sort()) !==
       JSON.stringify([...pantallasIniciales].sort());
@@ -698,21 +688,6 @@ const EditTemplateForm = () => {
       !buttonsChanged;
 
     const soloCambioPantallas = pantallasModificadas && gupshupSinCambios;
-
-    console.log("=== DEBUG COMPARACIONES ===");
-    console.log("formData.mediaId:", JSON.stringify(formData.mediaId));
-    console.log("mediaIdOriginal:", JSON.stringify(mediaIdOriginal));
-    console.log("messageChanged:", messageChanged, "| formData.message:", JSON.stringify(formData.message?.substring(0, 50)), "vs original:", JSON.stringify(mensajeOriginal?.substring(0, 50)));
-    console.log("headerChanged:", headerChanged, "| formData.header:", JSON.stringify(formData.header), "vs original:", JSON.stringify(headerOriginal));
-    console.log("footerChanged:", footerChanged, "| formData.footer:", JSON.stringify(formData.footer), "vs original:", JSON.stringify(footerOriginal));
-    console.log("mediaIdChanged:", mediaIdChanged);
-    console.log("buttonsChanged:", buttonsChanged);
-    console.log("=== DECISIÓN ===");
-    console.log("pantallasModificadas:", pantallasModificadas);
-    console.log("gupshupSinCambios:", gupshupSinCambios);
-    console.log("soloCambioPantallas:", soloCambioPantallas);
-
-    // === VARIABLES (necesarias para ambos casos) ===
     const variables = formData.variables || {};
     const variableKeys = Object.keys(variables);
     const variableDescriptions = {};
@@ -723,9 +698,7 @@ const EditTemplateForm = () => {
       variableExamples[key] = val?.example || "";
     });
 
-    // === CASO 1: Solo se modificaron pantallas → Actualizar solo TalkMe ===
     if (soloCambioPantallas) {
-      console.log("🎯 CASO 1: Solo se modificaron pantallas - Actualizando solo TalkMe");
 
       const urlImagen = mediaURL || uploadedUrl;
 
@@ -752,10 +725,7 @@ const EditTemplateForm = () => {
         true
       );
 
-      console.log("Resultado de editTemplateToTalkMe:", result2);
-
       if (result2?.status === "success") {
-        console.log("✅ Actualización de pantallas exitosa");
         Swal.fire({
           title: 'Éxito',
           text: 'Las pantallas se actualizaron correctamente.',
@@ -765,7 +735,6 @@ const EditTemplateForm = () => {
         });
         navigate('/Dashboard');
       } else {
-        console.log("❌ Error en actualización de pantallas:", result2);
         Swal.fire({
           title: 'Error al actualizar en TalkMe',
           text: `Error: ${result2?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -778,13 +747,8 @@ const EditTemplateForm = () => {
       return;
     }
 
-    // === CASO 2: Hay cambios en Gupshup → Validaciones adicionales ===
-    console.log("🎯 CASO 2: Hay cambios en Gupshup - Validando y actualizando");
-
-    // Validación IMAGE solo si NO es catálogo
     if (formData.templateType === "IMAGE") {
       if (!formData.mediaId) {
-        console.log("❌ Validación fallida: IMAGE sin mediaId");
         Swal.fire({
           title: 'Imagen requerida',
           text: 'Debes cargar una imagen para este tipo de plantilla.',
@@ -797,7 +761,6 @@ const EditTemplateForm = () => {
       }
 
       if (!isValidSampleMedia(formData.mediaId)) {
-        console.log("❌ Validación fallida: mediaId inválido:", formData.mediaId);
         Swal.fire({
           title: 'Imagen inválida',
           text: 'El identificador del sampleMedia no es válido. Vuelve a cargar la imagen.',
@@ -808,13 +771,11 @@ const EditTemplateForm = () => {
         setLoading(false);
         return;
       }
-      console.log("✅ mediaId válido:", formData.mediaId);
     }
 
     const descriptions = Object.values(variables).map(v => v?.description).filter(Boolean);
     const uniqueDescriptions = new Set(descriptions);
     if (descriptions.length !== uniqueDescriptions.size) {
-      console.log("❌ Validación fallida: Descripciones duplicadas");
       Swal.fire({
         title: 'Error',
         text: 'Las descripciones de las variables no pueden duplicarse.',
@@ -826,14 +787,13 @@ const EditTemplateForm = () => {
       return;
     }
 
-    // ✅ templatePayload se construye aquí, ANTES de usarlo
     const templatePayload = {
-      templateName: formData.templateName,       // era "elementName"
-      selectedCategory: formData.selectedCategory, // era "category"
+      templateName: formData.templateName,
+      selectedCategory: formData.selectedCategory,
       languageCode: formData.languageCode,
       templateType: formData.templateType,
       vertical: formData.vertical,
-      message: formData.message,                 // era "content"
+      message: formData.message,
       header: formData.header,
       footer: formData.footer,
       mediaId: formData.mediaId,
@@ -842,10 +802,6 @@ const EditTemplateForm = () => {
       exampleHeader: formData.exampleHeader,
     };
 
-    console.log("isFlowTemplate:", isFlowTemplate);
-    console.log("isCatalog:", isCatalog);
-
-    // ✅ Selección de función Gupshup según tipo de plantilla
     let result;
     if (isCatalog) {
       result = await editTemplateCatalogGupshup(
@@ -876,10 +832,7 @@ const EditTemplateForm = () => {
       );
     }
 
-    console.log("Resultado de actualización Gupshup:", result);
-
     if (result?.status === "success") {
-      console.log("✅ Actualización Gupshup exitosa");
 
       const result2 = await editTemplateToTalkMe(
         result.template?.id || templateData.id,
@@ -896,15 +849,12 @@ const EditTemplateForm = () => {
         [],
         urlTemplatesGS,
         idBotRedes,
-        isCatalog ? [] : formData.buttons, // ✅ botones vacíos para catálogo
+        isCatalog ? [] : formData.buttons,
         pantallasState.join(','),
         mediaURL
       );
 
-      console.log("Resultado de actualización TalkMe:", result2);
-
       if (result2?.status === "success") {
-        console.log("✅ Actualización completa exitosa");
         Swal.fire({
           title: 'Éxito',
           text: 'La plantilla se actualizó correctamente.',
@@ -914,7 +864,6 @@ const EditTemplateForm = () => {
         });
         navigate('/Dashboard');
       } else {
-        console.log("❌ Error en actualización TalkMe:", result2);
         Swal.fire({
           title: 'Error al actualizar en TalkMe',
           text: `Error: ${result2?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -924,7 +873,6 @@ const EditTemplateForm = () => {
         });
       }
     } else {
-      console.log("❌ Error en actualización Gupshup:", result);
       Swal.fire({
         title: isCatalog
           ? 'Error al editar plantilla catálogo'
@@ -939,7 +887,6 @@ const EditTemplateForm = () => {
     }
 
     setLoading(false);
-    console.log("=== FIN onSubmit ===");
   };
 
   useClickOutside(emojiPickerRef, () => setShowEmojiPicker(false));
@@ -1709,19 +1656,12 @@ const EditTemplateForm = () => {
               size="large"
               color="primary"
               onClick={async () => {
-                console.log("🖱️ Botón clickeado");
-                console.log("loading:", loading);
-                console.log("isSubmitting:", isSubmitting);
-
                 try {
-                  console.log("📞 Llamando a handleSubmit...");
                   await handleSubmit(
                     async (data) => {
-                      console.log("✅ handleSubmit ejecutó el callback con data:", data);
                       await onSubmit(data);
                     },
                     (validationErrors) => {
-                      console.error("❌ Errores de validación del formulario:", validationErrors);
                       const errorMessages = Object.entries(validationErrors)
                         .map(([field, error]) => {
                           if (error?.message) return `${field}: ${error.message}`;
