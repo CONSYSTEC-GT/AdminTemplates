@@ -19,9 +19,9 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 
-import CardBase from '../components/CardBase';
-import CardBaseCarousel from '../components/CardBaseCarousel';
-import CardBaseSkeleton from '../components/CardBaseSkeleton';
+import CardBase from '../components/common/CardBase';
+import CardBaseCarousel from '../components/common/CardBaseCarousel';
+import CardBaseSkeleton from '../components/common/CardBaseSkeleton';
 
 const TemplateCard = ({ title, subtitle, description, onEdit, onDelete, whatsappStyle }) => (
   <Card

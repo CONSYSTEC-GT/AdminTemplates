@@ -12,10 +12,10 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import DeleteModal from '../components/DeleteModal';
 import { parseTemplateContent } from "../utils/parseTemplateContent";
 import { fetchMergedTemplates } from '../api/templatesServices';
-import CardBase from '../components/CardBase';
-import CardBaseCarousel from '../components/CardBaseCarousel';
-import CardBaseSkeleton from '../components/CardBaseSkeleton';
-import ListBase from '../components/ListBase';
+import CardBase from '../components/common/CardBase';
+import CardBaseCarousel from '../components/common/CardBaseCarousel';
+import CardBaseSkeleton from '../components/common/CardBaseSkeleton';
+import ListBase from '../components/common/ListBase';
 
 const TemplateAproved = () => {
   const { templateId } = useParams();
@@ -175,7 +175,7 @@ const TemplateAproved = () => {
         case 'CAROUSEL':
           navigate('/modify-template-carousel', { state: { template } });
           break;
-        case 'CATALOGO':
+        case 'CATALOG':
           navigate('/modify-template-catalogo', { state: { template } });
           break;
         case 'TEXT':

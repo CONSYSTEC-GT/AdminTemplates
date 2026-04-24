@@ -34,21 +34,17 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-import WhatsAppCarouselPreview from './WhatsappCarouselPreview';
-import FileUploadCarousel from './FileUploadCarouselV2';
-import { isValidURL, updateButtonWithValidation } from '../utils/validarUrl';
-import { createTemplateCarouselGupshup } from '../api/gupshupApi';
-import { saveTemplateToTalkMe, validarNombrePlantillas } from '../api/templatesGSApi';
+import WhatsAppCarouselPreview from '../../../components/WhatsappCarouselPreview.jsx';
+import FileUploadCarousel from '../../../components/form-controls/FileUploadCarousel.jsx';
+import { isValidURL, updateButtonWithValidation } from '../../../utils/validarUrl.jsx';
+import { createTemplateCarouselGupshup } from '../../../api/gupshupApi.jsx';
+import { saveTemplateToTalkMe } from '../../../api/templatesGSApi.jsx';
 
-import { CustomDialog } from '../utils/CustomDialog';
-
-import { useClickOutside } from '../utils/emojiClick';
-import { useClickOutsideCards } from '../utils/emojiClick';
+import { CustomDialog } from '../../../utils/CustomDialog.jsx';
 
 const TemplateFormCarousel = () => {
 
   //CAMPOS DEL FORMULARIO PARA EL REQUEST
-  const [loading, setLoading] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [templateType, setTemplateType] = useState("CAROUSEL");
@@ -116,10 +112,6 @@ const TemplateFormCarousel = () => {
   const [variableExamplesError, setvariableExamplesError] = useState(false);
   const [variableExamplesHelperText, setvariableExamplesHelperText] = useState("");
   const [variableErrors, setVariableErrors] = useState({});
-  const [descriptionErrors, setDescriptionErrors] = useState({});
-  const [newDescriptionErrors, setNewDescriptionErrors] = useState({});
-  const [variableDescriptionErrors, setVariableDescriptionErrors] = useState({});
-  const [variableDescriptionHelperTexts, setVariableDescriptionHelperTexts] = useState({});
 
   const [cardErrors, setCardErrors] = useState({});
 
@@ -144,8 +136,6 @@ const TemplateFormCarousel = () => {
   const [uploadStatus, setUploadStatus] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
 
-  const [isValidating, setIsValidating] = useState(false);
-
   const templateNameRef = useRef(null);
   const templateTypeRef = useRef(null);
   const carouselTypeRef = useRef(null);
@@ -159,9 +149,6 @@ const TemplateFormCarousel = () => {
   const exampleRefs = useRef({});
   const exampleCardRefs = useRef({});
   const cantidadBotonesRefs = useRef({});
-  const descriptionRefs = useRef({});
-  const debounceTimeout = useRef(null);
-
 
   const emojiPickerRef = useRef(null);
   const emojiPickerCardRef = useRef(null);
@@ -205,37 +192,26 @@ const TemplateFormCarousel = () => {
     setOpenSnackbar(false);
   };
 
-  const validateFields = async () => {
+  const validateFields = () => {
     let isValid = true;
     let firstErrorFieldRef = null;
-
-
-
+  
+    
+  
     // Validación de templateName
     if (!templateName || templateName.trim() === "") {
+      
       setTemplateNameError(true);
       setTemplateNameHelperText("Este campo es requerido");
-      if (templateNameRef.current) templateNameRef.current.focus();
       isValid = false;
-
-    } else {
-
-      await validateTemplateName(templateName);
-
-      // Verificar el resultado después de validar
-      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
-        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
-        setTemplateNameError(true);
-        if (templateNameRef.current) templateNameRef.current.focus();
-        isValid = false;
-
-      } else {
+      if (templateNameRef.current && !firstErrorFieldRef) {
+        firstErrorFieldRef = templateNameRef;
       }
-      }
-
+    }
+  
     // Validación de templateType
     if (!templateType || templateType.trim() === "") {
-
+      
       setTemplateTypeError(true);
       setTemplateTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -245,20 +221,20 @@ const TemplateFormCarousel = () => {
     }
 
     if (displayPantallas.length === 0) {
-
+      
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       isValid = false;
       // No hay focus directo porque es un select con múltiples opciones
     } else {
-
+      
       setPantallasError(false);
       setPantallasHelperText("");
     }
-
+  
     // Validación de languageCode
     if (!languageCode || languageCode.trim() === "") {
-
+      
       setLanguageTypeError(true);
       setLanguageTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -266,20 +242,20 @@ const TemplateFormCarousel = () => {
         firstErrorFieldRef = languageCodeRef;
       }
     }
-
+  
     // Validación de vertical
     if (!vertical || vertical.trim() === "") {
-
+      
       setetiquetaPlantillaError(true);
       isValid = false;
       if (verticalRef.current && !firstErrorFieldRef) {
         firstErrorFieldRef = verticalRef;
       }
     }
-
+  
     // Validación de message
     if (!message || message.trim() === "") {
-
+      
       setcontenidoPlantillaTypeError(true);
       setcontenidoPlantillaTypeHelperText("Este campo es requerido");
       isValid = false;
@@ -287,10 +263,10 @@ const TemplateFormCarousel = () => {
         firstErrorFieldRef = messageRef;
       }
     }
-
+  
     // Validación de example
     if (!example || example.trim() === "") {
-
+      
       setejemploPlantillaError(true);
       setejemploPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -298,10 +274,10 @@ const TemplateFormCarousel = () => {
         firstErrorFieldRef = exampleRef;
       }
     }
-
+  
     // Validación de selectedCategory
     if (!selectedCategory || selectedCategory.trim() === "") {
-
+      
       setcategoriaPlantillaError(true);
       setcategoriaPlantillaHelperText("Este campo es requerido");
       isValid = false;
@@ -309,96 +285,47 @@ const TemplateFormCarousel = () => {
         firstErrorFieldRef = selectedCategoryRef;
       }
     }
-
-    // Validar que todas las variables tengan un texto de ejemplo
+  
+    // Validación de variables
     if (variables.length > 0) {
+      
       const newErrors = {};
-      const newDescriptionErrors = {};
-      const newHelperTexts = { ...variableDescriptionHelperTexts };
-
+  
       for (const variable of variables) {
-        // Validar ejemplo
-        if (!variableExamples[variable]?.trim()) {
+        if (!variableExamples[variable] || variableExamples[variable].trim() === "") {
+          
           isValid = false;
-          newErrors[variable] = "El campo Descripción y Ejemplo es requerido";
+          newErrors[variable] = "Este campo es requerido";
+  
+          // Solo establece el primer error de variable si no hay otro error antes
+          if (exampleRefs.current[variable] && !firstErrorFieldRef) {
+            firstErrorFieldRef = { current: exampleRefs.current[variable] };
+          }
         } else {
           newErrors[variable] = "";
         }
-
-        // Validar descripción
-        if (!variableDescriptions[variable]?.trim()) {
-          isValid = false;
-          newDescriptionErrors[variable] = "El campo Descripción y Ejemplo es requerido";
-          newHelperTexts[variable] = "El campo Descripción y Ejemplo es requerido";
-        }
       }
-
-      // VALIDAR SI LAS VARIABLES ESTAN DUPLICADAS
-      const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-
-      if (duplicateVariables.size > 0) {
-        isValid = false;
-
-        // Marcar todas las variables con descripciones duplicadas
-        duplicateVariables.forEach(variable => {
-          newDescriptionErrors[variable] = "Esta descripción ya existe en otra variable";
-          newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
-        });
-
-        // Enfocar la primera variable con descripción duplicada
-        const firstDuplicateVariable = Array.from(duplicateVariables)[0];
-        if (descriptionRefs.current && descriptionRefs.current[firstDuplicateVariable]) {
-          descriptionRefs.current[firstDuplicateVariable].focus();
-        }
-      }
-
-      // Validar que todas las variables tengan descripción
-      for (const variable of variables) {
-        if (!variableDescriptions[variable] || variableDescriptions[variable].trim() === "") {
-          isValid = false;
-          newDescriptionErrors[variable] = "La descripción es requerida";
-          newHelperTexts[variable] = "La descripción es requerida";
-
-          // Enfocar el campo de descripción vacío
-          if (descriptionRefs.current && descriptionRefs.current[variable]) {
-            descriptionRefs.current[variable].focus();
-          }
-        }
-      }
-
-      if (duplicateVariables.size === 0) {
-        variables.forEach(variable => {
-          if (variableDescriptions[variable]?.trim() &&
-            newHelperTexts[variable] !== "Esta descripción ya existe en otra variable" &&
-            newHelperTexts[variable] !== "El campo Descripción y Ejemplo es requerido" &&
-            newHelperTexts[variable] !== "La descripción es requerida") {
-            newHelperTexts[variable] = "";
-          }
-        });
-      }
-
+  
       setVariableErrors(newErrors);
-      setVariableDescriptionErrors(newDescriptionErrors);
-      setVariableDescriptionHelperTexts(newHelperTexts);
     }
 
     // Validación de selectedCategory
     if (!cantidadBotones || cantidadBotones.trim() === "") {
-
+      
       setcantidadBotonesError(true);
       isValid = false;
       if (cantidadBotonesRefs.current && !firstErrorFieldRef) {
         firstErrorFieldRef = cantidadBotonesRefs;
       }
     }
-
+  
     // Enfocar el primer campo con error encontrado
     if (!isValid && firstErrorFieldRef && firstErrorFieldRef.current) {
-
+      
       firstErrorFieldRef.current.focus();
     }
-
-
+  
+    
     return isValid;
   };
 
@@ -421,7 +348,7 @@ const TemplateFormCarousel = () => {
 
   const token = sessionStorage.getItem('authToken');
 
-  let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS;
+  let appId, authCode, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, apiToken;
   if (token) {
     try {
       const decoded = jwtDecode(token);
@@ -433,24 +360,32 @@ const TemplateFormCarousel = () => {
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
+      apiToken = decoded.apiToken;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
   }
 
   const iniciarRequest = async () => {
-    if (loading) return;
-    setLoading(true);
     try {
 
+      // Hacer debug de las cards antes de formatear
+      
+      // Primero verifica que cards esté definido
       if (!cards || cards.length === 0) {
         console.error("No hay tarjetas disponibles");
         return;
       }
+      
+      // Ahora sí puedes hacer log de formattedCards
+      //
+      // Asegúrate de que todas las cards tengan los datos necesarios
 
+      // format de cards
       const formattedCards = formatCardsForGupshup(cards);
-      const cardsToSendArray = [...cards];
-      const cardsToSend = JSON.stringify([...cards]);
+      const cardsToSendArray = [...cards]; 
+      const cardsToSend = JSON.stringify([...cards]); 
+
 
       const isValid = formattedCards.every(card =>
         card.mediaUrl && card.body
@@ -466,22 +401,26 @@ const TemplateFormCarousel = () => {
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
         });
-        setLoading(false);
         return;
       }
+      //
 
-      const isValidP = await validateFields();
-      if (!isValidP) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Campo incompletos.',
-          icon: 'error',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#00c3ff'
-        });
-        setLoading(false);
-        return; // Detener si hay errores
-      }
+      /******************************
+       * COMENTADO EL PRIMER REQUEST *
+       ******************************/
+
+      // Validar campos antes de enviar
+        const isValidP = validateFields();
+        if (!isValidP) {
+          Swal.fire({
+                title: 'Error',
+                text: 'Campo incompletos.',
+                icon: 'error',
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: '#00c3ff'
+              });
+          return; // Detener si hay errores
+        }
 
       const result = await createTemplateCarouselGupshup(
         appId,
@@ -521,10 +460,12 @@ const TemplateFormCarousel = () => {
 
         */
 
+      // Verificar si el primer request fue exitoso
       if (result && result.status === "success") {
-
+        // Extraer el valor de `id` del objeto `template`
         const templateId = result.template.id;
 
+        // Hacer el segundo request a TalkMe API
         const result2 = await saveTemplateToTalkMe(
           templateId,
           {
@@ -543,28 +484,26 @@ const TemplateFormCarousel = () => {
           urlTemplatesGS
         );
 
+        // Limpia todos los campos si todo fue bien
         resetForm();
-
         Swal.fire({
-          title: '¡Éxito!',
-          text: 'La plantilla fue creada correctamente.',
-          icon: 'success',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#00c3ff'
-        });
-        setLoading(false);
+                  title: '¡Éxito!',
+                  text: 'La plantilla fue creada correctamente.',
+                  icon: 'success',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#00c3ff'
+                });
 
       } else {
         console.error("El primer request no fue exitoso o no tiene el formato esperado.");
         setErrorMessageGupshup(result?.message || "La plantilla no pudo ser creada.");
         Swal.fire({
-          title: 'Error',
-          text: result?.message || 'La plantilla no pudo ser creada.',
-          icon: 'error',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#00c3ff'
-        });
-        setLoading(false);
+                  title: 'Error',
+                  text: result?.message || 'La plantilla no pudo ser creada.',
+                  icon: 'error',
+                  confirmButtonText: 'Cerrar',
+                  confirmButtonColor: '#00c3ff'
+                });
 
       }
     } catch (error) {
@@ -572,10 +511,10 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  // PANTALLAS
-  const pantallasTalkMe = [
-    '4 - Broadcast'
-  ];
+    // PANTALLAS
+    const pantallasTalkMe = [
+      '4 - Broadcast'
+    ];
 
 
   // CATEGORIAS
@@ -607,71 +546,22 @@ const TemplateFormCarousel = () => {
 
   //NOMBRE PLANTILLA
   const handleTemplateNameChange = (event) => {
-    const inputValue = event.target.value;
-    const hasUpperCase = /[A-Z]/.test(inputValue);
+  const inputValue = event.target.value;
+  const hasUpperCase = /[A-Z]/.test(inputValue);
+  
+  const newValue = inputValue.toLowerCase().replace(/\s+/g, '_');
+  setTemplateName(newValue);
 
-    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
-
-    const newValue = inputValue
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Quita acentos
-      .replace(/ñ/gi, 'n') // Reemplaza ñ
-      .toLowerCase() // Minúsculas
-      .replace(/\s+/g, '_') // Espacios por _
-      .replace(/[^a-z0-9_]/g, ''); // Solo caracteres permitidos
-
-    setTemplateName(newValue);
-
-    if (hasInvalidChars) {
-      setTemplateNameError(true);
-      setTemplateNameHelperText("Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales");
-    } else if (hasUpperCase) {
-      setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
-      setTemplateNameError(false);
-    } else if (newValue.trim() === "") {
-      setTemplateNameError(true);
-      setTemplateNameHelperText("Este campo es requerido");
-    } else {
-      setTemplateNameError(false);
-      setTemplateNameHelperText("");
-    }
-  };
-
-  // Función para validar el nombre de la plantilla
-  const validateTemplateName = async (nombre) => {
-    // Reemplazar _ por espacios
-    const nombreFormateado = nombre.replace(/_/g, ' ');  // Esto reemplaza todos los _ por espacios
-
-    if (!nombreFormateado.trim() || !idBotRedes) return;
-
-    setIsValidating(true);
-
-
-    try {
-      const existe = await validarNombrePlantillas(urlTemplatesGS, nombreFormateado, idBotRedes);
-
-      if (existe === true) {
-        setTemplateNameError(true);
-        setTemplateNameHelperText("Ya existe una plantilla con este nombre");
-      } else if (existe === false) {
-        // Solo limpiar el error si no hay otros errores
-        if (!templateNameError || templateNameHelperText === "Ya existe una plantilla con este nombre") {
-          setTemplateNameError(false);
-          setTemplateNameHelperText("Nombre disponible");
-        }
-      } else {
-        // Error en la validación (existe === null)
-        setTemplateNameError(true);
-        setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
-      }
-    } catch (error) {
-      console.error("Error en validación:", error);
-      setTemplateNameError(true);
-      setTemplateNameHelperText("Error al validar el nombre. Intenta nuevamente.");
-    } finally {
-      setIsValidating(false);
-    }
-  };
+  if (hasUpperCase) {
+    setTemplateNameHelperText("Las mayúsculas fueron convertidas a minúsculas");
+  } else if (newValue.trim() === "") {
+    setTemplateNameError(true);
+    setTemplateNameHelperText("Este campo es requerido");
+  } else {
+    setTemplateNameError(false);
+    setTemplateNameHelperText("");
+  }
+};
 
   //IDIOMA PLANTILLA
   const handleLanguageCodeChange = (event) => {
@@ -703,7 +593,7 @@ const TemplateFormCarousel = () => {
   const handleVerticalChange = (event) => {
     const newValue = event.target.value;
     setVertical(newValue);
-
+  
     // Validación en tiempo real mientras escribe
     if (newValue.trim() === "") {
       setetiquetaPlantillaError(true);
@@ -780,7 +670,7 @@ const TemplateFormCarousel = () => {
     } else {
       setError(''); //Limpio el mensaje de error
       setSelectedFile(selectedFile);
-
+      
     }
   };
 
@@ -788,7 +678,7 @@ const TemplateFormCarousel = () => {
     if (e.target.value.length <= charLimit) {
       setHeader(e.target.value)
     }
-
+    
   };
 
   //FOOTER PLANTILLA
@@ -875,15 +765,15 @@ const TemplateFormCarousel = () => {
     }
 
     if (newText.length > maxLength) {
-      Swal.fire({
-        title: 'Limite de caracteres',
-        text: 'Haz alcanzado el limite máximo de caracteres',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      return;
-    }
+              Swal.fire({
+                title: 'Limite de caracteres',
+                text: 'Solo puedes incluir un máximo de 550 caracteres',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#00c3ff'
+              });
+              return;
+            }
 
     if (newText.length <= maxLength) {
       // Guardar el nuevo texto
@@ -927,10 +817,10 @@ const TemplateFormCarousel = () => {
 
   const handleBodyMessageCardChange = (e, cardId) => {
 
-
+    
 
     const newText = e.target.value;
-    const maxLength = 160;
+    const maxLength = 280;
     const newEmojiCount = countEmojis(newText);
     const maxEmojis = 10;
 
@@ -950,15 +840,15 @@ const TemplateFormCarousel = () => {
     }
 
     if (newText.length > maxLength) {
-      Swal.fire({
-        title: 'Limite de caracteres',
-        text: 'Haz alcanzado el limite máximo de caracteres ',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      return;
-    }
+              Swal.fire({
+                title: 'Limite de caracteres',
+                text: 'Solo puedes incluir un máximo de 550 caracteres',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#00c3ff'
+              });
+              return;
+            }
 
     setCards(prevCards =>
       prevCards.map(card => {
@@ -1001,19 +891,19 @@ const TemplateFormCarousel = () => {
   // VARIABLES DEL BODY MESSAGE
   const handleAddVariable = () => {
     const newVariable = `{{${variables.length + 1}}}`;
-
-    // Verificar si al añadir la variable se superaría el límite de caracteres
-    if (message.length + newVariable.length > 550) {
-      // Puedes mostrar un mensaje de error o simplemente no hacer nada
-      Swal.fire({
-        title: 'Limite de caracteres',
-        text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      return;
-    }
+    
+       // Verificar si al añadir la variable se superaría el límite de caracteres
+      if (message.length + newVariable.length > 550) {
+        // Puedes mostrar un mensaje de error o simplemente no hacer nada
+        Swal.fire({
+            title: 'Limite de caracteres',
+            text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#00c3ff'
+          });
+        return;
+      }
     // Obtener la posición actual del cursor
     const cursorPosition = messageRef.current.selectionStart;
 
@@ -1037,104 +927,104 @@ const TemplateFormCarousel = () => {
   };
 
   const handleAddVariableCard = (cardId) => {
-    setCards(prevCards =>
-      prevCards.map(card => {
-        if (card.id !== cardId) return card;
+  setCards(prevCards =>
+    prevCards.map(card => {
+      if (card.id !== cardId) return card;
 
-        const newVariable = `{{${card.variablesCard.length + 1}}}`;
+      const newVariable = `{{${card.variablesCard.length + 1}}}`;
+      
+      // Verificar si al añadir la variable se superaría el límite de caracteres
+      if (card.messageCard.length + newVariable.length > 280) {
+        // Mostrar alerta de límite excedido
+        Swal.fire({
+          title: 'Limite de caracteres',
+          text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#00c3ff'
+        });
+        return card; // Retornar la tarjeta sin cambios
+      }
+      
+      // Usa la referencia específica de esta tarjeta
+      const textFieldRef = messageCardRefs.current[cardId];
+      const cursorPosition = textFieldRef?.selectionStart || 0;
 
-        // Verificar si al añadir la variable se superaría el límite de caracteres
-        if (card.messageCard.length + newVariable.length > 160) {
-          // Mostrar alerta de límite excedido
-          Swal.fire({
-            title: 'Limite de caracteres',
-            text: 'No se pueden agregar más variables porque excede el máximo de 550 caracteres',
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#00c3ff'
-          });
-          return card; // Retornar la tarjeta sin cambios
-        }
+      const textBefore = card.messageCard.substring(0, cursorPosition);
+      const textAfter = card.messageCard.substring(cursorPosition);
 
-        // Usa la referencia específica de esta tarjeta
-        const textFieldRef = messageCardRefs.current[cardId];
-        const cursorPosition = textFieldRef?.selectionStart || 0;
+      const newMessageCard = `${textBefore}${newVariable}${textAfter}`;
 
-        const textBefore = card.messageCard.substring(0, cursorPosition);
-        const textAfter = card.messageCard.substring(cursorPosition);
+      // OPCIONAL: Actualizar descripción y ejemplos también
+      const updatedDescriptions = { ...card.variableDescriptionsCard, [newVariable]: "" };
+      const updatedExamples = { ...card.variableExamples, [newVariable]: "" };
 
-        const newMessageCard = `${textBefore}${newVariable}${textAfter}`;
-
-        // OPCIONAL: Actualizar descripción y ejemplos también
-        const updatedDescriptions = { ...card.variableDescriptionsCard, [newVariable]: "" };
-        const updatedExamples = { ...card.variableExamples, [newVariable]: "" };
-
-        // OPCIONAL: Colocar el cursor después de la variable insertada
-        setTimeout(() => {
-          if (textFieldRef) {
-            const newPosition = cursorPosition + newVariable.length;
-            textFieldRef.focus();
-            textFieldRef.setSelectionRange(newPosition, newPosition);
-          }
-        }, 0);
-
-        return {
-          ...card,
-          messageCard: newMessageCard,
-          variablesCard: [...card.variablesCard, newVariable],
-          variableDescriptionsCard: updatedDescriptions,
-          variableExamples: updatedExamples
-        };
-      })
-    );
-  };
-
-
-
-  const handleEmojiClick = (emojiObject) => {
-    const cursor = messageRef.current.selectionStart;
-    const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
-
-    // Contar los emojis en el nuevo texto
-    const newEmojiCount = countEmojis(newText);
-
-    // Verificar si excedería el límite de 10 emojis
-    if (newEmojiCount > 10) {
-      // Mostrar alerta
-      Swal.fire({
-        title: 'Límite de emojis',
-        text: 'Solo puedes incluir un máximo de 10 emojis',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#00c3ff'
-      });
-      setShowEmojiPicker(false);
-
-      // Mantener el foco en el campo de texto
+      // OPCIONAL: Colocar el cursor después de la variable insertada
       setTimeout(() => {
-        if (messageRef.current) {
-          messageRef.current.focus();
-          messageRef.current.setSelectionRange(cursor, cursor);
+        if (textFieldRef) {
+          const newPosition = cursorPosition + newVariable.length;
+          textFieldRef.focus();
+          textFieldRef.setSelectionRange(newPosition, newPosition);
         }
-      }, 100);
+      }, 0);
 
-      return; // No actualizar el texto
-    }
+      return {
+        ...card,
+        messageCard: newMessageCard,
+        variablesCard: [...card.variablesCard, newVariable],
+        variableDescriptionsCard: updatedDescriptions,
+        variableExamples: updatedExamples
+      };
+    })
+  );
+};
 
-    // Si está dentro del límite, actualizar el mensaje
-    setMessage(newText);
-    // Actualizar el contador de emojis
-    setEmojiCount(newEmojiCount);
+
+
+const handleEmojiClick = (emojiObject) => {
+  const cursor = messageRef.current.selectionStart;
+  const newText = message.slice(0, cursor) + emojiObject.emoji + message.slice(cursor);
+  
+  // Contar los emojis en el nuevo texto
+  const newEmojiCount = countEmojis(newText);
+  
+  // Verificar si excedería el límite de 10 emojis
+  if (newEmojiCount > 10) {
+    // Mostrar alerta
+    Swal.fire({
+      title: 'Límite de emojis',
+      text: 'Solo puedes incluir un máximo de 10 emojis',
+      icon: 'warning',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#00c3ff'
+    });
     setShowEmojiPicker(false);
-
-    // Mantener el foco y posicionar el cursor después del emoji insertado
+    
+    // Mantener el foco en el campo de texto
     setTimeout(() => {
       if (messageRef.current) {
         messageRef.current.focus();
-        messageRef.current.setSelectionRange(cursor + emojiObject.emoji.length, cursor + emojiObject.emoji.length);
+        messageRef.current.setSelectionRange(cursor, cursor);
       }
     }, 100);
-  };
+    
+    return; // No actualizar el texto
+  }
+  
+  // Si está dentro del límite, actualizar el mensaje
+  setMessage(newText);
+  // Actualizar el contador de emojis
+  setEmojiCount(newEmojiCount);
+  setShowEmojiPicker(false);
+
+  // Mantener el foco y posicionar el cursor después del emoji insertado
+  setTimeout(() => {
+    if (messageRef.current) {
+      messageRef.current.focus();
+      messageRef.current.setSelectionRange(cursor + emojiObject.emoji.length, cursor + emojiObject.emoji.length);
+    }
+  }, 100);
+};
 
 
   const handleEmojiClickCarousel = (emojiObject, cardId) => {
@@ -1152,7 +1042,7 @@ const TemplateFormCarousel = () => {
 
         // Contar los emojis en el nuevo texto
         const newEmojiCountCard = countEmojis(newText);
-
+        
         // Verificar si excedería el límite de 10 emojis
         if (newEmojiCountCard > 10) {
           // Mostrar alerta
@@ -1163,7 +1053,7 @@ const TemplateFormCarousel = () => {
             confirmButtonText: 'Entendido'
           });
           setShowEmojiPickerCards(false);
-
+          
           // Mantener el foco en el campo de texto
           setTimeout(() => {
             if (input) {
@@ -1171,13 +1061,13 @@ const TemplateFormCarousel = () => {
               input.setSelectionRange(cursor, cursor);
             }
           }, 100);
-
+          
           return card; // No actualizar el texto
         }
 
         // Si está dentro del límite, actualizar el mensaje
-        return {
-          ...card,
+        return { 
+          ...card, 
           messageCard: newText,
           emojiCountCard: newEmojiCountCard // Asumiendo que tienes este campo en el objeto card
         };
@@ -1193,13 +1083,9 @@ const TemplateFormCarousel = () => {
         input.setSelectionRange(newPos, newPos);
       }
     }, 100);
-  };
+};
 
-  // Llamada correcta al hook (sin el tercer parámetro)
-  useClickOutside(
-    emojiPickerRef,
-    () => setShowEmojiPicker(false)
-  );
+
 
 
   // Función para borrar una variable específica
@@ -1392,64 +1278,17 @@ const TemplateFormCarousel = () => {
   const handleUpdateExample = (variable, value) => {
     setVariableExamples(prevExamples => {
       const updatedExamples = { ...prevExamples, [variable]: value };
-
+      
       return updatedExamples;
     });
   };
 
   const handleUpdateDescriptions = (variable, event) => {
-    const inputValue = event.target.value;
-
-    const hasInvalidChars = /[áéíóúÁÉÍÓÚñÑ]|[^\w\s]/.test(inputValue);
-
-    const newValue = inputValue
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/ñ/gi, 'n') 
-      .replace(/\s+/g, '_')
-      .replace(/[^a-zA-Z0-9_]/g, '');
-
+    const newValue = event.target.value.replace(/\s+/g, '_');
     setVariableDescriptions(prevDescriptions => ({
       ...prevDescriptions,
       [variable]: newValue
     }));
-
-    const newErrors = { ...variableDescriptionErrors };
-    const newHelperTexts = { ...variableDescriptionHelperTexts };
-
-    if (hasInvalidChars) {
-      newErrors[variable] = true;
-      newHelperTexts[variable] = "Se eliminaron acentos, tildes, la letra 'ñ' y caracteres especiales";
-    } else if (newValue.trim() === "") {
-      newErrors[variable] = true;
-      newHelperTexts[variable] = "Este campo es requerido";
-    } else {
-      const currentDescriptions = {
-        ...variableDescriptions,
-        [variable]: newValue
-      };
-
-      let isDuplicate = false;
-      const entries = Object.entries(currentDescriptions);
-      for (let i = 0; i < entries.length; i++) {
-        const [key, value] = entries[i];
-        if (key !== variable && value === newValue && newValue !== "") {
-          isDuplicate = true;
-          break;
-        }
-      }
-
-      if (isDuplicate) {
-        newErrors[variable] = true;
-        newHelperTexts[variable] = "Esta descripción ya existe en otra variable";
-      } else {
-        newErrors[variable] = false;
-        newHelperTexts[variable] = "";
-      }
-    }
-
-    setVariableDescriptionErrors(newErrors);
-    setVariableDescriptionHelperTexts(newHelperTexts);
   };
 
   const handleUpdateDescriptionsCard = (cardId, variable, value) => {
@@ -1494,37 +1333,37 @@ const TemplateFormCarousel = () => {
   };
 
   // Función para reemplazar las variables en el mensaje con sus ejemplos
-  const replaceVariables = (text, variables) => {
-    let result = text;
-
-    Object.keys(variables).forEach(variable => {
-      // Remover las llaves de la clave para crear el regex correcto
-      const cleanVariable = variable.replace(/[{}]/g, '');
-      const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
-
-      result = result.replace(regex, variables[variable]);
-    });
-
-    return result;
-  };
+const replaceVariables = (text, variables) => {
+  let result = text;
+  
+  Object.keys(variables).forEach(variable => {
+    // Remover las llaves de la clave para crear el regex correcto
+    const cleanVariable = variable.replace(/[{}]/g, '');
+    const regex = new RegExp(`\\{\\{${cleanVariable}\\}\\}`, 'g');
+    
+    result = result.replace(regex, variables[variable]);
+  });
+  
+  return result;
+};
 
   // Generar IDs únicos para los botones
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const handlePantallas = (event) => {
     const { target: { value } } = event;
-
+  
     // Procesar los valores seleccionados
     const selectedOptions = typeof value === 'string' ? value.split(',') : value;
-
+  
     // Extraer solo los números
     const numericValues = selectedOptions.map(option => {
       return option.split(' - ')[0].trim();
     });
-
+    
     // Guardar como string con comas para la API
     setPantallas(numericValues.join(','));
-
+  
     // Guardar el texto completo para mostrar (displayPantallas)
     setDisplayPantallas(selectedOptions);
   };
@@ -1533,12 +1372,12 @@ const TemplateFormCarousel = () => {
 
   // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
   useEffect(() => {
-
-
+    
+    
 
     const newExample = replaceVariables(message, variableExamples);
 
-
+    
 
     setExample(newExample);
   }, [message, variableExamples]);
@@ -1571,13 +1410,13 @@ const TemplateFormCarousel = () => {
   // Inicializar botones basado en la cantidad seleccionada
   // Efecto para inicializar botones
   useEffect(() => {
-
+    
     const count = parseInt(cantidadBotones, 10);
-
+  
     setCards(prevCards => {
       return prevCards.map(card => {
         const newButtons = [];
-
+        
         // Primer botón
         if (count >= 1) {
           newButtons.push({
@@ -1588,7 +1427,7 @@ const TemplateFormCarousel = () => {
             ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
           });
         }
-
+        
         // Segundo botón
         if (count === 2) {
           newButtons.push({
@@ -1599,8 +1438,8 @@ const TemplateFormCarousel = () => {
             ...(tipoBoton2 === 'PHONE_NUMBER' && { phoneNumber: '' })
           });
         }
-
-
+        
+        
         return {
           ...card,
           buttons: newButtons
@@ -1609,92 +1448,56 @@ const TemplateFormCarousel = () => {
     });
   }, [cantidadBotones, tipoBoton, tipoBoton2]);
 
-  // Actualizar el campo "example" y "message" cuando cambie el mensaje o los ejemplos de las variables
-  useEffect(() => {
-    const newExample = replaceVariables(message, variableExamples);
-    setExample(newExample);
-  }, [message, variableExamples]);
 
-  // useEffect para validación con debounce
-  useEffect(() => {
-    // Limpiar timeout anterior
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
-    // Solo validar si hay un nombre y no está vacío
-    if (templateName.trim()) {
-      debounceTimeout.current = setTimeout(() => {
-        validateTemplateName(templateName);
-      }, 800); // Esperar 800ms después de que el usuario deje de escribir
-    } else {
-      // Si está vacío, limpiar mensajes de validación de existencia
-      if (templateNameHelperText === "Ya existe una plantilla con este nombre" ||
-        templateNameHelperText === "Nombre disponible" ||
-        templateNameHelperText === "Error al validar el nombre. Intenta nuevamente.") {
-        setTemplateNameHelperText("");
-      }
-    }
-
-    // Cleanup function
-    return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-    };
-  }, [templateName, idBotRedes]); // Dependencias: templateName e idBotRedes
-  //
-
-
-  // Validación mejorada para URLs
-  const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, setValidationErrors) => {
-
-
-    // Actualiza la tarjeta y sus botones
-    setCards(prevCards => {
-      return prevCards.map(card => {
-        // Si no es la tarjeta que queremos actualizar, la dejamos igual
-        if (card.id !== cardId) return card;
-
-        // Es la tarjeta correcta, actualizamos el botón específico
-        const updatedButtons = card.buttons.map(button =>
-          button.id === buttonId ? { ...button, [field]: value } : button
-        );
-
-
-        return {
-          ...card,
-          buttons: updatedButtons
-        };
-      });
+// Validación mejorada para URLs
+const updateButtonWithValidation = (cardId, buttonId, field, value, setCards, setValidationErrors) => {
+  
+  
+  // Actualiza la tarjeta y sus botones
+  setCards(prevCards => {
+    return prevCards.map(card => {
+      // Si no es la tarjeta que queremos actualizar, la dejamos igual
+      if (card.id !== cardId) return card;
+      
+      // Es la tarjeta correcta, actualizamos el botón específico
+      const updatedButtons = card.buttons.map(button => 
+        button.id === buttonId ? { ...button, [field]: value } : button
+      );
+      
+      
+      return {
+        ...card,
+        buttons: updatedButtons
+      };
     });
-
-    // Lógica de validación
-    if (field === "url") {
-      if (value.trim() === '') {
+  });
+  
+  // Lógica de validación
+  if (field === "url") {
+    if (value.trim() === '') {
+      setValidationErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[buttonId];
+        return newErrors;
+      });
+    } else if (value.length > 5) {
+      const isValid = /^(ftp|http|https):\/\/[^ "]+$/.test(value);
+      
+      if (!isValid) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [buttonId]: 'URL no válida. Debe comenzar con http://, https:// o ftp://'
+        }));
+      } else {
         setValidationErrors(prev => {
-          const newErrors = { ...prev };
+          const newErrors = {...prev};
           delete newErrors[buttonId];
           return newErrors;
         });
-      } else if (value.length > 5) {
-        const isValid = /^(ftp|http|https):\/\/[^ "]+$/.test(value);
-
-        if (!isValid) {
-          setValidationErrors(prev => ({
-            ...prev,
-            [buttonId]: 'URL no válida. Debe comenzar con http://, https:// o ftp://'
-          }));
-        } else {
-          setValidationErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[buttonId];
-            return newErrors;
-          });
-        }
       }
     }
-  };
+  }
+};
 
 
   const formatCardsForGupshup = (cards) => {
@@ -1732,8 +1535,8 @@ const TemplateFormCarousel = () => {
         mediaUrl = card.fileData.url;
       }
 
-
-
+      
+      
 
       // Crear el formato requerido por Gupshup
       return {
@@ -1779,13 +1582,13 @@ const TemplateFormCarousel = () => {
       alert("No puedes tener más de 10 acordeones");
       return;
     }
-
+  
     const cantidad = parseInt(cantidadBotones, 10);
-
+    
     // Función auxiliar para generar los botones según la cantidad
     const generarBotones = (cantidad) => {
       const botones = [];
-
+      
       // Primer botón (siempre que cantidad >= 1)
       if (cantidad >= 1) {
         botones.push({
@@ -1796,7 +1599,7 @@ const TemplateFormCarousel = () => {
           ...(tipoBoton === 'PHONE_NUMBER' && { phoneNumber: '' })
         });
       }
-
+      
       // Segundo botón (solo si cantidad === 2)
       if (cantidad === 2) {
         botones.push({
@@ -1807,16 +1610,16 @@ const TemplateFormCarousel = () => {
           ...(tipoBoton2 === 'PHONE_NUMBER' && { phoneNumber: '' })
         });
       }
-
+      
       return botones;
     };
-
+  
     const nuevaCard = {
       ...initialCardState,
       id: uuidv4(),
       buttons: generarBotones(cantidad)
     };
-
+    
     setCards([...cards, nuevaCard]);
   };
 
@@ -1878,14 +1681,14 @@ const TemplateFormCarousel = () => {
 
   // Estado principal que contiene todas las tarjetas
   const [cards, setCards] = useState([initialCardState]);
-
+  
   const currentCardId = cards[0].id;
 
 
 
   // Función para manejar la subida de archivos para una card específica
   const handleFileUpload = (cardId, uploadResponse) => {
-
+    
 
     if (uploadResponse) {
       // Estructura esperada del uploadResponse después de las modificaciones
@@ -1894,7 +1697,7 @@ const TemplateFormCarousel = () => {
         mediaId: uploadResponse.mediaId || null
       };
 
-
+      
 
       setCards(prevCards => prevCards.map(card => {
         if (card.id === cardId) {
@@ -1910,84 +1713,13 @@ const TemplateFormCarousel = () => {
     }
   };
 
-  // Función para contar emojis en un texto
+    // Función para contar emojis en un texto
   const countEmojis = (text) => {
     // Esta regex detecta la mayoría de los emojis, incluyendo emojis con modificadores
-    const emojiRegex = /(\p{Extended_Pictographic}(?:\u200D\p{Extended_Pictographic})*)/gu;
+    const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
     const matches = text.match(emojiRegex);
     return matches ? matches.length : 0;
   };
-
-  // 1. Función para detectar duplicados
-  const getDuplicateDescriptions = (descriptions) => {
-    const descriptionCounts = {};
-    const duplicates = new Set();
-
-    // Contar ocurrencias de cada descripción (ignorando vacías)
-    Object.entries(descriptions).forEach(([variable, description]) => {
-      if (description && description.trim()) {
-        const cleanDesc = description.trim().toLowerCase();
-        if (descriptionCounts[cleanDesc]) {
-          descriptionCounts[cleanDesc].push(variable);
-          duplicates.add(cleanDesc);
-        } else {
-          descriptionCounts[cleanDesc] = [variable];
-        }
-      }
-    });
-
-    // Retornar variables que tienen descripciones duplicadas
-    const duplicateVariables = new Set();
-    duplicates.forEach(desc => {
-      descriptionCounts[desc].forEach(variable => {
-        duplicateVariables.add(variable);
-      });
-    });
-
-    return duplicateVariables;
-  };
-
-  // 3. En tu componente, calcular duplicados
-  const duplicateVariables = getDuplicateDescriptions(variableDescriptions);
-
-  // Función para detectar descripciones duplicadas entre tarjetas
-  const getDuplicateDescriptionsInCards = (cards) => {
-    const descriptionCounts = {};
-    const duplicates = new Set();
-
-    // Recorrer todas las tarjetas y sus descripciones
-    cards.forEach(card => {
-      if (card.variableDescriptions) {
-        Object.entries(card.variableDescriptions).forEach(([variable, description]) => {
-          if (description && description.trim()) {
-            const cleanDesc = description.trim().toLowerCase();
-            if (descriptionCounts[cleanDesc]) {
-              descriptionCounts[cleanDesc].push({ cardId: card.id, variable });
-              duplicates.add(cleanDesc);
-            } else {
-              descriptionCounts[cleanDesc] = [{ cardId: card.id, variable }];
-            }
-          }
-        });
-      }
-    });
-
-    // Crear un mapa de tarjetas y variables con descripciones duplicadas
-    const duplicateEntries = new Map();
-    duplicates.forEach(desc => {
-      descriptionCounts[desc].forEach(entry => {
-        if (!duplicateEntries.has(entry.cardId)) {
-          duplicateEntries.set(entry.cardId, new Set());
-        }
-        duplicateEntries.get(entry.cardId).add(entry.variable);
-      });
-    });
-
-    return duplicateEntries;
-  };
-
-  // Uso en tu componente:
-  const duplicateDescriptionsInCards = getDuplicateDescriptionsInCards(cards);
 
   return (
     <Grid container sx={{ height: 'calc(100vh - 16px)' }}>
@@ -2280,7 +2012,6 @@ const TemplateFormCarousel = () => {
               {/* Selector de emojis */}
               {showEmojiPicker && (
                 <Paper
-                  ref={emojiPickerRef}
                   elevation={3}
                   sx={{
                     position: "absolute",
@@ -2340,10 +2071,6 @@ const TemplateFormCarousel = () => {
                           placeholder="¿Para qué sirve esta variable?"
                           value={variableDescriptions[variable] || ''}
                           onChange={(e) => handleUpdateDescriptions(variable, e)}
-                          error={!!variableDescriptionErrors[variable]}
-                          helperText={
-                            variableDescriptionHelperTexts[variable] || ""
-                          }
                           sx={{ flexGrow: 1 }}
                         />
 
@@ -2390,7 +2117,7 @@ const TemplateFormCarousel = () => {
                 >
                   <MenuItem value="IMAGE">Imagen</MenuItem>
                   <MenuItem value="VIDEO">Video</MenuItem>
-
+                  
 
                 </TextField>
               </FormControl>
@@ -2435,7 +2162,7 @@ const TemplateFormCarousel = () => {
                   select
                   label="Tipo de botón 2"
                   fullWidth
-                  value={tipoBoton2}
+                  value={tipoBoton2} 
                   onChange={(e) => setTipoBoton2(e.target.value)}
                 >
                   <MenuItem value="QUICK_REPLY">Respuesta rápida</MenuItem>
@@ -2508,9 +2235,8 @@ const TemplateFormCarousel = () => {
                               <AccordionDetails>
                                 <Box component="form" sx={{ '& .MuiTextField-root': { mb: 2, width: '100%' } }}>
                                   <FileUploadCarousel
-                                    carouselType={carouselType}
                                     onUploadSuccess={(uploadData) => {
-
+                                      
                                       handleFileUpload(card.id, uploadData);
                                     }}
                                   />
@@ -2528,13 +2254,13 @@ const TemplateFormCarousel = () => {
                                       value={card.messageCard}
                                       onChange={(e) => handleBodyMessageCardChange(e, card.id)}
                                       inputRef={(el) => (messageCardRefs.current[card.id] = el)}
-                                      //inputProps={{ maxLength: 160 }}
-                                      helperText={`${card.messageCard.length}/160 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
+                                      //inputProps={{ maxLength: 280 }}
+                                      helperText={`${card.messageCard.length}/280 caracteres | ${card.emojiCountCard || 0}/10 emojis`}
                                       error={Boolean(cardErrors[card.id]?.messageCard)}
                                       FormHelperTextProps={{
                                         sx: {
                                           textAlign: 'right',
-                                          color: card.messageCard.length === 160 || emojiCountCard >= 10 ? 'error.main' : 'text.secondary'
+                                          color: card.messageCard.length === 280 || emojiCountCard >= 10 ? 'error.main' : 'text.secondary'
                                         }
                                       }}
                                       sx={{
@@ -2574,7 +2300,6 @@ const TemplateFormCarousel = () => {
 
                                       <Divider orientation="vertical" flexItem />
 
-                                      {/*
                                       <Button
                                         variant="contained"
                                         size="small"
@@ -2583,7 +2308,7 @@ const TemplateFormCarousel = () => {
                                         sx={{ borderRadius: 1 }}
                                       >
                                         Agregar Variable
-                                      </Button> */}
+                                      </Button>
 
                                       {card.variablesCard.length > 0 && (
                                         <Button
@@ -2602,7 +2327,6 @@ const TemplateFormCarousel = () => {
                                     {/* Selector de emojis */}
                                     {showEmojiPickerCards && (
                                       <Paper
-                                        ref={emojiPickerCardRef}
                                         elevation={3}
                                         sx={{
                                           position: "absolute",
@@ -2663,12 +2387,6 @@ const TemplateFormCarousel = () => {
                                                 placeholder="¿Para qué sirve esta variable?"
                                                 value={card.variableDescriptions?.[variableCard] || ''}
                                                 onChange={(e) => handleUpdateDescriptionsCard(card.id, variableCard, e.target.value)}
-                                                error={duplicateDescriptionsInCards.get(card.id)?.has(variableCard) || false}
-                                                helperText={
-                                                  duplicateDescriptionsInCards.get(card.id)?.has(variableCard)
-                                                    ? "Esta descripción ya existe en otra tarjeta"
-                                                    : ""
-                                                }
                                                 sx={{ flexGrow: 1 }}
                                               />
 
@@ -2733,7 +2451,7 @@ const TemplateFormCarousel = () => {
                                           label="URL"
                                           value={button.url || ''}
                                           onChange={(e) => {
-
+                                            
                                             // Asumiendo que tiene acceso al cardId actual
                                             updateButtonWithValidation(
                                               card.id,           // ID de la tarjeta actual
@@ -2760,7 +2478,7 @@ const TemplateFormCarousel = () => {
                                       )}
 
                                       {/* Icono según el tipo de botón - Ahora con alineación vertical */}
-                                      <Box sx={{ display: "flex", alignItems: "center", pt: 2 }}>
+                                      <Box sx={{ display: "flex", alignItems: "center", pt:2 }}>
                                         {button.type === "QUICK_REPLY" && <ArrowForward />}
                                         {button.type === "URL" && <Link />}
                                         {button.type === "PHONE_NUMBER" && <Phone />}
@@ -2807,9 +2525,8 @@ const TemplateFormCarousel = () => {
               color="primary"
               onClick={iniciarRequest}
               sx={{ mt: 3, mb: 3 }}
-              disabled={loading}
             >
-              {loading ? "Enviando..." : "Enviar solicitud"}
+              Enviar solicitud
             </Button>
           </Box>
 
@@ -2927,29 +2644,17 @@ const TemplateFormCarousel = () => {
                     )}
 
                     <Box sx={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
-                      {card.fileData && card.fileData.url ? (
-                        // Detecta si es video por la extensión
-                        /\.(mp4|webm|ogg)$/i.test(card.fileData.url) ? (
-                          <video
-                            src={card.fileData.url}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            controls={false}
-                            autoPlay
-                            muted
-                            loop
-                          />
-                        ) : (
-                          <CardMedia
-                            component="img"
-                            sx={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                            image={card.fileData.url}
-                            alt={card.title}
-                          />
-                        )
+                      {(card.fileData && card.fileData.url) ? (
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                          image={card.fileData.url}
+                          alt={card.title}
+                        />
                       ) : (
                         <Box sx={{
                           height: '100%',
@@ -2965,14 +2670,13 @@ const TemplateFormCarousel = () => {
                     </Box>
 
 
-
                     {/* Contenedor de texto con altura fija */}
                     <CardContent sx={{ pt: 2, pb: 1, height: '120px', overflow: 'auto' }}>
                       <Typography variant="body2" color="text.secondary" sx={{
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
-                        overflowWrap: 'break-word',
+                        overflow: 'overflowWrap: "break-word"',
                         textOverflow: 'ellipsis'
                       }}>
                         {card.messageCard || "Descripción de la tarjeta"}

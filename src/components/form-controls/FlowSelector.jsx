@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, FormControl, Typography, Alert, Radio, RadioGroup } from '@mui/material';
 import Swal from 'sweetalert2';
-import { viewFlows } from '../api/gupshupApi';
-import { getFlowScreenName } from '../api/templatesGSApi';
+import { viewFlows } from '../../api/gupshupApi.jsx';
+import { getFlowScreenName } from '../../api/templatesGSApi.jsx';
 
 const FlowSelector = ({ onClose, urlTemplatesGS, appId, authCode, onFlowSelect }) => {
   const [loading, setLoading] = useState(false);

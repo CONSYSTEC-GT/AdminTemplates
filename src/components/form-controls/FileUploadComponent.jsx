@@ -16,7 +16,7 @@ import {
   Alert
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { obtenerApiToken } from '../api/templatesGSApi';
+import { obtenerApiToken } from '../../api/templatesGSApi.jsx';
 
 const FileUploadComponent = ({ templateType = 'media', onUploadSuccess, onImagePreview, onHeaderChange }) => {
 

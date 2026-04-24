@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Box, Button, Tooltip, Typography } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import EditTemplateFormCarousel from '../components/EditTemplateFormCarousel';
+import EditTemplateFormCarousel from '../forms/templates/components/EditTemplateFormCarousel.jsx';
 
 
 
