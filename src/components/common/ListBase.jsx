@@ -31,7 +31,7 @@ import ReplyIcon from '@mui/icons-material/Reply';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
-import FechaModificacion from '../utils/FechaModificacion';
+import FechaModificacion from '../../utils/FechaModificacion';
 
 const ListBase = ({
     templates = [],
