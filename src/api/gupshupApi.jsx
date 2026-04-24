@@ -216,7 +216,12 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
     templateType,
     vertical,
     message,
-    example
+    header,
+    footer,
+    mediaId,
+    buttons,
+    example,
+    exampleHeader
   } = templateData;
 
   const url = `https://partner.gupshup.io/partner/app/${appId}/templates/${idTemplate}`;
@@ -232,7 +237,21 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
   data.append("templateType", templateType.toUpperCase());
   data.append("vertical", vertical);
   data.append("content", message);
-  data.append("example", example);
+  data.append("header", header || "");
+  data.append("footer", footer || "");
+  if (mediaId) data.append("exampleMedia", mediaId);
+
+  // Formatear botones
+  const formattedButtons = (buttons || []).map((button) => {
+    const buttonData = { type: button.type, text: button.title || button.text };
+    if (button.type === "URL") buttonData.url = button.url;
+    else if (button.type === "PHONE_NUMBER") buttonData.phone_number = button.phoneNumber;
+    return buttonData;
+  });
+  data.append("buttons", JSON.stringify(formattedButtons));
+
+  data.append("example", example || message);
+  data.append("exampleHeader", exampleHeader || "");
   data.append("enableSample", "true");
   data.append("allowTemplateCategoryChange", "false");
 
@@ -243,7 +262,12 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
     templateType: templateType.toUpperCase(),
     vertical,
     content: message,
-    example,
+    header: header || null,
+    footer: footer || null,
+    exampleMedia: mediaId || null,
+    buttons: formattedButtons,
+    example: example || message,
+    exampleHeader: exampleHeader || "",
     enableSample: true,
     allowTemplateCategoryChange: false
   };
@@ -254,6 +278,7 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
     payload: requestData,
     url,
     metadata: {
+      templateId: idTemplate,
       procesoCompleto: true
     }
   };
@@ -327,7 +352,13 @@ export const editTemplateGupshup = async (appId, authCode, templateData, idTempl
       console.error("Error al guardar log de éxito:", logError);
     }
 
-    return result;
+    return {
+      status: "success",
+      template: {
+        id: idTemplate
+      },
+      ...result
+    };
 
   } catch (error) {
     console.error("Error en la solicitud:", error);
