@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { alpha, Box, FormControl, InputAdornment, InputLabel, Menu, MenuItem, OutlinedInput, Select, styled, ToggleButton, ToggleButtonGroup, Typography, Pagination } from '@mui/material';
+import { alpha, Box, Button, FormControl, InputAdornment, InputLabel, Menu, MenuItem, OutlinedInput, Select, styled, ToggleButton, ToggleButtonGroup, Typography, Pagination } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import { motion } from 'framer-motion';
 import Swal from 'sweetalert2'
@@ -9,6 +9,7 @@ import Swal from 'sweetalert2'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 // MODAL PARA ELIMINAR
 import DeleteModal from '../components/DeleteModal';
@@ -55,6 +56,7 @@ const TemplateAproved = () => {
   }, [])
 
   const obtenerTemplatesMerge = async () => {
+    setLoading(true);
     try {
       const templates = await fetchMergedTemplates(appId, authCode, urlTemplatesGS);
       const templatesAprobados = templates.filter(template =>
@@ -64,6 +66,8 @@ const TemplateAproved = () => {
     } catch (error) {
       console.error('Error al obtener templates:', error);
       return [];
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -331,7 +335,7 @@ const TemplateAproved = () => {
 
         <Box sx={{ flexGrow: 1, p: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1, p: 3 }}>
-            {/* Título */}<Typography variant="h4" gutterBottom>
+            <Typography variant="h4" sx={{ flexGrow: 1 }} gutterBottom>
               Catálogo de Plantillas
             </Typography>
 
@@ -341,13 +345,7 @@ const TemplateAproved = () => {
               onChange={handleViewChange}
               aria-label="vista"
               size="small"
-              sx={{
-                marginLeft: { xs: 0, md: 'auto' },
-                '& .MuiToggleButton-root': {
-                  px: 2,
-                  py: 0.5
-                }
-              }}
+              sx={{ '& .MuiToggleButton-root': { px: 2, py: 0.5 } }}
             >
               <ToggleButton value="grid" aria-label="vista grid">
                 <ViewModuleIcon />
@@ -357,30 +355,38 @@ const TemplateAproved = () => {
               </ToggleButton>
             </ToggleButtonGroup>
 
-            <FormControl variant="outlined" sx={{ marginLeft: 'auto', minWidth: 400 }}>
-              <InputLabel htmlFor="input-with-icon-adornment">
-                Buscar plantillas por nombre
-              </InputLabel>
+            <Button
+              variant="contained"
+              startIcon={<RefreshIcon />}
+              onClick={obtenerTemplatesMerge}
+              disabled={loading}
+              size="small"
+              color="primary"
+            >
+              Actualizar
+            </Button>
+
+            <FormControl variant="outlined" sx={{ minWidth: 250 }}>
               <OutlinedInput
-                id="input-with-icon-adornment"
                 endAdornment={
                   <InputAdornment position="end">
                     <SearchOutlinedIcon />
                   </InputAdornment>
                 }
-                label="With an end adornment"
+                placeholder="Buscar plantillas..."
                 value={busquedaFiltro}
                 onChange={(e) => setBusquedaFiltro(e.target.value)}
+                size="small"
               />
             </FormControl>
 
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="Categoria">Categoría</InputLabel>
+            <FormControl sx={{ minWidth: 150 }} size="small">
+              <InputLabel id="categoria-label">Categoría</InputLabel>
               <Select
                 labelId="categoria-label"
                 id="categoria-select"
                 value={categoriaFiltro}
-                label="Categoria"
+                label="Categoría"
                 onChange={handleFiltrarCategoriaPlantilla}
               >
                 <MenuItem value='ALL'>Todas</MenuItem>
@@ -389,8 +395,8 @@ const TemplateAproved = () => {
               </Select>
             </FormControl>
 
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="Tipo">Tipo</InputLabel>
+            <FormControl sx={{ minWidth: 150 }} size="small">
+              <InputLabel id="tipo-label">Tipo</InputLabel>
               <Select
                 labelId="tipo-label"
                 id="tipo-select"
