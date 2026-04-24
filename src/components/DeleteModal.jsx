@@ -123,7 +123,6 @@ const DeleteModal = ({ open, onClose, onConfirm, template }) => {
 
   const validarEliminacion = async (templateId) => {
     const url = `${urlTemplatesGS}plantillas/${templateId}/contacto-programado`;
-    console.log('Validando en:', url);
 
     const response = await fetch(url, {
       method: 'GET',

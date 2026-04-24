@@ -210,15 +210,15 @@ const saveTemplateButtons = async (ID_PLANTILLA, buttons = [], idNombreUsuarioTa
 };
 
 export const saveTemplateToTalkMe = async (
-    templateId,
-    templateData,
-    idNombreUsuarioTalkMe,
-    variables = [],
-    variableDescriptions = {},
-    cards = [],
-    idBotRedes,
-    urlTemplatesGS,
-    buttons
+  templateId,
+  templateData,
+  idNombreUsuarioTalkMe,
+  variables = [],
+  variableDescriptions = {},
+  cards = [],
+  idBotRedes,
+  urlTemplatesGS,
+  buttons
 ) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
@@ -302,21 +302,21 @@ export const saveTemplateToTalkMe = async (
 
       if (cards && cards.length > 0) {
         await saveCardsTemplate(
-            {
-              ID_PLANTILLA: plantillaId,
-              cards: cards
-            },
-            idNombreUsuarioTalkMe,
-            urlTemplatesGS
+          {
+            ID_PLANTILLA: plantillaId,
+            cards: cards
+          },
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS
         );
       }
 
       if (buttons && buttons.length > 0) {
         await saveTemplateButtons(
-            plantillaId,
-            buttons,
-            idNombreUsuarioTalkMe,
-            urlTemplatesGS
+          plantillaId,
+          buttons,
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS
         );
       }
     }
@@ -329,15 +329,15 @@ export const saveTemplateToTalkMe = async (
 };
 
 export const saveTemplateFlowToTalkMe = async (
-    templateId,
-    templateData,
-    idNombreUsuarioTalkMe,
-    variables = [],
-    variableDescriptions = {},
-    cards = [],
-    idBotRedes,
-    urlTemplatesGS,
-    buttons
+  templateId,
+  templateData,
+  idNombreUsuarioTalkMe,
+  variables = [],
+  variableDescriptions = {},
+  cards = [],
+  idBotRedes,
+  urlTemplatesGS,
+  buttons
 ) => {
   const { templateName, selectedCategory, message, uploadedUrl, templateType, pantallas } = templateData;
 
@@ -421,21 +421,21 @@ export const saveTemplateFlowToTalkMe = async (
 
       if (cards && cards.length > 0) {
         await saveCardsTemplate(
-            {
-              ID_PLANTILLA: plantillaId,
-              cards: cards
-            },
-            idNombreUsuarioTalkMe,
-            urlTemplatesGS
+          {
+            ID_PLANTILLA: plantillaId,
+            cards: cards
+          },
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS
         );
       }
 
       if (buttons && buttons.length > 0) {
         await saveTemplateButtons(
-            plantillaId,
-            buttons,
-            idNombreUsuarioTalkMe,
-            urlTemplatesGS
+          plantillaId,
+          buttons,
+          idNombreUsuarioTalkMe,
+          urlTemplatesGS
         );
       }
     }
@@ -448,26 +448,19 @@ export const saveTemplateFlowToTalkMe = async (
 };
 
 export const editTemplateToTalkMe = async (
-    idTemplate,
-    templateData,
-    idNombreUsuarioTalkMe,
-    variables = [],
-    variableDescriptions = {},
-    cards = [],
-    urlTemplatesGS,
-    idBotRedes,
-    buttons = [],
-    pantallas = 0,
-    mediaURL = null,
-    skipParamsAndButtons = false
+  idTemplate,
+  templateData,
+  idNombreUsuarioTalkMe,
+  variables = [],
+  variableDescriptions = {},
+  cards = [],
+  urlTemplatesGS,
+  idBotRedes,
+  buttons = [],
+  pantallas = 0,
+  mediaURL = null,
+  skipParamsAndButtons = false
 ) => {
-  console.log("=== editTemplateToTalkMe INICIO ===");
-  console.log("idTemplate:", idTemplate);
-  console.log("templateData:", templateData);
-  console.log("variables:", variables);
-  console.log("variableDescriptions:", variableDescriptions);
-  console.log("buttons:", buttons);
-  console.log("pantallas:", pantallas);
 
   const { templateName, selectedCategory, message, uploadedUrl, templateType } = templateData;
 
@@ -530,42 +523,29 @@ export const editTemplateToTalkMe = async (
     }
 
     const result = await response.json();
-    console.log("PUT result:", result);
     const talkmeId = result?.ID_PLANTILLA;
-    console.log("talkmeId:", talkmeId);
 
     if (!talkmeId) {
-      console.log("❌ No se obtuvo talkmeId del PUT");
       return { status: "error", message: "No se obtuvo ID de plantilla" };
     }
 
     if (skipParamsAndButtons) {
-      console.log("⏭️ Saltando parámetros y botones (skipParamsAndButtons=true)");
       return { status: "success", data: result };
     }
 
     // ── Parámetros ──────────────────────────────────────────
     try {
-      console.log("Obteniendo parámetros existentes para talkmeId:", talkmeId);
       const parametros = await obtenerParametros(urlTemplatesGS, talkmeId);
-      console.log("Parámetros existentes:", parametros);
 
       if (parametros?.length > 0 && TIPO_PLANTILLA === 1) {
         const parametrosIds = parametros.map((p) => p.ID_PLANTILLA_PARAMETRO);
-        console.log("Eliminando broadcast parámetros:", parametrosIds);
         await eliminarBroadcastParametros(urlTemplatesGS, parametrosIds);
       }
-
-      console.log("Eliminando parámetros de plantilla...");
       await deleteTemplateParams(talkmeId, urlTemplatesGS);
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       if (variables.length > 0) {
-        console.log("Guardando parámetros:", { talkmeId, variables, variableDescriptions });
         await saveTemplateParams(talkmeId, variables, variableDescriptions, urlTemplatesGS);
-        console.log("✅ Parámetros guardados");
-      } else {
-        console.log("No hay variables, saltando saveTemplateParams");
       }
     } catch (error) {
       console.error("❌ Error gestionando parámetros:", error);
@@ -599,9 +579,9 @@ export const editTemplateToTalkMe = async (
 
         for (const card of cards) {
           await saveCardsTemplate(
-              { ID_PLANTILLA: talkmeId, cards: [card] },
-              idNombreUsuarioTalkMe,
-              urlTemplatesGS
+            { ID_PLANTILLA: talkmeId, cards: [card] },
+            idNombreUsuarioTalkMe,
+            urlTemplatesGS
           );
         }
       } catch (error) {

@@ -153,7 +153,6 @@ const EditTemplateFormCarousel = () => {
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
-        console.log("templateData: ", templateData);
 
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
         setValue("selectedCategory", templateData.category || "", { shouldValidate: false });
@@ -789,10 +788,6 @@ const EditTemplateFormCarousel = () => {
   };
 
   const onSubmit = async (formData) => {
-    console.log("🚀 onSubmit ejecutado");
-    console.log("formData:", formData);
-    console.log("pantallasState:", pantallasState);
-
     if (loading) return;
     setLoading(true);
 
@@ -855,7 +850,6 @@ const EditTemplateFormCarousel = () => {
     });
 
     if (soloCambioPantallas) {
-      console.log("🎯 Solo se modificaron pantallas - Actualizando solo TalkMe");
 
       const result2 = await editTemplateToTalkMe(
         templateData.id,

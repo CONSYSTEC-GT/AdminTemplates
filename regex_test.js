@@ -6,14 +6,9 @@ const isValidSampleMedia = (value) => {
   if (typeof value !== "string") return false;
   const trimmed = value.trim();
   if (!trimmed) return false;
-  // sampleMedia can be multi-line (e.g. for templates with multiple example images)
   const lines = trimmed.split('\n').map(l => l.trim()).filter(l => l);
-  console.log("Lines to test:", lines);
   return lines.length > 0 && lines.every(line => {
     const res = SAMPLE_MEDIA_REGEX.test(line);
-    console.log("Testing line:", line, "Result:", res);
     return res;
   });
 };
-
-console.log("Final result:", isValidSampleMedia(str));

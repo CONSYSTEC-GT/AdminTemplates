@@ -176,7 +176,6 @@ const EditTemplateFormFlow = () => {
   useEffect(() => {
     const loadData = async () => {
       if (templateData) {
-        console.log("templateData: ", templateData);
 
         // Campos deshabilitados - no se pueden cambiar
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
@@ -609,23 +608,17 @@ const EditTemplateFormFlow = () => {
   };
 
   const onSubmit = async (formData) => {
-    console.log("🚀🚀🚀 FUNCIÓN onSubmit EJECUTADA 🚀🚀🚀");
-    console.log("formData recibido:", formData);
-    console.log("pantallasState:", pantallasState);
-    console.log("pantallasIniciales:", pantallasIniciales);
 
     if (loading) return;
     setLoading(true);
 
     // === VALIDACIÓN COMÚN: Pantallas ===
     if (pantallasState.length === 0) {
-      console.log("❌ Validación fallida: No hay pantallas seleccionadas");
       setPantallasError(true);
       setPantallasHelperText("Debes seleccionar al menos una pantalla");
       setLoading(false);
       return;
     }
-    console.log("✅ Pantallas seleccionadas:", pantallasState);
 
     // === DETECCIÓN TEMPRANA: ¿Solo cambiaron las pantallas? ===
     const pantallasModificadas =
@@ -688,21 +681,6 @@ const EditTemplateFormFlow = () => {
       !buttonsChanged;
 
     const soloCambioPantallas = pantallasModificadas && gupshupSinCambios;
-
-    console.log("=== DEBUG COMPARACIONES ===");
-    console.log("formData.mediaId:", JSON.stringify(formData.mediaId));
-    console.log("mediaIdOriginal:", JSON.stringify(mediaIdOriginal));
-    console.log("messageChanged:", messageChanged, "| formData.message:", JSON.stringify(formData.message?.substring(0, 50)), "vs original:", JSON.stringify(mensajeOriginal?.substring(0, 50)));
-    console.log("headerChanged:", headerChanged, "| formData.header:", JSON.stringify(formData.header), "vs original:", JSON.stringify(headerOriginal));
-    console.log("footerChanged:", footerChanged, "| formData.footer:", JSON.stringify(formData.footer), "vs original:", JSON.stringify(footerOriginal));
-    console.log("mediaIdChanged:", mediaIdChanged);
-    console.log("buttonsChanged:", buttonsChanged);
-    console.log("=== DECISIÓN ===");
-    console.log("pantallasModificadas:", pantallasModificadas);
-    console.log("gupshupSinCambios:", gupshupSinCambios);
-    console.log("soloCambioPantallas:", soloCambioPantallas);
-
-    // === VARIABLES (necesarias para ambos casos) ===
     const variables = formData.variables || {};
     const variableKeys = Object.keys(variables);
     const variableDescriptions = {};
@@ -713,14 +691,8 @@ const EditTemplateFormFlow = () => {
       variableExamples[key] = val?.example || "";
     });
 
-    // === CASO 1: Solo se modificaron pantallas → Actualizar solo TalkMe ===
     if (soloCambioPantallas) {
-      console.log("🎯 CASO 1: Solo se modificaron pantallas - Actualizando solo TalkMe");
-
-      // Usar la URL original de la imagen (mediaURL del estado, que viene de la API)
       const urlImagen = mediaURL || uploadedUrl;
-
-      // Construir payload con valores originales, SOLO actualizar pantallas
       const talkMePayload = {
         templateName: templateData.elementName,
         selectedCategory: templateData.category,
@@ -731,23 +703,20 @@ const EditTemplateFormFlow = () => {
 
       const result2 = await editTemplateToTalkMe(
         templateData.id,
-        talkMePayload,  // ← Usar valores originales
+        talkMePayload,
         idNombreUsuarioTalkMe,
-        variableKeys,   // Variables originales
-        variableDescriptions, // Descripciones originales
-        [], // parameters (vacío como en sendRequest2)
+        variableKeys,
+        variableDescriptions,
+        [],
         urlTemplatesGS,
         idBotRedes,
-        [], // buttons (no se modifican)
-        pantallasState.join(','), // ✅ SOLO ESTO CAMBIA
-        urlImagen,  // URL original de la imagen
-        true  // ← skipParamsAndButtons: solo actualizar pantallas
+        [],
+        pantallasState.join(','),
+        urlImagen,
+        true
       );
 
-      console.log("Resultado de editTemplateToTalkMe:", result2);
-
       if (result2?.status === "success") {
-        console.log("✅ Actualización de pantallas exitosa");
         Swal.fire({
           title: 'Éxito',
           text: 'Las pantallas se actualizaron correctamente.',
@@ -757,7 +726,6 @@ const EditTemplateFormFlow = () => {
         });
         navigate('/Dashboard');
       } else {
-        console.log("❌ Error en actualización de pantallas:", result2);
         Swal.fire({
           title: 'Error al actualizar en TalkMe',
           text: `Error: ${result2?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -770,12 +738,8 @@ const EditTemplateFormFlow = () => {
       return;
     }
 
-    // === CASO 2: Hay cambios en Gupshup → Validaciones adicionales ===
-    console.log("🎯 CASO 2: Hay cambios en Gupshup - Validando y actualizando");
-
     if (formData.templateType === "IMAGE") {
       if (!formData.mediaId) {
-        console.log("❌ Validación fallida: IMAGE sin mediaId");
         Swal.fire({
           title: 'Imagen requerida',
           text: 'Debes cargar una imagen para este tipo de plantilla.',
@@ -788,7 +752,6 @@ const EditTemplateFormFlow = () => {
       }
 
       if (!isValidSampleMedia(formData.mediaId)) {
-        console.log("❌ Validación fallida: mediaId inválido:", formData.mediaId);
         Swal.fire({
           title: 'Imagen inválida',
           text: 'El identificador del sampleMedia no es válido. Vuelve a cargar la imagen.',
@@ -799,13 +762,11 @@ const EditTemplateFormFlow = () => {
         setLoading(false);
         return;
       }
-      console.log("✅ mediaId válido:", formData.mediaId);
     }
 
     const descriptions = Object.values(variables).map(v => v?.description).filter(Boolean);
     const uniqueDescriptions = new Set(descriptions);
     if (descriptions.length !== uniqueDescriptions.size) {
-      console.log("❌ Validación fallida: Descripciones duplicadas");
       Swal.fire({
         title: 'Error',
         text: 'Las descripciones de las variables no pueden duplicarse.',
@@ -817,17 +778,11 @@ const EditTemplateFormFlow = () => {
       return;
     }
 
-    console.log("isFlowTemplate:", isFlowTemplate);
-
     const result = isFlowTemplate
       ? await editTemplateFlowGupshup(appId, authCode, templatePayload, templateData.id, idNombreUsuarioTalkMe, urlTemplatesGS)
       : await editTemplateGupshup(appId, authCode, templatePayload, templateData.id, idNombreUsuarioTalkMe, urlTemplatesGS);
 
-    console.log("Resultado de actualización Gupshup:", result);
-
     if (result?.status === "success") {
-      console.log("✅ Actualización Gupshup exitosa");
-
       const result2 = await editTemplateToTalkMe(
         result.template.id,
         {
@@ -848,10 +803,7 @@ const EditTemplateFormFlow = () => {
         mediaURL
       );
 
-      console.log("Resultado de actualización TalkMe:", result2);
-
       if (result2?.status === "success") {
-        console.log("✅ Actualización completa exitosa");
         Swal.fire({
           title: 'Éxito',
           text: 'La plantilla se actualizó correctamente.',
@@ -861,7 +813,6 @@ const EditTemplateFormFlow = () => {
         });
         navigate('/Dashboard');
       } else {
-        console.log("❌ Error en actualización TalkMe:", result2);
         Swal.fire({
           title: 'Error al actualizar en TalkMe',
           text: `Error: ${result2?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -871,7 +822,6 @@ const EditTemplateFormFlow = () => {
         });
       }
     } else {
-      console.log("❌ Error en actualización Gupshup:", result);
       Swal.fire({
         title: isFlowTemplate ? 'Error al editar plantilla FLOW' : 'Error al editar plantilla',
         text: `Error: ${result?.message || 'Ocurrió un problema, intenta nuevamente.'}`,
@@ -882,7 +832,6 @@ const EditTemplateFormFlow = () => {
     }
 
     setLoading(false);
-    console.log("=== FIN onSubmit ===");
   };
 
   useClickOutside(emojiPickerRef, () => setShowEmojiPicker(false));
@@ -1653,15 +1602,9 @@ const EditTemplateFormFlow = () => {
               size="large"
               color="primary"
               onClick={async () => {
-                console.log("🖱️ Botón clickeado");
-                console.log("loading:", loading);
-                console.log("isSubmitting:", isSubmitting);
-
                 try {
-                  console.log("📞 Llamando a handleSubmit...");
                   await handleSubmit(
                     async (data) => {
-                      console.log("✅ handleSubmit ejecutó el callback con data:", data);
                       await onSubmit(data);
                     },
                     (validationErrors) => {
