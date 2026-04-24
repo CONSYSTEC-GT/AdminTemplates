@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { templateBaseSchema, variablesSchema } from "./template.schema";
+import { templateBaseSchema, variablesSchema } from "./Template.schema";
 
 // 1. Definimos el botón con todos los campos que usa tu componente
 export const flowButtonSchema = z.object({
