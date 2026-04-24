@@ -882,7 +882,7 @@ const EditTemplateForm = () => {
       console.log("✅ Actualización Gupshup exitosa");
 
       const result2 = await editTemplateToTalkMe(
-        result.template.id,
+        result.template?.id || templateData.id,
         {
           templateName: formData.templateName,
           selectedCategory: formData.selectedCategory,

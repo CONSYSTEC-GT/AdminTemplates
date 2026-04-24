@@ -1218,7 +1218,7 @@ const EditTemplateFormCarousel = () => {
                 name="carouselType"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} select label="Tipo de carrusel" fullWidth sx={{ mb: 2 }}>
+                  <TextField {...field} disabled select label="Tipo de carrusel" fullWidth sx={{ mb: 2 }}>
                     <MenuItem value="IMAGE">Imagen</MenuItem>
                     <MenuItem value="VIDEO">Video</MenuItem>
                   </TextField>
@@ -1268,13 +1268,16 @@ const EditTemplateFormCarousel = () => {
                               </AccordionSummary>
                               <AccordionDetails>
                                 <Box component="form" sx={{ '& .MuiTextField-root': { mb: 2, width: '100%' } }}>
-                                  <FileUploadCarousel
+                                  {/*<FileUploadCarousel
+                                    disabled
                                     carouselType={getValues("carouselType")}
                                     onUploadSuccess={(uploadData) => handleFileUpload(card.id, uploadData)}
-                                  />
+                                  />*/}
+
 
                                   <Box sx={{ position: "relative" }}>
                                     <TextField
+                                      disabled
                                       fullWidth
                                       multiline
                                       rows={4}
@@ -1322,7 +1325,7 @@ const EditTemplateFormCarousel = () => {
                                 <Stack spacing={2}>
                                   {(card.buttons || []).map((button, btnIndex) => (
                                     <Box key={button.id} sx={{ display: "flex", alignItems: "center", gap: 2, border: "1px solid #ccc", borderRadius: 2, p: 2, backgroundColor: "#f9f9f9" }}>
-                                      <TextField label="Titulo del botón" value={button.title} onChange={(e) => updateButton(card.id, button.id, "title", e.target.value)} fullWidth />
+                                      <TextField disabled label="Titulo del botón" value={button.title} onChange={(e) => updateButton(card.id, button.id, "title", e.target.value)} fullWidth />
                                       <Select value={button.type} sx={{ minWidth: 150 }} disabled>
                                         <MenuItem value="QUICK_REPLY">Respuesta rápida</MenuItem>
                                         <MenuItem value="URL">URL</MenuItem>
