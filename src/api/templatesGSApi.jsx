@@ -252,7 +252,7 @@ export const saveTemplateToTalkMe = async (
   };
   const MEDIA = mediaMap[templateType] || null;
 
-  const mensajeProcesado = message;
+  const mensajeProcesado = reordenarVariables(message);
 
   const nombreProcesado = templateName.replace(/_/g, " ");
 
@@ -371,7 +371,7 @@ export const saveTemplateFlowToTalkMe = async (
   };
   const MEDIA = mediaMap[templateType] || null;
 
-  const mensajeProcesado = message;
+  const mensajeProcesado = reordenarVariables(message);
 
   const nombreProcesado = templateName.replace(/_/g, " ");
 
