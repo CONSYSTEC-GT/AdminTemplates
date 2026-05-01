@@ -6,7 +6,14 @@ export const editTemplateCatalogFormSchema = z.object({
     templateType: z.string().default("CATALOG"),
     languageCode: z.string().min(1, "El idioma es requerido"),
     vertical: z.string().optional(),
-    message: z.string().min(1, "El contenido es requerido").max(550, "Máximo 550 caracteres"),
+    message: z.string().min(1, "El contenido es requerido").max(550, "Máximo 550 caracteres").refine(
+        (val) => {
+            const matches = val.match(/\{\{([^}]+)\}\}/g);
+            if (!matches) return true;
+            return matches.every((m) => /^\{\{\d+\}\}$/.test(m));
+        },
+        "Las variables deben ser numéricas, ej: {{1}}, {{2}}. No se permiten nombres como {{nombre_cliente}}"
+    ),
     header: z.string().max(60, "Máximo 60 caracteres").optional(),
     footer: z.string().max(60, "Máximo 60 caracteres").optional(),
     mediaId: z.string().optional(),

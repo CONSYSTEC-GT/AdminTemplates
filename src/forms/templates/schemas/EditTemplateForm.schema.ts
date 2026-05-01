@@ -64,7 +64,15 @@ export const editTemplateFormSchema = z.object({
             const matches = text.match(emojiRegex);
             const emojiCount = matches ? matches.length : 0;
             return emojiCount <= 10;
-        }, "Máximo 10 emojis"),
+        }, "Máximo 10 emojis")
+        .refine(
+            (val) => {
+                const matches = val.match(/\{\{([^}]+)\}\}/g);
+                if (!matches) return true;
+                return matches.every((m) => /^\{\{\d+\}\}$/.test(m));
+            },
+            "Las variables deben ser numéricas, ej: {{1}}, {{2}}. No se permiten nombres como {{nombre_cliente}}"
+        ),
 
     header: z.string().max(60, "Máximo 60 caracteres").optional().default(""),
     footer: z.string().max(60, "Máximo 60 caracteres").optional().default(""),
