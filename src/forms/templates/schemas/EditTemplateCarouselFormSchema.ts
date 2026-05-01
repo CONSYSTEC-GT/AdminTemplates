@@ -28,7 +28,22 @@ export const editTemplateCarouselFormSchema = z.object({
     templateType: z.string().default("CAROUSEL"),
     languageCode: z.string().min(1, "El idioma es requerido"),
     vertical: z.string().optional(),
-    message: z.string().min(1, "El contenido es requerido").max(550, "Máximo 550 caracteres"),
+    message: z.string().min(1, "El contenido es requerido").max(550, "Máximo 550 caracteres").refine(
+        (val) => {
+            const matches = val.match(/\{\{([^}]+)\}\}/g);
+            if (!matches) return true;
+            return matches.every((m) => /^\{\{\d+\}\}$/.test(m));
+        },
+        "Las variables deben ser numéricas, ej: {{1}}, {{2}}. No se permiten nombres como {{nombre_cliente}}"
+    )
+        .refine(
+            (val) => {
+                const matches = val.match(/\{\{([^}]+)\}\}/g);
+                if (!matches) return true;
+                return matches.every((m) => /^\{\{\d+\}\}$/.test(m));
+            },
+            "Las variables deben ser numéricas, ej: {{1}}, {{2}}. No se permiten nombres como {{nombre_cliente}}"
+        ),
     carouselType: z.enum(["IMAGE", "VIDEO"]).default("IMAGE"),
     cantidadBotones: z.number().min(1).max(2).default(1),
     tipoBoton: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER"]).default("QUICK_REPLY"),

@@ -114,7 +114,15 @@ export const templateBaseSchema = z.object({
     message: z
         .string()
         .min(1,   "Este campo es requerido")
-        .max(550, "Máximo 550 caracteres"),
+        .max(550, "Máximo 550 caracteres")
+        .refine(
+            (val) => {
+                const matches = val.match(/\{\{([^}]+)\}\}/g);
+                if (!matches) return true;
+                return matches.every((m) => /^\{\{\d+\}\}$/.test(m));
+            },
+            "Las variables deben ser numéricas, ej: {{1}}, {{2}}. No se permiten nombres como {{nombre_cliente}}"
+        ),
 });
 
 // ── Tipos inferidos del schema ────────────────────────────────────────────────
