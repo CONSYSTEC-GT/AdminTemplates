@@ -17,6 +17,7 @@ const normalButtonSchema = z.discriminatedUnion("type", [
         title: z.string().min(1, "El título del botón es requerido").max(25, "Máximo 25 caracteres"),
         url: z.string().optional(),
         phoneNumber: z.string().optional(),
+        contextoIA: z.string().max(100, "Máximo 100 caracteres").optional(),
     }),
     z.object({
         id: z.any(),

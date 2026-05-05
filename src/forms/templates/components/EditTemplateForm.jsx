@@ -27,7 +27,7 @@ import PreviewIcon from '@mui/icons-material/Preview';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 import FileUploadComponent from '../../../components/form-controls/FileUploadComponentV2.jsx';
-import { obtenerPantallasMedia, obtenerParametros, editTemplateToTalkMe } from '../../../api/templatesGSApi.jsx';
+import { obtenerPantallasMedia, obtenerParametros, editTemplateToTalkMe, botIAActivo, obtenerBotones } from '../../../api/templatesGSApi.jsx';
 import { useClickOutside } from '../../../utils/emojiClick.jsx';
 import { editTemplateFlowGupshup, editTemplateGupshup, previewFlow } from '../../../api/gupshupApi.jsx';
 import FlowSelector from '../../../components/form-controls/FlowSelector.jsx';
@@ -42,6 +42,17 @@ const isValidSampleMedia = (value) => {
   const lines = trimmed.split('\n').map(l => l.trim()).filter(l => l);
   return lines.length > 0 && lines.every(line => SAMPLE_MEDIA_REGEX.test(line));
 };
+
+const checkBotIAActivo = async (idBot, urlTemplatesGS) => {
+  if (!idBot || !urlTemplatesGS) return false;
+  try {
+    const IA = await botIAActivo(idBot, urlTemplatesGS);
+    return IA?.VALOR === "1";
+  } catch (error) {
+    console.log("Error al validar IA activo:", error);
+    return false;
+  }
+}
 
 const CATEGORY_OPTIONS = [
   {
@@ -174,6 +185,19 @@ const EditTemplateForm = () => {
   const watchedVariables = watch("variables") ?? {};
   const watchedButtons = watch("buttons") ?? [];
 
+  const [tieneIAActiva, setTieneIAActiva] = useState(false);
+
+  useEffect(() => {
+    if (idBot && urlTemplatesGS) {
+      const checkIA = async () => {
+        const activa = await checkBotIAActivo(idBot, urlTemplatesGS);
+        setTieneIAActiva(activa);
+        console.log("Tiene IA activa = ", activa);
+      };
+      checkIA();
+    }
+  }, [idBot, urlTemplatesGS]);
+
   // Cargar datos iniciales desde templateData
   useEffect(() => {
     const loadData = async () => {
@@ -241,7 +265,7 @@ const EditTemplateForm = () => {
                 }
               } else {
                 const formattedButtons = meta.buttons.map((button, index) => ({
-                  id: index,
+                  id: `btn_${index}`,
                   title: button.text || "",
                   type: button.type || "QUICK_REPLY",
                   url: button.url || "",
@@ -272,6 +296,7 @@ const EditTemplateForm = () => {
 
         try {
           const info = await obtenerPantallasMedia(urlTemplatesGS, templateData.id);
+          let realIdPlantilla = "";
           if (info !== null) {
             const pantallasFromAPI = info.pantallas || "";
             const pantallasArray = pantallasFromAPI.split(',').filter(p => p);
@@ -285,8 +310,27 @@ const EditTemplateForm = () => {
 
             setMediaURL(info.url || "");
             setImagePreview(info.url || "");
-            setIdPlantilla(info.id_plantilla || "");
-            setValue("idPlantilla", info.id_plantilla || "");
+            realIdPlantilla = info.id_plantilla || "";
+            setIdPlantilla(realIdPlantilla);
+            setValue("idPlantilla", realIdPlantilla);
+          }
+
+          if (realIdPlantilla) {
+            try {
+              const botonContextoIA = await obtenerBotones(urlTemplatesGS, realIdPlantilla);
+              console.log("botones de contexto ia obtenidos: ", botonContextoIA);
+
+              if (Array.isArray(botonContextoIA) && botonContextoIA.length > 0) {
+                const botonesActuales = getValues("buttons");
+                const botonesActualizados = botonesActuales.map((btn, i) => ({
+                  ...btn,
+                  contextoIA: botonContextoIA[i]?.CONTEXTO_IA || ""
+                }));
+                setValue("buttons", botonesActualizados, { shouldValidate: false });
+              }
+            } catch (error) {
+              console.error("Error al cargar botón contexto IA:", error);
+            }
           }
         } catch (error) {
           console.error("❌ Error al cargar pantallas/media:", error);
@@ -559,12 +603,17 @@ const EditTemplateForm = () => {
     }
   };
 
-  const handleUpdateButton = (index, key, value) => {
-    updateButton(index, { ...buttonFields[index], [key]: value });
+  const handleUpdateButton = (id, key, value) => {
+    const current = getValues("buttons") ?? [];
+    setValue("buttons",
+      current.map(btn => btn.id === id ? { ...btn, [key]: value } : btn),
+      { shouldValidate: false }
+    );
   };
 
-  const handleRemoveButton = (index) => {
-    removeButton(index);
+  const handleRemoveButton = (id) => {
+    const current = getValues("buttons") ?? [];
+    setValue("buttons", current.filter(btn => btn.id !== id), { shouldValidate: false });
   };
 
   const handleFlowClose = () => {
@@ -644,6 +693,7 @@ const EditTemplateForm = () => {
     const buttonsOriginal = originalMeta.buttons || [];
 
     // ✅ buttonsHaveChanged solo aplica si la plantilla NO es catálogo
+    // ⚠️ contextoIA es exclusivo de TalkMe, NO se compara contra Gupshup
     const buttonsHaveChanged = () => {
       const currentButtons = (formData.buttons || []).map(btn => ({
         type: btn.type,
@@ -680,6 +730,9 @@ const EditTemplateForm = () => {
     const isCatalog = formData.templateType === "CATALOG";
     const buttonsChanged = isCatalog ? false : buttonsHaveChanged();
 
+    // ✅ contextoIA es solo TalkMe — detectar si cambió para forzar actualización en TalkMe
+    const contextoIAChanged = (formData.buttons || []).some(btn => btn.contextoIA);
+
     const gupshupSinCambios =
       !messageChanged &&
       !headerChanged &&
@@ -687,6 +740,27 @@ const EditTemplateForm = () => {
       !mediaIdChanged &&
       !buttonsChanged;
 
+    if (!gupshupSinCambios) {
+      // 🐛 DEBUG TEMPORAL: Mostrar al usuario qué campo provocó el cambio en Gupshup
+      Swal.fire({
+        title: "Debug - Gupshup Detectó Cambios",
+        html: `
+          <ul>
+            <li><b>Mensaje:</b> ${messageChanged}</li>
+            <li><b>Header:</b> ${headerChanged}</li>
+            <li><b>Footer:</b> ${footerChanged}</li>
+            <li><b>Media ID:</b> ${mediaIdChanged}</li>
+            <li><b>Botones:</b> ${buttonsChanged}</li>
+          </ul>
+          <p>Si solo cambiaste Contexto IA, todos deberían ser false.</p>
+        `,
+        icon: "info"
+      });
+      // setLoading(false);
+      // return; // NO hacemos return para no bloquear su flujo, pero verá la alerta
+    }
+
+    // soloCambioPantallas: gupshup sin cambios Y puede haber cambiado contextoIA (solo TalkMe)
     const soloCambioPantallas = pantallasModificadas && gupshupSinCambios;
     const variables = formData.variables || {};
     const variableKeys = Object.keys(variables);
@@ -698,7 +772,7 @@ const EditTemplateForm = () => {
       variableExamples[key] = val?.example || "";
     });
 
-    if (soloCambioPantallas) {
+    if (soloCambioPantallas || (gupshupSinCambios && contextoIAChanged)) {
 
       const urlImagen = mediaURL || uploadedUrl;
 
@@ -719,16 +793,16 @@ const EditTemplateForm = () => {
         [],
         urlTemplatesGS,
         idBotRedes,
-        [],
+        isCatalog ? [] : formData.buttons,
         pantallasState.join(','),
         urlImagen,
-        true
+        false
       );
 
       if (result2?.status === "success") {
         Swal.fire({
           title: 'Éxito',
-          text: 'Las pantallas se actualizaron correctamente.',
+          text: 'La plantilla se guardó correctamente.',
           icon: 'success',
           confirmButtonText: 'Cerrar',
           confirmButtonColor: '#00c3ff'
@@ -1549,102 +1623,78 @@ const EditTemplateForm = () => {
               {/* Se ha deshabilitado la capacidad de agregar nuevos botones en la edición */}
 
               <Stack spacing={2}>
-                {buttonFields.map((button, index) => (
-                  <Box
-                    key={button.id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 2,
-                      border: "1px solid #ccc",
-                      borderRadius: 2,
-                      p: 2,
-                      backgroundColor: "#f9f9f9",
-                    }}
-                  >
-                    <Controller
-                      name={`buttons.${index}.title`}
-                      control={control}
-                      render={({ field, fieldState }) => (
+                {watchedButtons.map((button, index) => (
+                  <Box key={button.id}>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, border: "1px solid #ccc", borderRadius: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+
+                      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, width: "100%" }}>
                         <TextField
-                          {...field}
                           label="Título del botón"
+                          value={button.title}
+                          onChange={(e) => handleUpdateButton(button.id, "title", e.target.value)}
                           fullWidth
                           inputProps={{ maxLength: 25 }}
-                          error={!!fieldState.error}
-                          helperText={fieldState.error?.message ?? `${field.value?.length || 0}/25 caracteres`}
+                          error={!!errors.buttons?.[index]?.title}
+                          helperText={errors.buttons?.[index]?.title?.message ?? `${button.title.length}/25 caracteres`}
                         />
-                      )}
-                    />
-
-                    <Controller
-                      name={`buttons.${index}.type`}
-                      control={control}
-                      render={({ field }) => (
                         <Select
-                          {...field}
+                          value={button.type}
+                          onChange={(e) => handleUpdateButton(button.id, "type", e.target.value)}
                           sx={{ minWidth: 150 }}
-                          disabled={true} // Bloqueado para que no cambien el tipo en edición
-                          onChange={(e) => {
-                            field.onChange(e.target.value);
-                            if (e.target.value === "URL") {
-                              setValue(`buttons.${index}.url`, "");
-                            } else if (e.target.value === "PHONE_NUMBER") {
-                              setValue(`buttons.${index}.phoneNumber`, "");
-                            }
-                          }}
                         >
                           <MenuItem value="QUICK_REPLY">Respuesta rápida</MenuItem>
                           <MenuItem value="URL">URL</MenuItem>
                           <MenuItem value="PHONE_NUMBER">Número de teléfono</MenuItem>
                         </Select>
-                      )}
-                    />
-
-                    {button.type === "URL" && (
-                      <Controller
-                        name={`buttons.${index}.url`}
-                        control={control}
-                        render={({ field, fieldState }) => (
+                        {button.type === "URL" && (
                           <TextField
-                            {...field}
                             label="URL"
+                            value={button.url || ""}
+                            onChange={(e) => handleUpdateButton(button.id, "url", e.target.value)}
                             fullWidth
-                            error={!!fieldState.error}
-                            helperText={fieldState.error?.message ?? ""}
+                            error={!!errors.buttons?.[index]?.url}
+                            helperText={errors.buttons?.[index]?.url?.message ?? ""}
                           />
                         )}
-                      />
-                    )}
-
-                    {button.type === "PHONE_NUMBER" && (
-                      <Controller
-                        name={`buttons.${index}.phoneNumber`}
-                        control={control}
-                        render={({ field, fieldState }) => (
+                        {button.type === "PHONE_NUMBER" && (
                           <TextField
-                            {...field}
                             label="Número de teléfono"
+                            value={button.phoneNumber}
+                            onChange={(e) => handleUpdateButton(button.id, "phoneNumber", e.target.value)}
                             fullWidth
-                            error={!!fieldState.error}
-                            helperText={fieldState.error?.message ?? ""}
+                            error={!!errors.buttons?.[index]?.phoneNumber}
+                            helperText={errors.buttons?.[index]?.phoneNumber?.message ?? ""}
                           />
                         )}
-                      />
-                    )}
+                        <Box sx={{ display: "flex", alignItems: "center", pt: 2 }}>
+                          {button.type === "QUICK_REPLY" && <ArrowForward />}
+                          {button.type === "URL" && <Link />}
+                          {button.type === "PHONE_NUMBER" && <Phone />}
+                        </Box>
+                        <IconButton color="error" onClick={() => handleRemoveButton(button.id)} sx={{ alignSelf: "center", pb: 4 }}>
+                          <Delete />
+                        </IconButton>
+                      </Box>
 
-                    <Box sx={{ display: "flex", alignItems: "center", pt: 2 }}>
-                      {button.type === "QUICK_REPLY" && <ArrowForward />}
-                      {button.type === "URL" && <Link />}
-                      {button.type === "PHONE_NUMBER" && <Phone />}
+                      {button.type === "QUICK_REPLY" && tieneIAActiva && (
+                        <TextField
+                          label="Mensaje de contexto para agente IA"
+                          value={button.contextoIA || ""}
+                          onChange={(e) => handleUpdateButton(button.id, "contextoIA", e.target.value)}
+                          fullWidth
+                          multiline rows={4}
+                          inputProps={{ maxLength: 100 }}
+                          error={!!errors.buttons?.[index]?.contextoIA}
+                          helperText={errors.buttons?.[index]?.quickReplyValue?.message ?? "Escribe el mensaje que se envía al agente de IA para interpretación de la plantilla."}
+                          size="small"
+                        />
+                      )}
                     </Box>
-
-                    {/* Botón de eliminar inhabilitado */}
                   </Box>
                 ))}
               </Stack>
-              <Typography variant="body2" color={buttonFields.length >= MAX_BUTTONS ? "error" : "text.secondary"} sx={{ mt: 2 }}>
-                {buttonFields.length} / {MAX_BUTTONS} botones agregados
+              <Typography variant="body2" color={watchedButtons.length >= MAX_BUTTONS ? "error" : "text.secondary"} sx={{ mt: 2 }}>
+                {watchedButtons.length} / {MAX_BUTTONS} botones agregados
               </Typography>
             </Box>
           )}
