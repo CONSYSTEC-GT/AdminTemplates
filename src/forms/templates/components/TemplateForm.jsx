@@ -49,7 +49,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FileUploadComponent from '../../../components/form-controls/FileUploadComponentV2.jsx';
 import { isValidURL, updateButtonWithValidation } from '../../../utils/validarUrl.jsx';
 import { createTemplateGupshup } from '../../../api/gupshupApi.jsx';
-import { saveTemplateToTalkMe, validarNombrePlantillas } from '../../../api/templatesGSApi.jsx';
+import { saveTemplateToTalkMe, validarNombrePlantillas, botIAActivo } from '../../../api/templatesGSApi.jsx';
 import { useClickOutside } from '../../../utils/emojiClick.jsx';
 
 
@@ -63,6 +63,17 @@ const checkTemplateName = async (urlTemplatesGS, nombre, idBotRedes) => {
     return null;
   }
 };
+
+const checkBotIAActivo = async (idBot, urlTemplatesGS) => {
+  if (!idBot || !urlTemplatesGS) return false;
+  try {
+    const IA = await botIAActivo(idBot, urlTemplatesGS);
+    return IA?.VALOR === "1";
+  } catch (error) {
+    console.log("Error al validar IA activo:", error);
+    return false;
+  }
+}
 
 const CATEGORY_OPTIONS = [
   {
@@ -176,6 +187,19 @@ const TemplateForm = () => {
   const buttons = watch("buttons");
   const variables = watch("variables");
   const watchedVariables = watch("variables") ?? {};
+  const [tieneIAActiva, setTieneIAActiva] = useState(false);
+
+  useEffect(() => {
+    if (idBot && urlTemplatesGS) {
+      const checkIA = async () => {
+        const activa = await checkBotIAActivo(idBot, urlTemplatesGS);
+        setTieneIAActiva(activa);
+        console.log("Tiene IA activa = ", activa);
+      };
+      checkIA();
+    }
+  }, [idBot, urlTemplatesGS]);
+
 
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -529,7 +553,7 @@ const TemplateForm = () => {
     if (current.length >= MAX_BUTTONS) return;
     setValue("buttons", [
       ...current,
-      { id: String(Date.now()), type: "QUICK_REPLY", title: "", url: "", phoneNumber: "" },
+      { id: String(Date.now()), type: "QUICK_REPLY", title: "", url: "", phoneNumber: "", contextoIA: "" },
     ], { shouldValidate: false });
   };
 
@@ -537,7 +561,7 @@ const TemplateForm = () => {
     const current = watch("buttons") ?? [];
     setValue("buttons",
       current.map(btn => btn.id === id ? { ...btn, [key]: value } : btn),
-      { shouldValidate: true }
+      { shouldValidate: false }
     );
   };
 
@@ -996,53 +1020,72 @@ const TemplateForm = () => {
 
             <Stack spacing={2}>
               {buttons.map((button, index) => (
-                <Box key={button.id} sx={{ display: "flex", alignItems: "flex-start", gap: 2, border: "1px solid #ccc", borderRadius: 2, p: 2, backgroundColor: "#f9f9f9" }}>
-                  <TextField
-                    label="Título del botón"
-                    value={button.title}
-                    onChange={(e) => updateButton(button.id, "title", e.target.value)}
-                    fullWidth
-                    inputProps={{ maxLength: 25 }}
-                    error={!!errors.buttons?.[index]?.title}
-                    helperText={errors.buttons?.[index]?.title?.message ?? `${button.title.length}/25 caracteres`}
-                  />
-                  <Select
-                    value={button.type}
-                    onChange={(e) => updateButton(button.id, "type", e.target.value)}
-                    sx={{ minWidth: 150 }}
-                  >
-                    <MenuItem value="QUICK_REPLY">Respuesta rápida</MenuItem>
-                    <MenuItem value="URL">URL</MenuItem>
-                    <MenuItem value="PHONE_NUMBER">Número de teléfono</MenuItem>
-                  </Select>
-                  {button.type === "URL" && (
-                    <TextField
-                      label="URL"
-                      value={button.url || ""}
-                      onChange={(e) => updateButton(button.id, "url", e.target.value)}
-                      fullWidth
-                      error={!!errors.buttons?.[index]?.url}
-                      helperText={errors.buttons?.[index]?.url?.message ?? ""}
-                    />
-                  )}
-                  {button.type === "PHONE_NUMBER" && (
-                    <TextField
-                      label="Número de teléfono"
-                      value={button.phoneNumber}
-                      onChange={(e) => updateButton(button.id, "phoneNumber", e.target.value)}
-                      fullWidth
-                      error={!!errors.buttons?.[index]?.phoneNumber}
-                      helperText={errors.buttons?.[index]?.phoneNumber?.message ?? ""}
-                    />
-                  )}
-                  <Box sx={{ display: "flex", alignItems: "center", pt: 2 }}>
-                    {button.type === "QUICK_REPLY" && <ArrowForward />}
-                    {button.type === "URL" && <Link />}
-                    {button.type === "PHONE_NUMBER" && <Phone />}
+                <Box key={button.id}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2, border: "1px solid #ccc", borderRadius: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+
+                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, width: "100%" }}>
+                      <TextField
+                        label="Título del botón"
+                        value={button.title}
+                        onChange={(e) => updateButton(button.id, "title", e.target.value)}
+                        fullWidth
+                        inputProps={{ maxLength: 25 }}
+                        error={!!errors.buttons?.[index]?.title}
+                        helperText={errors.buttons?.[index]?.title?.message ?? `${button.title.length}/25 caracteres`}
+                      />
+                      <Select
+                        value={button.type}
+                        onChange={(e) => updateButton(button.id, "type", e.target.value)}
+                        sx={{ minWidth: 150 }}
+                      >
+                        <MenuItem value="QUICK_REPLY">Respuesta rápida</MenuItem>
+                        <MenuItem value="URL">URL</MenuItem>
+                        <MenuItem value="PHONE_NUMBER">Número de teléfono</MenuItem>
+                      </Select>
+                      {button.type === "URL" && (
+                        <TextField
+                          label="URL"
+                          value={button.url || ""}
+                          onChange={(e) => updateButton(button.id, "url", e.target.value)}
+                          fullWidth
+                          error={!!errors.buttons?.[index]?.url}
+                          helperText={errors.buttons?.[index]?.url?.message ?? ""}
+                        />
+                      )}
+                      {button.type === "PHONE_NUMBER" && (
+                        <TextField
+                          label="Número de teléfono"
+                          value={button.phoneNumber}
+                          onChange={(e) => updateButton(button.id, "phoneNumber", e.target.value)}
+                          fullWidth
+                          error={!!errors.buttons?.[index]?.phoneNumber}
+                          helperText={errors.buttons?.[index]?.phoneNumber?.message ?? ""}
+                        />
+                      )}
+                      <Box sx={{ display: "flex", alignItems: "center", pt: 2 }}>
+                        {button.type === "QUICK_REPLY" && <ArrowForward />}
+                        {button.type === "URL" && <Link />}
+                        {button.type === "PHONE_NUMBER" && <Phone />}
+                      </Box>
+                      <IconButton color="error" onClick={() => removeButton(button.id)} sx={{ alignSelf: "center", pb: 4 }}>
+                        <Delete />
+                      </IconButton>
+                    </Box>
+
+                    {button.type === "QUICK_REPLY" && tieneIAActiva && (
+                      <TextField
+                        label="Mensaje de contexto para agente IA"
+                        value={button.contextoIA || ""}
+                        onChange={(e) => updateButton(button.id, "contextoIA", e.target.value)}
+                        fullWidth
+                        multiline rows={4}
+                        inputProps={{ maxLength: 100 }}
+                        error={!!errors.buttons?.[index]?.contextoIA}
+                        helperText={errors.buttons?.[index]?.contextoIA?.message ?? "Escribe el mensaje que se envía al agente de IA para interpretación de la plantilla."}
+                        size="small"
+                      />
+                    )}
                   </Box>
-                  <IconButton color="error" onClick={() => removeButton(button.id)} sx={{ alignSelf: "center", pb: 4 }}>
-                    <Delete />
-                  </IconButton>
                 </Box>
               ))}
             </Stack>
