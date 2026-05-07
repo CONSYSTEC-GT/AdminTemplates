@@ -174,7 +174,7 @@ const formatCardsForGupshup = (cards) =>
         if (btn.type === "URL")
           return { type: "URL", text: btn.title, url: btn.url, buttonValue: btn.url.split("{{")[0] || btn.url, suffix: "", example: [btn.url] };
         if (btn.type === "QUICK_REPLY") return { type: "QUICK_REPLY", text: btn.title };
-        if (btn.type === "PHONE_NUMBER") return { type: "PHONE_NUMBER", text: btn.title, phoneNumber: btn.phoneNumber };
+        if (btn.type === "PHONE_NUMBER") return { type: "PHONE_NUMBER", text: btn.title, phone_number: btn.phoneNumber };
         return null;
       })
       .filter(Boolean),
@@ -1548,10 +1548,10 @@ const TemplateFormCarousel = () => {
                                 <ArrowForward sx={{ fontSize: "16px", color: "#075e54" }} />
                               )}
                               {button.type === "URL" && (
-                                <Link sx={{ fontSize: "16px", color: "#075e54" }} />
+                                <LinkIcon sx={{ fontSize: "16px", color: "#075e54" }} />
                               )}
                               {button.type === "PHONE_NUMBER" && (
-                                <Phone sx={{ fontSize: "16px", color: "#075e54" }} />
+                                <PhoneIcon sx={{ fontSize: "16px", color: "#075e54" }} />
                               )}
                               <Typography
                                 variant="body1"

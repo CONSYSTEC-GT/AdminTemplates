@@ -22,8 +22,8 @@ import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Delete from '@mui/icons-material/Delete';
 import ArrowForward from "@mui/icons-material/ArrowForward";
-import Link from "@mui/icons-material/Link";
-import Phone from "@mui/icons-material/Phone";
+import LinkIcon from "@mui/icons-material/Link";
+import PhoneIcon from "@mui/icons-material/Phone";
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -778,9 +778,16 @@ const EditTemplateFormCarousel = () => {
       sampleText: card.messageCard || "",
       buttons: (card.buttons || []).map(button => {
         if (button.type === "URL") {
-          return { type: "URL", text: button.title, url: button.url };
+          return {
+            type: "URL",
+            text: button.title,
+            url: button.url,
+            buttonValue: button.url.split("{{")[0] || button.url,
+            suffix: "",
+            example: [button.url]
+          };
         } else if (button.type === "PHONE_NUMBER") {
-          return { type: "PHONE_NUMBER", text: button.title, phoneNumber: button.phoneNumber };
+          return { type: "PHONE_NUMBER", text: button.title, phone_number: button.phoneNumber };
         }
         return { type: "QUICK_REPLY", text: button.title };
       }).filter(btn => btn.text)
@@ -1328,8 +1335,8 @@ const EditTemplateFormCarousel = () => {
                                       {button.type === "URL" && <TextField label="URL" value={button.url || ''} onChange={(e) => updateButton(card.id, button.id, "url", e.target.value)} fullWidth />}
                                       {button.type === "PHONE_NUMBER" && <TextField label="Phone Number" value={button.phoneNumber || ''} onChange={(e) => updateButton(card.id, button.id, "phoneNumber", e.target.value)} fullWidth />}
                                       {button.type === "QUICK_REPLY" && <ArrowForward />}
-                                      {button.type === "URL" && <Link />}
-                                      {button.type === "PHONE_NUMBER" && <Phone />}
+                                      {button.type === "URL" && <LinkIcon />}
+                                      {button.type === "PHONE_NUMBER" && <PhoneIcon />}
                                     </Box>
                                   ))}
                                 </Stack>
@@ -1574,10 +1581,10 @@ const EditTemplateFormCarousel = () => {
                                 <ArrowForward sx={{ fontSize: "16px", color: "#075e54" }} />
                               )}
                               {button.type === "URL" && (
-                                <Link sx={{ fontSize: "16px", color: "#075e54" }} />
+                                <LinkIcon sx={{ fontSize: "16px", color: "#075e54" }} />
                               )}
                               {button.type === "PHONE_NUMBER" && (
-                                <Phone sx={{ fontSize: "16px", color: "#075e54" }} />
+                                <PhoneIcon sx={{ fontSize: "16px", color: "#075e54" }} />
                               )}
                               <Typography
                                 variant="body1"
