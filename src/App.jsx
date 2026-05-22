@@ -44,6 +44,24 @@ function App() {
           return;
         }
 
+        if (decoded.nombre_app) {
+          document.title = decoded.nombre_app;
+        }
+
+        if (decoded.url_logoPestania) {
+          let link = document.querySelector("link[rel~='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = decoded.url_logoPestania;
+        }
+
+        console.log("LOGO PESTAÑA: ", decoded.url_LogoPestania);
+        console.log("NOMBRE APP: ", decoded.nombre_app);
+        console.log("LOGO PARTNER: ", decoded.url_logoPartner);
+
         // Si hay nuevo token de URL, actualizar storage
         if (urlToken && urlToken !== storedToken) {
           sessionStorage.setItem('authToken', urlToken);

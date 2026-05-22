@@ -75,7 +75,7 @@ export default function BasicCard() {
 
   const [isSupportMode, setIsSupportMode] = useState(false);
 
-  const { appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP, } = useMemo(() => {
+  const { appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP, nombreApp } = useMemo(() => {
     const token = sessionStorage.getItem('authToken');
     if (!token) return {};
 
@@ -92,6 +92,7 @@ export default function BasicCard() {
         idBot: decoded.id_bot,
         urlTemplatesGS: decoded.urlTemplatesGS,
         urlWsFTP: decoded.urlWsFTP,
+        nombreApp: decoded.nombre_app
       };
     } catch (error) {
       console.error('Error decodificando el token:', error);
@@ -352,7 +353,7 @@ export default function BasicCard() {
 
       {/*TITULO PRIMER BLOQUE */}<Paper elevation={3} sx={{ padding: 3, borderRadius: 2 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Plantillas TalkMe
+          Plantillas {nombreApp ? nombreApp : "TalkMe"}
         </Typography>
 
         <Box display="flex" justifyContent="space-between" alignItems="center">

@@ -1,5 +1,7 @@
 // components/sidebarConfig.js
 import React from 'react';
+import { useMemo } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CreateIcon from '@mui/icons-material/Create';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -33,23 +35,49 @@ export const NAVIGATION = [
     },
     { kind: 'divider' },
     { kind: 'header', title: 'Plantillas' },
-    { segment: 'plantillas', title: 'Todas', icon: <DescriptionIcon />, children: [
-        { segment: 'todas', title: 'Todas', icon: <DescriptionIcon /> },
-        { segment: 'aprobadas', title: 'Aprobadas', icon: <CheckIcon /> },
-        { segment: 'enviadas', title: 'Enviadas', icon: <SendIcon /> },
-        { segment: 'fallidas', title: 'Fallidas', icon: <SmsFailedIcon /> },
-        { segment: 'rechazadas', title: 'Rechazadas', icon: <ThumbDownIcon /> },
-    ]},
+    {
+        segment: 'plantillas', title: 'Todas', icon: <DescriptionIcon />, children: [
+            { segment: 'todas', title: 'Todas', icon: <DescriptionIcon /> },
+            { segment: 'aprobadas', title: 'Aprobadas', icon: <CheckIcon /> },
+            { segment: 'enviadas', title: 'Enviadas', icon: <SendIcon /> },
+            { segment: 'fallidas', title: 'Fallidas', icon: <SmsFailedIcon /> },
+            { segment: 'rechazadas', title: 'Rechazadas', icon: <ThumbDownIcon /> },
+        ]
+    },
 ];
 
-export const getBranding = (theme) => ({
-    title: 'TalkMe',
-    logo: (
-        <img
-            src="https://www.talkme.pro/wp-content/uploads/2019/07/logoidentity.png"
-            alt="TalkMe Logo"
-            style={{ width: 'auto', height: 'auto' }}
-        />
-    ),
-    titleStyle: { color: theme.palette.primary.main }
-});
+export const getBranding = (theme) => {
+    let urlPartnerLogo = null;
+    let urlLogoPestania = null;
+    let nombreApp = null;
+
+    try {
+        const token = sessionStorage.getItem('authToken');
+        if (token) {
+            const decoded = jwtDecode(token);
+            urlPartnerLogo = decoded.url_LogoPartner;
+            urlLogoPestania = decoded.url_LogoPestania;
+            nombreApp = decoded.nombre_App;
+        }
+    } catch (error) {
+        console.warn('Error decoding token:', error);
+    }
+
+    return {
+        title: 'Plantillas',
+        logo: urlPartnerLogo ? (
+            <img
+                src={urlPartnerLogo}
+                alt="Partner Logo"
+                style={{ width: '70px', height: '40px' }}
+            />
+        ) : (
+            <img
+                src="https://www.talkme.pro/wp-content/uploads/2019/07/logoidentity.png"
+                alt="TalkMe Logo"
+                style={{ width: 'auto', height: 'auto' }}
+            />
+        ),
+        titleStyle: { color: theme.palette.primary.main }
+    };
+};
