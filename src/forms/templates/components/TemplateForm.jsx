@@ -64,16 +64,33 @@ const checkTemplateName = async (urlTemplatesGS, nombre, idBotRedes) => {
   }
 };
 
-const checkBotIAActivo = async (idBot, urlTemplatesGS) => {
-  if (!idBot || !urlTemplatesGS) return false;
+const checkBotIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
+  if (!idBot || !urlTemplatesGS || !idEmpresa) return false;
+
   try {
-    const IA = await botIAActivo(idBot, urlTemplatesGS);
-    return IA?.VALOR === "1";
+    const params = await botIAActivo(idBot, urlTemplatesGS, idEmpresa);
+    if (!params) return false;
+
+    const { BOT_IA_ACTIVO, BOT_TIPO_IA, BOT_IA_APLICA_CTX } = params;
+
+    // 1. IA debe estar activa
+    if (BOT_IA_ACTIVO !== "1") return false;
+
+    // 2. Debe existir un tipo de IA configurado
+    if (!BOT_TIPO_IA) return false;
+
+    // 3. Si existe BOT_IA_APLICA_CTX, el tipo de IA debe estar en la lista
+    if (BOT_IA_APLICA_CTX) {
+      const tiposPermitidos = BOT_IA_APLICA_CTX.split(",").map(v => v.trim());
+      if (!tiposPermitidos.includes(BOT_TIPO_IA)) return false;
+    }
+
+    return true;
   } catch (error) {
     console.log("Error al validar IA activo:", error);
     return false;
   }
-}
+};
 
 const CATEGORY_OPTIONS = [
   {
@@ -118,7 +135,7 @@ const MAX_BUTTONS = 10;
 const TemplateForm = () => {
 
   const token = sessionStorage.getItem('authToken');
-  let appId, authCode, idNombreUsuarioTalkMe, idBotRedes, urlTemplatesGS, idBot;
+  let appId, authCode, idNombreUsuarioTalkMe, idBotRedes, urlTemplatesGS, idBot, empresa;
   if (token) {
     try {
       const decoded = jwtDecode(token);
@@ -128,6 +145,7 @@ const TemplateForm = () => {
       idBotRedes = decoded.id_bot_redes;
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
+      empresa = decoded.empresa;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -190,9 +208,9 @@ const TemplateForm = () => {
   const [tieneIAActiva, setTieneIAActiva] = useState(false);
 
   useEffect(() => {
-    if (idBot && urlTemplatesGS) {
+    if (idBot && urlTemplatesGS && empresa) {
       const checkIA = async () => {
-        const activa = await checkBotIAActivo(idBot, urlTemplatesGS);
+        const activa = await checkBotIAActivo(idBot, urlTemplatesGS, empresa);
         setTieneIAActiva(activa);
         console.log("Tiene IA activa = ", activa);
       };

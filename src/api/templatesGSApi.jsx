@@ -816,22 +816,25 @@ export const getFlowScreenName = async (urlTemplatesGS, appId, authCode, flowId)
   }
 };
 
-export const botIAActivo = async (idBot, urlTemplatesGS) => {
+export const botIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
+  if (!idBot || !urlTemplatesGS) return null;
+
   const baseUrl = urlTemplatesGS.replace(/\/$/, '');
-  const url = `${baseUrl}/plantillas/config/${idBot}`;
+  const url = `${baseUrl}/plantillas/config/${idBot}?idEmpresa=${idEmpresa}`;
 
   console.log("URL generada:", url);
 
   try {
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     console.log("Respuesta del endpoint:", data);
     return data;
   } catch (error) {
-    console.error('Error al obtener parametro IA activo:', error);
-    return null; // Mejor retornar null que []
+    console.error('Error al obtener parámetros de IA:', error);
+    return null;
   }
-}
+};
 
 
 //utils
