@@ -182,6 +182,7 @@ const saveTemplateButtons = async (ID_PLANTILLA, buttons = [], idNombreUsuarioTa
         URL: button.url || null,
         TELEFONO: button.phoneNumber || null,
         FLOW_ID: button.flow_id || null,
+        CONTEXTO_IA: button.contextoIA || null,
         ORDEN: i,
         CREADO_POR: idNombreUsuarioTalkMe,
       };
@@ -653,8 +654,6 @@ export const obtenerPantallasMedia = async (urlTemplatesGS, id_interno) => {
 export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
   const url = `${urlTemplatesGS}parametros/plantilla/${id_plantilla}`;
 
-
-
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -662,8 +661,6 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
         "Content-Type": "application/json",
       },
     });
-
-
 
     if (!response.ok) {
       throw new Error(`Error al obtener la información de la plantilla: ${response.status}`);
@@ -674,6 +671,30 @@ export const obtenerParametros = async (urlTemplatesGS, id_plantilla) => {
     return data
   } catch (error) {
     console.error("Error obteniendo parametros de la plantilla", error);
+    return null;
+  }
+}
+
+export const obtenerBotones = async (urlTemplatesGS, id_plantilla) => {
+  const url = `${urlTemplatesGS}botones/plantilla/${id_plantilla}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener los botones de la plantilla', error);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error obteniendo botones de la plantilla", error);
     return null;
   }
 }
@@ -791,6 +812,23 @@ export const getFlowScreenName = async (urlTemplatesGS, appId, authCode, flowId)
 
   } catch (error) {
     console.error('Error al obtener el nombre de la pantalla:', error);
+    return null;
+  }
+};
+
+export const botIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
+  if (!idBot || !urlTemplatesGS) return null;
+
+  const baseUrl = urlTemplatesGS.replace(/\/$/, '');
+  const url = `${baseUrl}/plantillas/config/${idBot}?idEmpresa=${idEmpresa}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error al obtener parámetros de IA:', error);
     return null;
   }
 };
