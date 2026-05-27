@@ -131,7 +131,7 @@ const EditTemplateForm = () => {
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
       urlWsFTP = decoded.urlWsFTP;
-      empresa = decoded.empresa;
+      empresa = decoded.empresa ?? decoded.id_empresa ?? decoded.empresa_id ?? decoded.EMPRESA ?? null;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -210,11 +210,10 @@ const EditTemplateForm = () => {
       const checkIA = async () => {
         const activa = await checkBotIAActivo(idBot, urlTemplatesGS, empresa);
         setTieneIAActiva(activa);
-        console.log("Tiene IA activa = ", activa);
       };
       checkIA();
     }
-  }, [idBot, urlTemplatesGS]);
+  }, [idBot, urlTemplatesGS, empresa]);
 
   // Cargar datos iniciales desde templateData
   useEffect(() => {

@@ -212,7 +212,6 @@ const TemplateForm = () => {
       const checkIA = async () => {
         const activa = await checkBotIAActivo(idBot, urlTemplatesGS, empresa);
         setTieneIAActiva(activa);
-        console.log("Tiene IA activa = ", activa);
       };
       checkIA();
     }
