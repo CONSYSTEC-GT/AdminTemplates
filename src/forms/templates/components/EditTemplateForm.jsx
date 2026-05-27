@@ -43,16 +43,33 @@ const isValidSampleMedia = (value) => {
   return lines.length > 0 && lines.every(line => SAMPLE_MEDIA_REGEX.test(line));
 };
 
-const checkBotIAActivo = async (idBot, urlTemplatesGS) => {
-  if (!idBot || !urlTemplatesGS) return false;
+const checkBotIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
+  if (!idBot || !urlTemplatesGS || !idEmpresa) return false;
+
   try {
-    const IA = await botIAActivo(idBot, urlTemplatesGS);
-    return IA?.VALOR === "1";
+    const params = await botIAActivo(idBot, urlTemplatesGS, idEmpresa);
+    if (!params) return false;
+
+    const { BOT_IA_ACTIVO, BOT_TIPO_IA, BOT_IA_APLICA_CTX } = params;
+
+    // 1. IA debe estar activa
+    if (BOT_IA_ACTIVO !== "1") return false;
+
+    // 2. Debe existir un tipo de IA configurado
+    if (!BOT_TIPO_IA) return false;
+
+    // 3. Si existe BOT_IA_APLICA_CTX, el tipo de IA debe estar en la lista
+    if (BOT_IA_APLICA_CTX) {
+      const tiposPermitidos = BOT_IA_APLICA_CTX.split(",").map(v => v.trim());
+      if (!tiposPermitidos.includes(BOT_TIPO_IA)) return false;
+    }
+
+    return true;
   } catch (error) {
     console.log("Error al validar IA activo:", error);
     return false;
   }
-}
+};
 
 const CATEGORY_OPTIONS = [
   {
@@ -100,7 +117,7 @@ const EditTemplateForm = () => {
   const templateData = location.state?.template.gupshup || {};
 
   const token = sessionStorage.getItem('authToken');
-  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP;
+  let appId, authCode, appName, idUsuarioTalkMe, idNombreUsuarioTalkMe, empresaTalkMe, idBotRedes, idBot, urlTemplatesGS, urlWsFTP, empresa;
   if (token) {
     try {
       const decoded = jwtDecode(token);
@@ -114,6 +131,7 @@ const EditTemplateForm = () => {
       idBot = decoded.id_bot;
       urlTemplatesGS = decoded.urlTemplatesGS;
       urlWsFTP = decoded.urlWsFTP;
+      empresa = decoded.empresa;
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
@@ -188,9 +206,9 @@ const EditTemplateForm = () => {
   const [tieneIAActiva, setTieneIAActiva] = useState(false);
 
   useEffect(() => {
-    if (idBot && urlTemplatesGS) {
+    if (idBot && urlTemplatesGS && empresa) {
       const checkIA = async () => {
-        const activa = await checkBotIAActivo(idBot, urlTemplatesGS);
+        const activa = await checkBotIAActivo(idBot, urlTemplatesGS, empresa);
         setTieneIAActiva(activa);
         console.log("Tiene IA activa = ", activa);
       };
