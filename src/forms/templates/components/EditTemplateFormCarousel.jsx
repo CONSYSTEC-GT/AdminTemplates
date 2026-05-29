@@ -154,6 +154,7 @@ const EditTemplateFormCarousel = () => {
     const loadData = async () => {
       if (templateData) {
 
+        setValue("idPlantilla", templateData.id || "", { shouldValidate: false });
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
         setValue("selectedCategory", templateData.category || "", { shouldValidate: false });
         setValue("templateType", "CAROUSEL", { shouldValidate: false });
@@ -209,8 +210,6 @@ const EditTemplateFormCarousel = () => {
             setDisplayPantallas(displayValues);
             setMediaURL(info.url || "");
             setImagePreview(info.url || "");
-            setIdPlantilla(info.id_plantilla || "");
-            setValue("idPlantilla", info.id_plantilla || "");
           }
         } catch (error) {
           console.error("❌ Error al cargar pantallas/media:", error);
@@ -996,7 +995,7 @@ const EditTemplateFormCarousel = () => {
 
               <Box>
                 <Typography variant="body1" color="textSecondary">
-                  ID
+                  ID Plantilla
                 </Typography>
                 <Typography variant="body2">
                   {watch("idPlantilla") || "-"}

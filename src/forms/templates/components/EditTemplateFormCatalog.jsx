@@ -167,6 +167,7 @@ const EditTemplateCatalogForm = () => {
         if (templateData.containerMeta) {
           try {
             const meta = JSON.parse(templateData.containerMeta);
+            setValue("idPlantilla", templateData.id || "", { shouldValidate: false });
             setValue("message", meta.data || "", { shouldValidate: false });
             setValue("header", meta.header || "", { shouldValidate: false });
             setValue("footer", meta.footer || "", { shouldValidate: false });
@@ -199,8 +200,6 @@ const EditTemplateCatalogForm = () => {
 
             setMediaURL(info.url || "");
             setImagePreview(info.url || "");
-            setIdPlantilla(info.id_plantilla || "");
-            setValue("idPlantilla", info.id_plantilla || "");
           }
         } catch (error) {
           console.error("❌ Error al cargar pantallas/media:", error);
@@ -671,7 +670,7 @@ const EditTemplateCatalogForm = () => {
 
               <Box>
                 <Typography variant="body1" color="textSecondary">
-                  ID
+                  ID Plantilla
                 </Typography>
                 <Typography variant="body2">
                   {watch("idPlantilla") || "-"}
