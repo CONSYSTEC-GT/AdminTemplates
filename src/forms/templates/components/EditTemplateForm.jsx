@@ -220,7 +220,7 @@ const EditTemplateForm = () => {
     const loadData = async () => {
       if (templateData) {
 
-        // Campos deshabilitados - no se pueden cambiar
+        setValue("idPlantilla", templateData.id || "", { shouldValidate: false });
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
         setValue("selectedCategory", templateData.category || "", { shouldValidate: false });
         setValue("templateType", templateData.templateType || "TEXT", { shouldValidate: false });
@@ -318,7 +318,6 @@ const EditTemplateForm = () => {
             const pantallasFromAPI = info.pantallas || "";
             const pantallasArray = pantallasFromAPI.split(',').filter(p => p);
 
-            // Guardar pantallas en estado separado (solo para TalkMe)
             setPantallasState(pantallasArray);
             setPantallasIniciales(pantallasArray);
 
@@ -329,7 +328,6 @@ const EditTemplateForm = () => {
             setImagePreview(info.url || "");
             realIdPlantilla = info.id_plantilla || "";
             setIdPlantilla(realIdPlantilla);
-            setValue("idPlantilla", realIdPlantilla);
           }
 
           if (realIdPlantilla) {
@@ -1001,7 +999,7 @@ const EditTemplateForm = () => {
 
               <Box>
                 <Typography variant="body1" color="textSecondary">
-                  ID
+                  ID Plantilla
                 </Typography>
                 <Typography variant="body2">
                   {watch("idPlantilla") || "-"}
