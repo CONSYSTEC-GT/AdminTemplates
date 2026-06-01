@@ -11,7 +11,6 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-
 // Navegación estática — ReactRouterAppProvider se encarga de resaltar
 // el ítem activo automáticamente basándose en la URL actual.
 export const NAVIGATION = [
@@ -33,17 +32,28 @@ export const NAVIGATION = [
     },
     { kind: 'divider' },
     { kind: 'header', title: 'Plantillas' },
-    { segment: 'plantillas', title: 'Todas', icon: <DescriptionIcon />, children: [
-        { segment: 'todas', title: 'Todas', icon: <DescriptionIcon /> },
-        { segment: 'aprobadas', title: 'Aprobadas', icon: <CheckIcon /> },
-        { segment: 'enviadas', title: 'Enviadas', icon: <SendIcon /> },
-        { segment: 'fallidas', title: 'Fallidas', icon: <SmsFailedIcon /> },
-        { segment: 'rechazadas', title: 'Rechazadas', icon: <ThumbDownIcon /> },
-    ]},
+    {
+        segment: 'plantillas', title: 'Todas', icon: <DescriptionIcon />, children: [
+            { segment: 'todas', title: 'Todas', icon: <DescriptionIcon /> },
+            { segment: 'aprobadas', title: 'Aprobadas', icon: <CheckIcon /> },
+            { segment: 'enviadas', title: 'Enviadas', icon: <SendIcon /> },
+            { segment: 'fallidas', title: 'Fallidas', icon: <SmsFailedIcon /> },
+            { segment: 'rechazadas', title: 'Rechazadas', icon: <ThumbDownIcon /> },
+        ]
+    },
 ];
 
-export const getBranding = (theme) => ({
-    title: 'TalkMe',
+export const getBranding = (theme, nombreCanal) => ({
+    title: (
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <span>TalkMe</span>
+            {nombreCanal && (
+                <span style={{ marginLeft: '20px', fontSize: '0.9em' }}>
+                    {nombreCanal}
+                </span>
+            )}
+        </div>
+    ),
     logo: (
         <img
             src="https://www.talkme.pro/wp-content/uploads/2019/07/logoidentity.png"
