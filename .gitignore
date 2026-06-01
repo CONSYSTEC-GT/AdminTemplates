@@ -30,3 +30,6 @@ node_modules
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+
+# Notas locales
+NOTAS_PROYECTO.md
