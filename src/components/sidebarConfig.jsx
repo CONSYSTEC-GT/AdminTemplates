@@ -13,7 +13,6 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import AutoAwesomeMosaicIcon from '@mui/icons-material/AutoAwesomeMosaic';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-
 // Navegación estática — ReactRouterAppProvider se encarga de resaltar
 // el ítem activo automáticamente basándose en la URL actual.
 export const NAVIGATION = [
@@ -46,7 +45,7 @@ export const NAVIGATION = [
     },
 ];
 
-export const getBranding = (theme) => {
+export const getBranding = (theme, nombreCanal) => {
     let urlPartnerLogo = null;
     let urlLogoPestania = null;
     let nombreApp = null;
@@ -64,7 +63,16 @@ export const getBranding = (theme) => {
     }
 
     return {
-        title: 'Plantillas',
+        title: (
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>{nombreApp || 'TalkMe'}</span>
+                {nombreCanal && (
+                    <span style={{ marginLeft: '20px', fontSize: '0.9em' }}>
+                        {nombreCanal}
+                    </span>
+                )}
+            </div>
+        ),
         logo: urlPartnerLogo ? (
             <img
                 src={urlPartnerLogo}

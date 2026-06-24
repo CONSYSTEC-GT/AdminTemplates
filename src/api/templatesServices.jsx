@@ -21,7 +21,7 @@ const fetchGupshupTemplates = async (appId, authCode) => {
 // TALKME
 const fetchTalkmeTemplates = async (urlTemplatesGS) => {
 
- const url = urlTemplatesGS.endsWith('/') ? urlTemplatesGS + 'plantillas' : urlTemplatesGS + '/plantillas';
+  const url = urlTemplatesGS.endsWith('/') ? urlTemplatesGS + 'plantillas' : urlTemplatesGS + '/plantillas';
 
   try {
     const response = await fetch(url);
@@ -36,26 +36,26 @@ const fetchTalkmeTemplates = async (urlTemplatesGS) => {
 
 export const fetchMergedTemplates = async (appId, authCode, templatesGS) => {
   try {
-    
+
     const [gupshupTemplates, talkmeTemplates] = await Promise.all([
       fetchGupshupTemplates(appId, authCode),
       fetchTalkmeTemplates(templatesGS)
     ]);
 
-    
+
     const talkmeMap = new Map();
     talkmeTemplates.forEach(template => {
       talkmeMap.set(template.ID_INTERNO, template);
     });
 
-    
+
     const mergedTemplates = gupshupTemplates
       .filter(gupshupTemplate => talkmeMap.has(gupshupTemplate.id))
       .map(gupshupTemplate => {
         const talkmeTemplate = talkmeMap.get(gupshupTemplate.id);
-        
+
         return {
-          
+
           id: gupshupTemplate.id,
           nombre: talkmeTemplate.NOMBRE_PLANTILLA || gupshupTemplate.elementName,
 
@@ -93,10 +93,10 @@ export const fetchMergedTemplates = async (appId, authCode, templatesGS) => {
           }
         };
       })
-      //.slice(0, 4);
+    //.slice(0, 4);
 
     return mergedTemplates;
-    
+
 
   } catch (error) {
     console.error('Error merging templates:', error);

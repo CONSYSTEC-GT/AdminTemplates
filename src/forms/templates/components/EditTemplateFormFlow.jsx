@@ -178,6 +178,7 @@ const EditTemplateFormFlow = () => {
       if (templateData) {
 
         // Campos deshabilitados - no se pueden cambiar
+        setValue("idPlantilla", templateData.id || "", { shouldValidate: false });
         setValue("templateName", templateData.elementName || "", { shouldValidate: false });
         setValue("selectedCategory", templateData.category || "", { shouldValidate: false });
         setValue("templateType", templateData.templateType || "TEXT", { shouldValidate: false });
@@ -280,7 +281,6 @@ const EditTemplateFormFlow = () => {
 
             setMediaURL(info.url || "");
             setImagePreview(info.url || "");
-            setIdPlantilla(info.id_plantilla || "");
           }
         } catch (error) {
           console.error("❌ Error al cargar pantallas/media:", error);
