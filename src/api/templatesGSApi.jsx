@@ -833,6 +833,20 @@ export const botIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
   }
 };
 
+export const nombreCanal = async (idBotRedes, empresa, urlTemplatesGS) => {
+  const url = `${urlTemplatesGS}bots/nombre?idBotRedes=${idBotRedes}&idEmpresa=${empresa}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data.DESCRIPCION;
+  } catch (error) {
+    console.error('Error al obtener el nombre del canal:', error);
+    return null;
+  }
+}
+
 
 //utils
 

@@ -9,11 +9,13 @@ import Swal from 'sweetalert2';
 import LoadingSpinner from '../utils/LoadingSpinner';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { NAVIGATION, getBranding } from './sidebarConfig';
+import useNombreCanal from '../hooks/useNombreCanal';
 
 export default function SidebarLayout() {
     const theme = useTheme();
+    const nombreCanal = useNombreCanal();
 
-    const branding = useMemo(() => getBranding(theme), [theme]);
+    const branding = useMemo(() => getBranding(theme, nombreCanal), [theme, nombreCanal]);
 
     const handleLogout = useCallback(() => {
         Swal.fire({
