@@ -43,23 +43,47 @@ export const NAVIGATION = [
     },
 ];
 
-export const getBranding = (theme, nombreCanal) => ({
-    title: (
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <span>TalkMe</span>
-            {nombreCanal && (
-                <span style={{ marginLeft: '20px', fontSize: '0.9em' }}>
-                    {nombreCanal}
-                </span>
-            )}
-        </div>
-    ),
-    logo: (
-        <img
-            src="https://www.talkme.pro/wp-content/uploads/2019/07/logoidentity.png"
-            alt="TalkMe Logo"
-            style={{ width: 'auto', height: 'auto' }}
-        />
-    ),
-    titleStyle: { color: theme.palette.primary.main }
-});
+export const getBranding = (theme, nombreCanal) => {
+    let urlPartnerLogo = null;
+    let urlLogoPestania = null;
+    let nombreApp = null;
+
+    try {
+        const token = sessionStorage.getItem('authToken');
+        if (token) {
+            const decoded = jwtDecode(token);
+            urlPartnerLogo = decoded.url_LogoPartner;
+            urlLogoPestania = decoded.url_LogoPestania;
+            nombreApp = decoded.nombre_app;
+        }
+    } catch (error) {
+        console.warn('Error decoding token:', error);
+    }
+
+    return {
+        title: (
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>{nombreApp || ''}</span>
+                {nombreCanal && (
+                    <span style={{ marginLeft: '20px', fontSize: '0.9em' }}>
+                        {nombreCanal}
+                    </span>
+                )}
+            </div>
+        ),
+        logo: urlPartnerLogo ? (
+            <img
+                src={urlPartnerLogo}
+                alt="Partner Logo"
+                style={{ width: '70px', height: '40px', objectFit: 'contain' }}
+            />
+        ) : (
+            <img
+                src="https://www.talkme.pro/wp-content/uploads/2019/07/logoidentity.png"
+                alt="TalkMe Logo"
+                style={{ width: 'auto', height: 'auto' }}
+            />
+        ),
+        titleStyle: { color: theme.palette.primary.main }
+    };
+};
