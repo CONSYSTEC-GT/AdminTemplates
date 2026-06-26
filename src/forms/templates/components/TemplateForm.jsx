@@ -87,7 +87,7 @@ const checkBotIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
 
     return true;
   } catch (error) {
-    console.log("Error al validar IA activo:", error);
+    console.error("Error al validar IA activo:", error);
     return false;
   }
 };
