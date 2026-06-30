@@ -56,7 +56,7 @@ export const getBranding = (theme, nombreCanal) => {
             const decoded = jwtDecode(token);
             urlPartnerLogo = decoded.url_LogoPartner;
             urlLogoPestania = decoded.url_LogoPestania;
-            nombreApp = decoded.nombre_App;
+            nombreApp = decoded.nombre_app;
         }
     } catch (error) {
         console.warn('Error decoding token:', error);
@@ -65,7 +65,7 @@ export const getBranding = (theme, nombreCanal) => {
     return {
         title: (
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <span>{nombreApp || 'TalkMe'}</span>
+                <span>{nombreApp || ''}</span>
                 {nombreCanal && (
                     <span style={{ marginLeft: '20px', fontSize: '0.9em' }}>
                         {nombreCanal}
@@ -77,7 +77,7 @@ export const getBranding = (theme, nombreCanal) => {
             <img
                 src={urlPartnerLogo}
                 alt="Partner Logo"
-                style={{ width: '70px', height: '40px' }}
+                style={{ width: '70px', height: '40px', objectFit: 'contain' }}
             />
         ) : (
             <img

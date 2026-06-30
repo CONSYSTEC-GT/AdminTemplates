@@ -58,10 +58,6 @@ function App() {
           link.href = decoded.url_logoPestania;
         }
 
-        console.log("LOGO PESTAÑA: ", decoded.url_LogoPestania);
-        console.log("NOMBRE APP: ", decoded.nombre_app);
-        console.log("LOGO PARTNER: ", decoded.url_logoPartner);
-
         // Si hay nuevo token de URL, actualizar storage
         if (urlToken && urlToken !== storedToken) {
           sessionStorage.setItem('authToken', urlToken);

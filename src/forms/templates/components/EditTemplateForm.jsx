@@ -66,7 +66,7 @@ const checkBotIAActivo = async (idBot, urlTemplatesGS, idEmpresa) => {
 
     return true;
   } catch (error) {
-    console.log("Error al validar IA activo:", error);
+    console.error("Error al validar IA activo:", error);
     return false;
   }
 };
@@ -333,7 +333,6 @@ const EditTemplateForm = () => {
           if (realIdPlantilla) {
             try {
               const botonContextoIA = await obtenerBotones(urlTemplatesGS, realIdPlantilla);
-              console.log("botones de contexto ia obtenidos: ", botonContextoIA);
 
               if (Array.isArray(botonContextoIA) && botonContextoIA.length > 0) {
                 const botonesActuales = getValues("buttons");
